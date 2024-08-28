@@ -1,0 +1,34 @@
+cmake_minimum_required(VERSION 3.25)
+
+project(
+    Engine
+    LANGUAGES CXX
+)
+
+# Add source files
+file(
+    GLOB_RECURSE
+    ENGINE_SOURCES
+    CONFIGURE_DEPENDS
+    "${CMAKE_CURRENT_SOURCE_DIR}/*.cpp"
+)
+
+# Compile to a static library
+add_library(
+    Engine
+    STATIC
+    ${ENGINE_SOURCES}
+)
+
+# Include directory
+target_include_directories(
+    Engine
+    PUBLIC
+    "${CMAKE_CURRENT_SOURCE_DIR}"
+)
+
+# TODO: Check for Vulkan
+
+# TODO: Check for GLFW
+
+# TODO: Link against libraries
