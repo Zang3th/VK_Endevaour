@@ -9,3 +9,6 @@ mkdir Debug
 cd Debug
 cmake ../.. -D CMAKE_BUILD_TYPE=Debug -D CMAKE_CXX_FLAGS="-g"
 make -j
+
+mv compile_commands.json $PROJECT_ROOT
+

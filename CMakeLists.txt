@@ -10,7 +10,12 @@ project(
     LANGUAGES CXX
 )
 
+# Add compile options
 include("CMake/AddCompileOptions.cmake")
 
-# add_subdirectory(Engine)
+# Add global include directory
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/Engine)
+
+# Add subprojects
+add_subdirectory(Engine)
 add_subdirectory(Application)

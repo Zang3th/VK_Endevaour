@@ -20,11 +20,11 @@ add_library(
     ${ENGINE_SOURCES}
 )
 
-# Include directory
-target_include_directories(
+# Add external libraries
+add_subdirectory("Vendor/fmt")
+target_link_libraries(
     Engine
-    PUBLIC
-    "${CMAKE_CURRENT_SOURCE_DIR}"
+    fmt::fmt
 )
 
 # TODO: Check for Vulkan

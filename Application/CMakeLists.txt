@@ -17,4 +17,4 @@ file(
 add_executable(Application ${APP_SOURCES})
 
 # Link application against the engine
-# target_link_libraries(Application PRIVATE Engine)
+target_link_libraries(Application PRIVATE Engine)

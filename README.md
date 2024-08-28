@@ -8,7 +8,7 @@ Accommodating repository while learning Vulkan. This includes some basic engine 
 - CMake 3.25 or above
 - Vulkan compatible graphics card and driver
 
-The project should build crossplatform but is currently only tested on Linux.
+The project should build cross-platform but is currently only tested on Linux.
 
 ## External dependencies
 
