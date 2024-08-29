@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.25)
 
 project(
-    Application
+    HelloTriangle
     LANGUAGES CXX
 )
 
@@ -14,7 +14,7 @@ file(
 )
 
 # Compile to an executable
-add_executable(Application ${APP_SOURCES})
+add_executable(HelloTriangle ${APP_SOURCES})
 
 # Link application against the engine
-target_link_libraries(Application PRIVATE Engine)
+target_link_libraries(HelloTriangle PRIVATE Engine)

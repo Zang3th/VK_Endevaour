@@ -18,9 +18,11 @@ The project should build cross-platform but is currently only tested on Linux.
 
 ### External dependencies
 
-- **GLFW**
+- glfw
 
         sudo apt install libglfw3-dev
+
+- [glslc](https://github.com/google/shaderc?tab=readme-ov-file#downloads)
 
 ### Packages (only used for development)
 
