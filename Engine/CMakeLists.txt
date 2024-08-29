@@ -14,21 +14,28 @@ file(
 )
 
 # Compile to a static library
-add_library(
-    Engine
-    STATIC
-    ${ENGINE_SOURCES}
-)
+add_library(Engine STATIC ${ENGINE_SOURCES})
 
 # Add external libraries
 add_subdirectory("Vendor/fmt")
-target_link_libraries(
-    Engine
-    fmt::fmt
+
+# Check for GLFW
+find_package(glfw3 REQUIRED)
+message(STATUS "{glfw} version: ${glfw3_VERSION}")
+
+# Check for Vulkan
+find_package(Vulkan REQUIRED)
+message(STATUS "Vulkan SDK version: ${Vulkan_VERSION}")
+
+# Link against everything
+target_link_libraries( Engine
+    PRIVATE
+        fmt::fmt
+    PUBLIC
+        glfw
+        Vulkan::Vulkan
 )
 
-# TODO: Check for Vulkan
-
-# TODO: Check for GLFW
-
-# TODO: Link against libraries
+# Add linker flags
+set(ENGINE_LINKER_FLAGS "-ldl -lpthread -lX11")
+target_link_libraries(Engine PRIVATE ${ENGINE_LINKER_FLAGS})
