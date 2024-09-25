@@ -50,7 +50,7 @@ class HelloTriangle
             void*                                       pUserData
         )
         {
-            LOG_ERROR("Validation layer: {}", pCallbackData->pMessage);
+            LOG_INFO("Validation layer: {}", pCallbackData->pMessage);
             return VK_FALSE;
         }
 };

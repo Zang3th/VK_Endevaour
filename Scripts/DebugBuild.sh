@@ -2,13 +2,11 @@
 
 SCRIPT_DIR=$(dirname "$(realpath "$0")")
 PROJECT_ROOT=$(realpath "$SCRIPT_DIR/..")
-cd "$PROJECT_ROOT/Build" || exit
+mkdir -p "$PROJECT_ROOT/Build" && cd "$PROJECT_ROOT/Build" || exit
 
-rm -f -r Debug/
-mkdir Debug
+mkdir -p Debug
 cd Debug
-cmake ../.. -D CMAKE_BUILD_TYPE=Debug -D CMAKE_CXX_FLAGS="-g"
+cmake ../.. -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_FLAGS="-glldb"
 make -j
 
 mv compile_commands.json $PROJECT_ROOT
-
