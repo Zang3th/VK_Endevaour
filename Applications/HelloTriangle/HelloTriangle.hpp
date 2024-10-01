@@ -50,6 +50,7 @@ class HelloTriangle
             void*                                       pUserData
         )
         {
+            // TODO: Log depending on severity level
             LOG_INFO("Validation layer: {}", pCallbackData->pMessage);
             return VK_FALSE;
         }

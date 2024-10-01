@@ -32,7 +32,7 @@
 ### Vorteile von Vulkan gegenüber OpenGL
 
 - Vulkan ist eine allgemeine GPU API
-  - Compute ist automatisch und von Vornherein integriert
+  - Compute ist automatisch und von vornherein integriert
 - Keine globalen States mehr
   - OpenGL ist riesiger Zustandsautomat
 - Moderne API

@@ -14,21 +14,18 @@ Accommodating repository while learning Vulkan. This includes:
 - Vulkan compatible graphics card, driver and the SDK
 - An installation of all external dependencies
 
-The project should build cross-platform but is currently only tested on Linux.
+The project *should* build cross-platform but is currently only tested on Linux.
 
 ### External dependencies
 
-- glfw
-
-        sudo apt install libglfw3-dev
-
+- [glfw](https://github.com/glfw/glfw)
 - [glslc](https://github.com/google/shaderc?tab=readme-ov-file#downloads)
 
 ### Packages (only used for development)
 
-        sudo apt install vulkan-tools
-        sudo apt install libvulkan-dev
-        sudo apt install vulkan-validationlayers-dev spirv-tools
+        sudo dnf install vulkan-tools
+        sudo dnf install vulkan-loader-devel
+        sudo dnf install vulkan-validation-layers-devel
 
 ### Integrated libraries
 
