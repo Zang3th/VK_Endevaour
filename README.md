@@ -23,9 +23,9 @@ The project *should* build cross-platform but is currently only tested on Linux.
 
 ### Packages (only used for development)
 
-        sudo dnf install vulkan-tools
-        sudo dnf install vulkan-loader-devel
-        sudo dnf install vulkan-validation-layers-devel
+    sudo dnf install vulkan-tools
+    sudo dnf install vulkan-loader-devel
+    sudo dnf install vulkan-validation-layers-devel
 
 ### Integrated libraries
 
@@ -33,5 +33,5 @@ The project *should* build cross-platform but is currently only tested on Linux.
 
 | **Library**                                                          | **Version** | **Updated in Engine** | **Functionality**           | **Type**       |
 |:--------------------------------------------------------------------:|:-----------:|:---------------------:|:---------------------------:|:--------------:|
-| [GLM](https://github.com/g-truc/glm)                                 | 1.0.1       | 29.08.2024            | Mathematics                 | Header only    |
+| [glm](https://github.com/g-truc/glm)                                 | 1.0.1       | 29.08.2024            | Mathematics                 | Header only    |
 | [fmt](https://github.com/fmtlib/fmt)                                 | 11.0.2      | 28.08.2024            | Formatting and logging      | Static library |

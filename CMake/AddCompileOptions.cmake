@@ -17,4 +17,5 @@ add_compile_options(
         -Wno-type-limits
         -Wno-unused-parameter
         -Wno-unused-variable
+        -Wno-unused-function
 )

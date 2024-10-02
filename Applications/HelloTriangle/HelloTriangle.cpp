@@ -1,6 +1,39 @@
 #include "HelloTriangle.hpp"
+#include <GLFW/glfw3.h>
+#include <vulkan/vulkan_core.h>
 
 // ----- Current translation unit
+
+constexpr const char* VkMsgTypeToString(const VkDebugUtilsMessageTypeFlagsEXT type)
+{
+    switch (type)
+    {
+        case VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT:       return "General";
+        case VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT:    return "Validation";
+        case VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT:   return "Performance";
+        default:                                                return "Unknown";
+    }
+}
+
+static VKAPI_ATTR VkBool32 VKAPI_CALL DebugCallback
+(
+    VkDebugUtilsMessageSeverityFlagBitsEXT      messageSeverity,
+    VkDebugUtilsMessageTypeFlagsEXT             messageType,
+    const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData,
+    void*                                       pUserData
+)
+{
+    switch(messageSeverity)
+    {
+        case VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT: LOG_VERBOSE("[VkMsg | {}]: {}", VkMsgTypeToString(messageType), pCallbackData->pMessage); break;
+        case VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT:    LOG_INFO   ("[VkMsg | {}]: {}", VkMsgTypeToString(messageType), pCallbackData->pMessage); break;
+        case VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT: LOG_WARN   ("[VkMsg | {}]: {}", VkMsgTypeToString(messageType), pCallbackData->pMessage); break;
+        case VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT:   LOG_ERROR  ("[VkMsg | {}]: {}", VkMsgTypeToString(messageType), pCallbackData->pMessage); break;
+        default: LOG_ERROR("Caught unknown severity in vulkan debug callback!"); break;
+    }
+
+    return VK_FALSE;
+}
 
 static VkResult CreateDebugUtilsMessengerEXT
 (
@@ -35,39 +68,19 @@ static void DestroyDebugUtilsMessengerEXT
 
 // ----- Public -----
 
-bool HelloTriangle::Run()
+void HelloTriangle::Run()
 {
-    bool status = EXIT_SUCCESS;
-
-    if(InitWindow() != EXIT_SUCCESS)
-    {
-        status = EXIT_FAILURE;
-        goto QUIT;
-    }
-
-    if(InitVulkan() != EXIT_SUCCESS)
-    {
-        status = EXIT_FAILURE;
-        goto QUIT;
-    }
-
+    InitWindow();
+    InitVulkan();
     MainLoop();
-
-QUIT:
     CleanUp();
-
-    return status;
 }
 
 // ----- Private -----
 
-bool HelloTriangle::InitWindow()
+void HelloTriangle::InitWindow()
 {
-    if(!glfwInit())
-    {
-        LOG_ERROR("Failed to initialize GLFW: {}", glfwGetError(nullptr));
-        return EXIT_FAILURE;
-    }
+    ASSERT(glfwInit(), "Failed to initialize GLFW: {}", glfwGetError(nullptr));
     LOG_INFO("Initialized GLFW!");
 
     glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
@@ -75,66 +88,41 @@ bool HelloTriangle::InitWindow()
     glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
 
     _window = glfwCreateWindow(WIDTH, HEIGHT, "HelloTriangle", nullptr, nullptr);
-    if(!_window)
-    {
-        LOG_ERROR("Failed to create GLFW-Window: {}", glfwGetError(nullptr));
-        return EXIT_FAILURE;
-    }
-    LOG_INFO("Created GLFW-Window!");
-
-    return EXIT_SUCCESS;
+    ASSERT(_window, "Failed to create GLFW window: {}", glfwGetError(nullptr));
+    LOG_INFO("Created GLFW window!");
 }
 
-bool HelloTriangle::CheckValidationLayerSupport()
+void HelloTriangle::InitVulkan()
 {
-    uint32_t layerCount;
-    vkEnumerateInstanceLayerProperties(&layerCount, nullptr);
-
-    std::vector<VkLayerProperties> availableLayers(layerCount);
-    vkEnumerateInstanceLayerProperties(&layerCount, availableLayers.data());
-
-    for(const char* layerName : validationLayers)
-    {
-        bool layerFound = false;
-
-        for(const auto& layerProperties : availableLayers)
-        {
-            if(strcmp(layerName, layerProperties.layerName) == 0)
-            {
-                layerFound = true;
-                break;
-            }
-        }
-
-        if(!layerFound)
-        {
-            return false;
-        }
-    }
-
-    return true;
+    CreateInstance();
+    SetupDebugMessenger();
 }
 
-std::vector<const char*> HelloTriangle::GetRequiredExtensions()
+void HelloTriangle::MainLoop()
 {
-    uint32_t glfwExtensionCount = 0;
-    const char** glfwExtensions = glfwGetRequiredInstanceExtensions(&glfwExtensionCount);
+    while(!glfwWindowShouldClose(_window))
+    {
+        glfwPollEvents();
+    }
+}
 
-    std::vector<const char*> extensions(glfwExtensions, glfwExtensions + glfwExtensionCount);
+void HelloTriangle::CleanUp()
+{
     if(enableValidationLayers)
     {
-        extensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
+        DestroyDebugUtilsMessengerEXT(_instance, _debugMessenger, nullptr);
     }
 
-    return extensions;
+    vkDestroyInstance(_instance, nullptr);
+    glfwDestroyWindow(_window);
+    glfwTerminate();
 }
 
-bool HelloTriangle::CreateInstance()
+void HelloTriangle::CreateInstance()
 {
     if(enableValidationLayers && !CheckValidationLayerSupport())
     {
-        LOG_ERROR("Validation layers requested, but not available!");
-        return EXIT_FAILURE;
+        ASSERT(CheckValidationLayerSupport(), "Validation layers requested, but not available!");
     }
 
     VkApplicationInfo appInfo{};
@@ -168,20 +156,15 @@ bool HelloTriangle::CreateInstance()
         createInfo.pNext = nullptr;
     }
 
-    if(vkCreateInstance(&createInfo, nullptr, &_instance) != VK_SUCCESS)
-    {
-        LOG_ERROR("Failed to create instance!");
-        return EXIT_FAILURE;
-    }
-    LOG_INFO("Created VK-Instance!");
-
-    return EXIT_SUCCESS;
+    VK_CALL(vkCreateInstance(&createInfo, nullptr, &_instance));
+    LOG_INFO("Created Vulkan instance!");
 }
 
 void HelloTriangle::PopulateDebugMessengerCreateInfo(VkDebugUtilsMessengerCreateInfoEXT& createInfo)
 {
     createInfo.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT;
     createInfo.messageSeverity = VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT |
+                                 // VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT    |
                                  VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT |
                                  VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT;
     createInfo.messageType = VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT |
@@ -192,47 +175,60 @@ void HelloTriangle::PopulateDebugMessengerCreateInfo(VkDebugUtilsMessengerCreate
 
 }
 
-bool HelloTriangle::SetupDebugMessenger()
+void HelloTriangle::SetupDebugMessenger()
 {
+    if(!enableValidationLayers)
+    {
+        return;
+    }
+
     VkDebugUtilsMessengerCreateInfoEXT createInfo{};
     PopulateDebugMessengerCreateInfo(createInfo);
 
-    if(CreateDebugUtilsMessengerEXT(_instance, &createInfo, nullptr, &_debugMessenger) != VK_SUCCESS)
-    {
-        LOG_INFO("Failed to set up debug messenger!");
-        return EXIT_FAILURE;
-    }
-
-    return EXIT_SUCCESS;
+    VK_CALL(CreateDebugUtilsMessengerEXT(_instance, &createInfo, nullptr, &_debugMessenger));
+    LOG_INFO("Setup debug messenger!");
 }
 
-bool HelloTriangle::InitVulkan()
+std::vector<const char*> HelloTriangle::GetRequiredExtensions()
 {
-    bool status = EXIT_SUCCESS;
+    uint32_t glfwExtensionCount = 0;
+    const char** glfwExtensions = glfwGetRequiredInstanceExtensions(&glfwExtensionCount);
 
-    // TODO: Add Asserts()
-    status = CreateInstance();
-    status = SetupDebugMessenger();
-
-    return status;
-}
-
-void HelloTriangle::MainLoop()
-{
-    while(!glfwWindowShouldClose(_window))
-    {
-        glfwPollEvents();
-    }
-}
-
-void HelloTriangle::CleanUp()
-{
+    std::vector<const char*> extensions(glfwExtensions, glfwExtensions + glfwExtensionCount);
     if(enableValidationLayers)
     {
-        DestroyDebugUtilsMessengerEXT(_instance, _debugMessenger, nullptr);
+        extensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
     }
 
-    vkDestroyInstance(_instance, nullptr);
-    glfwDestroyWindow(_window);
-    glfwTerminate();
+    return extensions;
+}
+
+bool HelloTriangle::CheckValidationLayerSupport()
+{
+    uint32_t layerCount;
+    vkEnumerateInstanceLayerProperties(&layerCount, nullptr);
+
+    std::vector<VkLayerProperties> availableLayers(layerCount);
+    vkEnumerateInstanceLayerProperties(&layerCount, availableLayers.data());
+
+    for(const char* layerName : validationLayers)
+    {
+        bool layerFound = false;
+
+        for(const auto& layerProperties : availableLayers)
+        {
+            if(strcmp(layerName, layerProperties.layerName) == 0)
+            {
+                layerFound = true;
+                break;
+            }
+        }
+
+        if(!layerFound)
+        {
+            return false;
+        }
+    }
+
+    return true;
 }
