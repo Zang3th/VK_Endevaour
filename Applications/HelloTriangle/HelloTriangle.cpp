@@ -2,17 +2,6 @@
 
 // ----- Current translation unit
 
-constexpr const char* VkMsgTypeToString(const VkDebugUtilsMessageTypeFlagsEXT type)
-{
-    switch (type)
-    {
-        case VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT:       return "General";
-        case VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT:    return "Validation";
-        case VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT:   return "Performance";
-        default:                                                return "Unknown";
-    }
-}
-
 static VKAPI_ATTR VkBool32 VKAPI_CALL DebugCallback
 (
     VkDebugUtilsMessageSeverityFlagBitsEXT      messageSeverity,
@@ -162,7 +151,7 @@ void HelloTriangle::CreateInstance()
 void HelloTriangle::PopulateDebugMessengerCreateInfo(VkDebugUtilsMessengerCreateInfoEXT& createInfo)
 {
     createInfo.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT;
-    createInfo.messageSeverity = VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT |
+    createInfo.messageSeverity = // VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT |
                                  // VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT    |
                                  VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT |
                                  VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT;
@@ -263,7 +252,7 @@ void HelloTriangle::PickPhysicalDevice()
     // Query device features
     VkPhysicalDeviceFeatures deviceFeatures;
     vkGetPhysicalDeviceFeatures(physicalDevice, &deviceFeatures);
-    LOG_INFO("GPU: {}", deviceProperties.deviceName);
+    LOG_INFO("GPU: {} ({}), Driver: {}", deviceProperties.deviceName, VkVendorIDToString(deviceProperties.vendorID), VkDriverVersionToString(deviceProperties.driverVersion));
 
     // Queue family indices
     QueueFamilyIndices queueFamilyIndices = FindQueueFamilies(physicalDevice);
