@@ -21,7 +21,7 @@ const std::vector<const char*> validationLayers =
     const bool enableValidationLayers = true;
 #endif
 
-#define VK_CALL(func) \
+#define VK_VERIFY_RESULT(func) \
 { \
     VkResult res = (func); \
     if(res != VK_SUCCESS) \
@@ -30,6 +30,11 @@ const std::vector<const char*> validationLayers =
         __builtin_debugtrap(); \
     } \
 }
+
+struct QueueFamilyIndices
+{
+    uint32_t graphicsFamily;
+};
 
 class HelloTriangle
 {
@@ -50,6 +55,8 @@ class HelloTriangle
         void SetupDebugMessenger();
         std::vector<const char*> GetRequiredExtensions();
         bool CheckValidationLayerSupport();
+        void PickPhysicalDevice();
+        QueueFamilyIndices FindQueueFamilies(VkPhysicalDevice device);
 
         inline const char* VKResultToString(VkResult result)
         {
