@@ -83,6 +83,7 @@ void HelloTriangle::InitVulkan()
 {
     CreateInstance();
     SetupDebugMessenger();
+    CreateSurface();
     PickPhysicalDevice();
     CreateLogicalDevice();
 }
@@ -103,6 +104,7 @@ void HelloTriangle::CleanUp()
     }
 
     vkDestroyDevice(_device, nullptr);
+    vkDestroySurfaceKHR(_instance, _surface, nullptr);
     vkDestroyInstance(_instance, nullptr);
     glfwDestroyWindow(_window);
     glfwTerminate();
@@ -223,6 +225,11 @@ bool HelloTriangle::CheckValidationLayerSupport()
     return true;
 }
 
+void HelloTriangle::CreateSurface()
+{
+    VK_VERIFY_RESULT(glfwCreateWindowSurface(_instance, _window, nullptr, &_surface));
+}
+
 void HelloTriangle::PickPhysicalDevice()
 {
     // Query for devices
@@ -257,11 +264,12 @@ void HelloTriangle::PickPhysicalDevice()
     // Queue family indices
     _queueFamilyIndices = FindQueueFamilies(_physicalDevice);
     LOG_INFO("Found graphics capable queue family (index {})", _queueFamilyIndices.graphicsFamily);
+    LOG_INFO("Found surface presentation queue family (index {})", _queueFamilyIndices.presentFamily);
 }
 
 QueueFamilyIndices HelloTriangle::FindQueueFamilies(VkPhysicalDevice device)
 {
-    QueueFamilyIndices indices;
+    QueueFamilyIndices indices{};
 
     // Query for queue family count and properties
     uint32_t queueFamilyCount = 0;
@@ -270,50 +278,81 @@ QueueFamilyIndices HelloTriangle::FindQueueFamilies(VkPhysicalDevice device)
     std::vector<VkQueueFamilyProperties> queueFamilies(queueFamilyCount);
     vkGetPhysicalDeviceQueueFamilyProperties(device, &queueFamilyCount, queueFamilies.data());
 
-    // Query queue family for graphics bit
     int i = 0;
-    bool success = false;
+    bool foundGraphics = false;
+    bool foundSurface = false;
+    VkBool32 presentSupport = false;
+
+    // Iterate over queue familys
     for(const auto& queueFamily : queueFamilies)
     {
-        if(queueFamily.queueFlags & VK_QUEUE_GRAPHICS_BIT)
+        // Query for first graphics capable queue
+        if(!foundGraphics && queueFamily.queueFlags & VK_QUEUE_GRAPHICS_BIT)
         {
             indices.graphicsFamily = i;
-            success = true;
-            break;
+            foundGraphics = true;
         }
+
+        // Query for first surface presentation queue
+        vkGetPhysicalDeviceSurfaceSupportKHR(_physicalDevice, i, _surface, &presentSupport);
+        if(!foundSurface && presentSupport)
+        {
+            indices.presentFamily = i;
+            foundSurface = true;
+        }
+
+        // INFO: This will be most likely be the same queue index, it's possible to improve performance here.
         i++;
     }
-    ASSERT(success, "Found no graphics capable queue family!");
+    ASSERT(foundGraphics , "Found no graphics capable queue family!");
+    ASSERT(foundSurface , "Found no surface presentation queue family!");
 
     return indices;
 }
 
 void HelloTriangle::CreateLogicalDevice()
 {
-    // Create queue with graphics capabilties
-    VkDeviceQueueCreateInfo queueCreateInfo{};
-    queueCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
-    queueCreateInfo.queueFamilyIndex = _queueFamilyIndices.graphicsFamily;
-    queueCreateInfo.queueCount = 1;
-
+    // Create vector with queues
+    std::vector<VkDeviceQueueCreateInfo> queueCreateInfos;
     float queuePriority = 1.0f;
-    queueCreateInfo.pQueuePriorities = &queuePriority;
+
+    // Add graphics queue
+    VkDeviceQueueCreateInfo queueCreateInfo1{};
+    queueCreateInfo1.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
+    queueCreateInfo1.queueFamilyIndex = _queueFamilyIndices.graphicsFamily;
+    queueCreateInfo1.queueCount = 1;
+    queueCreateInfo1.pQueuePriorities = &queuePriority;
+    queueCreateInfos.push_back(queueCreateInfo1);
+
+    // Add surface presentation queue
+    VkDeviceQueueCreateInfo queueCreateInfo2{};
+    queueCreateInfo2.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
+    queueCreateInfo2.queueFamilyIndex = _queueFamilyIndices.presentFamily;
+    queueCreateInfo2.queueCount = 1;
+    queueCreateInfo2.pQueuePriorities = &queuePriority;
+    queueCreateInfos.push_back(queueCreateInfo2);
 
     // Define features you want to use (e.g. geometry shaders)
     VkPhysicalDeviceFeatures deviceFeatures{};
 
-    // Create logical device
+    // Configure logical device
     VkDeviceCreateInfo createInfo{};
     createInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
-    createInfo.pQueueCreateInfos = &queueCreateInfo;
+    createInfo.pQueueCreateInfos = queueCreateInfos.data();
     createInfo.queueCreateInfoCount = 1;
     createInfo.pEnabledFeatures = &deviceFeatures;
     createInfo.enabledExtensionCount = 0;
     createInfo.enabledLayerCount = 0; // Device specific validation layers get ignored in newer vulkan versions
 
+    // Create logical device
     VK_VERIFY_RESULT(vkCreateDevice(_physicalDevice, &createInfo, nullptr, &_device));
     LOG_INFO("Created device!");
 
-    // Retrieve queue handle
+    // TODO: Reduce to one queue handle
+
+    // Retrieve graphics queue handle
     vkGetDeviceQueue(_device, _queueFamilyIndices.graphicsFamily, 0, &_graphicsQueue);
+
+    // Retrieve surface presentation queue handle
+    vkGetDeviceQueue(_device, _queueFamilyIndices.presentFamily, 0, &_presentQueue);
 }

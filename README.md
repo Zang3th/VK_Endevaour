@@ -10,6 +10,7 @@ Accommodating repository while learning Vulkan. This includes:
 ### What you need
 
 - C++20 compiler
+  - The provided build script uses clang++-17
 - CMake 3.25 or above
 - Vulkan compatible graphics card, driver and the SDK
 - An installation of all external dependencies

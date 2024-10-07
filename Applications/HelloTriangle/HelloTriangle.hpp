@@ -1,6 +1,7 @@
 #pragma once
 
-#define GLFW_INCLUDE_VULKAN
+#include <vulkan/vulkan.h>
+#include <vulkan/vulkan_core.h>
 #include <GLFW/glfw3.h>
 
 #include <vector>
@@ -35,6 +36,7 @@ const std::vector<const char*> validationLayers =
 struct QueueFamilyIndices
 {
     uint32_t graphicsFamily;
+    uint32_t presentFamily;
 };
 
 class HelloTriangle
@@ -46,10 +48,11 @@ class HelloTriangle
         GLFWwindow* _window;
         VkInstance  _instance;
         VkDebugUtilsMessengerEXT _debugMessenger;
+        VkSurfaceKHR _surface;
         VkPhysicalDevice _physicalDevice;
         QueueFamilyIndices _queueFamilyIndices;
         VkDevice _device;
-        VkQueue _graphicsQueue;
+        VkQueue _graphicsQueue, _presentQueue;
 
         void InitWindow();
         void InitVulkan();
@@ -60,6 +63,7 @@ class HelloTriangle
         void SetupDebugMessenger();
         std::vector<const char*> GetRequiredExtensions();
         bool CheckValidationLayerSupport();
+        void CreateSurface();
         void PickPhysicalDevice();
         QueueFamilyIndices FindQueueFamilies(VkPhysicalDevice device);
         void CreateLogicalDevice();
