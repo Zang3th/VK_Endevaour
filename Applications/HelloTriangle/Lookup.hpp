@@ -2,6 +2,9 @@
 
 #include "vulkan/vulkan_core.h"
 
+#include <string>
+
+// TODO: Move into query code of the physical device class
 constexpr std::string VkDriverVersionToString(uint32_t version)
 {
     char buf[32];

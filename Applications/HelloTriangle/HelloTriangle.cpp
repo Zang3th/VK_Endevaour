@@ -84,6 +84,7 @@ void HelloTriangle::InitVulkan()
     CreateInstance();
     SetupDebugMessenger();
     PickPhysicalDevice();
+    CreateLogicalDevice();
 }
 
 void HelloTriangle::MainLoop()
@@ -101,6 +102,7 @@ void HelloTriangle::CleanUp()
         DestroyDebugUtilsMessengerEXT(_instance, _debugMessenger, nullptr);
     }
 
+    vkDestroyDevice(_device, nullptr);
     vkDestroyInstance(_instance, nullptr);
     glfwDestroyWindow(_window);
     glfwTerminate();
@@ -223,8 +225,6 @@ bool HelloTriangle::CheckValidationLayerSupport()
 
 void HelloTriangle::PickPhysicalDevice()
 {
-    VkPhysicalDevice physicalDevice = VK_NULL_HANDLE;
-
     // Query for devices
     uint32_t deviceCount = 0;
     VK_VERIFY_RESULT(vkEnumeratePhysicalDevices(_instance, &deviceCount, nullptr));
@@ -242,21 +242,21 @@ void HelloTriangle::PickPhysicalDevice()
         vkGetPhysicalDeviceProperties(device, &deviceProperties);
         if(deviceProperties.deviceType == VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU)
         {
-            physicalDevice = device;
+            _physicalDevice = device;
             break;
         }
     }
 
-    ASSERT(physicalDevice, "Failed to find discrete GPU!");
+    ASSERT(_physicalDevice, "Failed to find discrete GPU!");
 
     // Query device features
     VkPhysicalDeviceFeatures deviceFeatures;
-    vkGetPhysicalDeviceFeatures(physicalDevice, &deviceFeatures);
+    vkGetPhysicalDeviceFeatures(_physicalDevice, &deviceFeatures);
     LOG_INFO("GPU: {} ({}), Driver: {}", deviceProperties.deviceName, VkVendorIDToString(deviceProperties.vendorID), VkDriverVersionToString(deviceProperties.driverVersion));
 
     // Queue family indices
-    QueueFamilyIndices queueFamilyIndices = FindQueueFamilies(physicalDevice);
-    LOG_INFO("Found graphics capable queue family with index {}", queueFamilyIndices.graphicsFamily);
+    _queueFamilyIndices = FindQueueFamilies(_physicalDevice);
+    LOG_INFO("Found graphics capable queue family (index {})", _queueFamilyIndices.graphicsFamily);
 }
 
 QueueFamilyIndices HelloTriangle::FindQueueFamilies(VkPhysicalDevice device)
@@ -286,4 +286,34 @@ QueueFamilyIndices HelloTriangle::FindQueueFamilies(VkPhysicalDevice device)
     ASSERT(success, "Found no graphics capable queue family!");
 
     return indices;
+}
+
+void HelloTriangle::CreateLogicalDevice()
+{
+    // Create queue with graphics capabilties
+    VkDeviceQueueCreateInfo queueCreateInfo{};
+    queueCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
+    queueCreateInfo.queueFamilyIndex = _queueFamilyIndices.graphicsFamily;
+    queueCreateInfo.queueCount = 1;
+
+    float queuePriority = 1.0f;
+    queueCreateInfo.pQueuePriorities = &queuePriority;
+
+    // Define features you want to use (e.g. geometry shaders)
+    VkPhysicalDeviceFeatures deviceFeatures{};
+
+    // Create logical device
+    VkDeviceCreateInfo createInfo{};
+    createInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
+    createInfo.pQueueCreateInfos = &queueCreateInfo;
+    createInfo.queueCreateInfoCount = 1;
+    createInfo.pEnabledFeatures = &deviceFeatures;
+    createInfo.enabledExtensionCount = 0;
+    createInfo.enabledLayerCount = 0; // Device specific validation layers get ignored in newer vulkan versions
+
+    VK_VERIFY_RESULT(vkCreateDevice(_physicalDevice, &createInfo, nullptr, &_device));
+    LOG_INFO("Created device!");
+
+    // Retrieve queue handle
+    vkGetDeviceQueue(_device, _queueFamilyIndices.graphicsFamily, 0, &_graphicsQueue);
 }

@@ -46,6 +46,10 @@ class HelloTriangle
         GLFWwindow* _window;
         VkInstance  _instance;
         VkDebugUtilsMessengerEXT _debugMessenger;
+        VkPhysicalDevice _physicalDevice;
+        QueueFamilyIndices _queueFamilyIndices;
+        VkDevice _device;
+        VkQueue _graphicsQueue;
 
         void InitWindow();
         void InitVulkan();
@@ -58,4 +62,5 @@ class HelloTriangle
         bool CheckValidationLayerSupport();
         void PickPhysicalDevice();
         QueueFamilyIndices FindQueueFamilies(VkPhysicalDevice device);
+        void CreateLogicalDevice();
 };
