@@ -4,7 +4,7 @@
 
 #include <string>
 
-// TODO: Move into query code of the physical device class
+// TODO: Move into query code of the physical device class. Also this is not really constexpr
 constexpr std::string VkDriverVersionToString(uint32_t version)
 {
     char buf[32];

@@ -86,6 +86,7 @@ void HelloTriangle::InitVulkan()
     CreateSurface();
     PickPhysicalDevice();
     CreateLogicalDevice();
+    CreateSwapChain();
 }
 
 void HelloTriangle::MainLoop()
@@ -103,6 +104,7 @@ void HelloTriangle::CleanUp()
         DestroyDebugUtilsMessengerEXT(_instance, _debugMessenger, nullptr);
     }
 
+    vkDestroySwapchainKHR(_device, _swapChain, nullptr);
     vkDestroyDevice(_device, nullptr);
     vkDestroySurfaceKHR(_instance, _surface, nullptr);
     vkDestroyInstance(_instance, nullptr);
@@ -241,30 +243,158 @@ void HelloTriangle::PickPhysicalDevice()
     std::vector<VkPhysicalDevice> devices(deviceCount);
     VK_VERIFY_RESULT(vkEnumeratePhysicalDevices(_instance, &deviceCount, devices.data()));
 
-    // Check requirements
-    VkPhysicalDeviceProperties deviceProperties;
+    // Check each device for suitability
     for(const auto& device : devices)
     {
-        // Get first discrete device and then exit
-        vkGetPhysicalDeviceProperties(device, &deviceProperties);
-        if(deviceProperties.deviceType == VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU)
+        if(IsDeviceSuitable(device))
         {
             _physicalDevice = device;
             break;
         }
     }
 
-    ASSERT(_physicalDevice, "Failed to find discrete GPU!");
+    ASSERT(_physicalDevice, "Failed to find suitable device!");
 
-    // Query device features
-    VkPhysicalDeviceFeatures deviceFeatures;
-    vkGetPhysicalDeviceFeatures(_physicalDevice, &deviceFeatures);
-    LOG_INFO("GPU: {} ({}), Driver: {}", deviceProperties.deviceName, VkVendorIDToString(deviceProperties.vendorID), VkDriverVersionToString(deviceProperties.driverVersion));
-
-    // Queue family indices
+    // TODO: Move this also into the IsDeviceSuitable()-Function
     _queueFamilyIndices = FindQueueFamilies(_physicalDevice);
     LOG_INFO("Found graphics capable queue family (index {})", _queueFamilyIndices.graphicsFamily);
     LOG_INFO("Found surface presentation queue family (index {})", _queueFamilyIndices.presentFamily);
+}
+
+bool HelloTriangle::IsDeviceSuitable(VkPhysicalDevice device)
+{
+    VkPhysicalDeviceProperties deviceProperties;
+    vkGetPhysicalDeviceProperties(device, &deviceProperties);
+
+    // Check requirements (discrete GPU and support for swap chain)
+    if(deviceProperties.deviceType == VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU && CheckDeviceExtensionSupport(device))
+    {
+        LOG_INFO("Found discrete GPU with swap chain support!");
+        _swapChainSupport = QuerySwapChainSupport(device);
+
+        if(!_swapChainSupport.formats.empty() && !_swapChainSupport.presentModes.empty())
+        {
+            LOG_INFO("Found adequate swap chain support!");
+
+            // Query and print device features
+            VkPhysicalDeviceFeatures deviceFeatures;
+            vkGetPhysicalDeviceFeatures(device, &deviceFeatures);
+            LOG_INFO("GPU: {} ({}), Driver: {}", deviceProperties.deviceName, VkVendorIDToString(deviceProperties.vendorID), VkDriverVersionToString(deviceProperties.driverVersion));
+
+            return true;
+        }
+    }
+
+    return false;
+}
+
+VkSurfaceFormatKHR HelloTriangle::ChooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats)
+{
+    // Check if prefered format is available
+    for(const auto& availableFormat : availableFormats)
+    {
+        if(availableFormat.format == VK_FORMAT_B8G8R8A8_SRGB && availableFormat.colorSpace == VK_COLOR_SPACE_SRGB_NONLINEAR_KHR)
+        {
+            return availableFormat;
+        }
+    }
+
+    // If that's not available return the next best thing
+    return availableFormats[0];
+}
+
+VkPresentModeKHR HelloTriangle::ChooseSwapPresentMode(const std::vector<VkPresentModeKHR>& availablePresentModes)
+{
+    // Check if mailbox mode aka triple buffering is available
+    for(const auto& availablePresentMode : availablePresentModes)
+    {
+        if(availablePresentMode == VK_PRESENT_MODE_MAILBOX_KHR)
+        {
+            return availablePresentMode;
+        }
+    }
+
+    // Queue mode is guaranteed to be available
+    return VK_PRESENT_MODE_FIFO_KHR;
+}
+
+VkExtent2D HelloTriangle::ChooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilites)
+{
+    // Check for special case
+    if(capabilites.currentExtent.width != std::numeric_limits<uint32_t>::max())
+    {
+        return capabilites.currentExtent;
+    }
+    else
+    {
+        // Get window size in pixels
+        int width, height;
+        glfwGetFramebufferSize(_window, &width, &height);
+
+        VkExtent2D actualExtent =
+        {
+            static_cast<uint32_t>(width),
+            static_cast<uint32_t>(height)
+        };
+
+        // Clamp width and height between allowed min and max values of the display manager implementation
+        actualExtent.width = std::clamp(actualExtent.width, capabilites.minImageExtent.width, capabilites.maxImageExtent.width);
+        actualExtent.height = std::clamp(actualExtent.height, capabilites.minImageExtent.height, capabilites.maxImageExtent.height);
+
+        return actualExtent;
+    }
+}
+
+bool HelloTriangle::CheckDeviceExtensionSupport(VkPhysicalDevice device)
+{
+    // Get number of extensions
+    uint32_t extensionCount;
+    VK_VERIFY_RESULT(vkEnumerateDeviceExtensionProperties(device, nullptr, &extensionCount, nullptr));
+
+    // Get extensions
+    std::vector<VkExtensionProperties> availableExtensions(extensionCount);
+    VK_VERIFY_RESULT(vkEnumerateDeviceExtensionProperties(device, nullptr, &extensionCount, availableExtensions.data()));
+
+    // Create set out of needed extensions
+    std::set<std::string> requiredExtensions(deviceExtensions.begin(), deviceExtensions.end());
+
+    // Iterate over all available extensions and check if the required ones are amongst thme
+    for(const auto& extension : availableExtensions)
+    {
+        requiredExtensions.erase(extension.extensionName);
+    }
+
+    // Return false if not all requested extensions are available
+    return requiredExtensions.empty();
+}
+
+// PERF: This returns a struct with several vectors inside. Optimize later.
+SwapChainSupport HelloTriangle::QuerySwapChainSupport(VkPhysicalDevice device)
+{
+    SwapChainSupport swapChainSupport{};
+
+    // Query for basic surface capabilites
+    VK_VERIFY_RESULT(vkGetPhysicalDeviceSurfaceCapabilitiesKHR(device, _surface, &swapChainSupport.capabilities));
+
+    // Query surface format count
+    uint32_t formatCount = 0;
+    VK_VERIFY_RESULT(vkGetPhysicalDeviceSurfaceFormatsKHR(device, _surface, &formatCount, nullptr));
+    ASSERT(formatCount > 0, "Found no supported surface formats!");
+
+    // Query surface formats
+    swapChainSupport.formats.resize(formatCount);
+    VK_VERIFY_RESULT(vkGetPhysicalDeviceSurfaceFormatsKHR(device, _surface, &formatCount, swapChainSupport.formats.data()));
+
+    // Query presentation mode count
+    uint32_t presentModeCount = 0;
+    VK_VERIFY_RESULT(vkGetPhysicalDeviceSurfacePresentModesKHR(device, _surface, &presentModeCount, nullptr));
+    ASSERT(presentModeCount > 0, "Found no supported presentation modes!");
+
+    // Query presentation modes
+    swapChainSupport.presentModes.resize(presentModeCount);
+    VK_VERIFY_RESULT(vkGetPhysicalDeviceSurfacePresentModesKHR(device, _surface, &presentModeCount, swapChainSupport.presentModes.data()));
+
+    return swapChainSupport;
 }
 
 QueueFamilyIndices HelloTriangle::FindQueueFamilies(VkPhysicalDevice device)
@@ -294,14 +424,14 @@ QueueFamilyIndices HelloTriangle::FindQueueFamilies(VkPhysicalDevice device)
         }
 
         // Query for first surface presentation queue
-        vkGetPhysicalDeviceSurfaceSupportKHR(_physicalDevice, i, _surface, &presentSupport);
+        VK_VERIFY_RESULT(vkGetPhysicalDeviceSurfaceSupportKHR(_physicalDevice, i, _surface, &presentSupport));
         if(!foundSurface && presentSupport)
         {
             indices.presentFamily = i;
             foundSurface = true;
         }
 
-        // INFO: This will be most likely be the same queue index, it's possible to improve performance here.
+        // PERF: This will be most likely be the same queue index, it's possible to improve performance here.
         i++;
     }
     ASSERT(foundGraphics , "Found no graphics capable queue family!");
@@ -341,7 +471,8 @@ void HelloTriangle::CreateLogicalDevice()
     createInfo.pQueueCreateInfos = queueCreateInfos.data();
     createInfo.queueCreateInfoCount = 1;
     createInfo.pEnabledFeatures = &deviceFeatures;
-    createInfo.enabledExtensionCount = 0;
+    createInfo.enabledExtensionCount = static_cast<uint32_t>(deviceExtensions.size());
+    createInfo.ppEnabledExtensionNames = deviceExtensions.data();
     createInfo.enabledLayerCount = 0; // Device specific validation layers get ignored in newer vulkan versions
 
     // Create logical device
@@ -355,4 +486,66 @@ void HelloTriangle::CreateLogicalDevice()
 
     // Retrieve surface presentation queue handle
     vkGetDeviceQueue(_device, _queueFamilyIndices.presentFamily, 0, &_presentQueue);
+}
+
+void HelloTriangle::CreateSwapChain()
+{
+    // Swap chain got already queried at this point, so extract all the preferable settings
+    _swapChainProperties.extent = ChooseSwapExtent(_swapChainSupport.capabilities);
+    _swapChainProperties.surfaceFormat = ChooseSwapSurfaceFormat(_swapChainSupport.formats);
+    _swapChainProperties.presentMode = ChooseSwapPresentMode(_swapChainSupport.presentModes);
+
+    // Specify amount of images in swap chain
+    uint32_t imageCount = _swapChainSupport.capabilities.minImageCount + 1;
+
+    // Make sure to not exceed bounds (0 := means no limit)
+    if(_swapChainSupport.capabilities.maxImageCount > 0 && imageCount > _swapChainSupport.capabilities.maxImageCount)
+    {
+        imageCount = _swapChainSupport.capabilities.maxImageCount;
+    }
+
+    // Create swap chain
+    VkSwapchainCreateInfoKHR createInfo{};
+    createInfo.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
+    createInfo.surface = _surface;
+    createInfo.minImageCount = imageCount;
+    createInfo.imageFormat = _swapChainProperties.surfaceFormat.format;
+    createInfo.imageColorSpace = _swapChainProperties.surfaceFormat.colorSpace;
+    createInfo.imageExtent = _swapChainProperties.extent;
+    createInfo.imageArrayLayers = 1;
+    createInfo.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT; // Render directly to image
+
+    // Check if graphics queue is different from presentation queue
+    if(_queueFamilyIndices.graphicsFamily != _queueFamilyIndices.presentFamily)
+    {
+        createInfo.imageSharingMode = VK_SHARING_MODE_CONCURRENT; // Images can be used across multiple queue families
+        createInfo.queueFamilyIndexCount = 2;
+        uint32_t queueFamilyIndices[] = {_queueFamilyIndices.graphicsFamily, _queueFamilyIndices.presentFamily};
+        createInfo.pQueueFamilyIndices = queueFamilyIndices;
+    }
+    else
+    {
+        createInfo.imageSharingMode = VK_SHARING_MODE_EXCLUSIVE; // Image is owned by one queue family at a time
+        createInfo.queueFamilyIndexCount = 0;
+        createInfo.pQueueFamilyIndices = nullptr;
+    }
+
+    createInfo.preTransform = _swapChainSupport.capabilities.currentTransform; // Disable automatic transformation
+
+    // NOTE: This alpha channel config is not yet fully clear to me
+    createInfo.compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR; // Ignore alpha channel for blending with other os windows ?
+
+    createInfo.presentMode = _swapChainProperties.presentMode;
+    createInfo.clipped = VK_TRUE;
+    createInfo.oldSwapchain = VK_NULL_HANDLE; // NOTE: You will need to revisit this because of window resizing
+
+    VK_VERIFY_RESULT(vkCreateSwapchainKHR(_device, &createInfo, nullptr, &_swapChain));
+
+    // TODO: Log swap chain parameters (e.g. format, colorSpace ...)
+    LOG_INFO("Created swap chain!");
+
+    // Retrieve handles for swap chain images
+    vkGetSwapchainImagesKHR(_device, _swapChain, &imageCount, nullptr);
+    _swapChainImages.resize(imageCount);
+    vkGetSwapchainImagesKHR(_device, _swapChain, &imageCount, _swapChainImages.data());
 }

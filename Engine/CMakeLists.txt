@@ -37,5 +37,5 @@ target_link_libraries( Engine
 )
 
 # Add linker flags
-set(ENGINE_LINKER_FLAGS "-ldl -lpthread -lX11")
+set(ENGINE_LINKER_FLAGS "-ldl -lpthread")
 target_link_libraries(Engine PRIVATE ${ENGINE_LINKER_FLAGS})
