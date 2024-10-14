@@ -79,6 +79,7 @@ class HelloTriangle
         SwapChainProperties _swapChainProperties;
         VkSwapchainKHR _swapChain;
         std::vector<VkImage> _swapChainImages;
+        std::vector<VkImageView> _swapChainImageViews;
 
         void InitWindow();
         void InitVulkan();
@@ -100,4 +101,5 @@ class HelloTriangle
         QueueFamilyIndices FindQueueFamilies(VkPhysicalDevice device);
         void CreateLogicalDevice();
         void CreateSwapChain();
+        void CreateImageViews();
 };

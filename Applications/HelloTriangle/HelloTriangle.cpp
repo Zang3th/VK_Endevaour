@@ -87,6 +87,7 @@ void HelloTriangle::InitVulkan()
     PickPhysicalDevice();
     CreateLogicalDevice();
     CreateSwapChain();
+    CreateImageViews();
 }
 
 void HelloTriangle::MainLoop()
@@ -102,6 +103,11 @@ void HelloTriangle::CleanUp()
     if(enableValidationLayers)
     {
         DestroyDebugUtilsMessengerEXT(_instance, _debugMessenger, nullptr);
+    }
+
+    for(auto* imageView : _swapChainImageViews)
+    {
+        vkDestroyImageView(_device, imageView, nullptr);
     }
 
     vkDestroySwapchainKHR(_device, _swapChain, nullptr);
@@ -325,24 +331,22 @@ VkExtent2D HelloTriangle::ChooseSwapExtent(const VkSurfaceCapabilitiesKHR& capab
     {
         return capabilites.currentExtent;
     }
-    else
+
+    // Get window size in pixels
+    int width, height;
+    glfwGetFramebufferSize(_window, &width, &height);
+
+    VkExtent2D actualExtent =
     {
-        // Get window size in pixels
-        int width, height;
-        glfwGetFramebufferSize(_window, &width, &height);
+        static_cast<uint32_t>(width),
+        static_cast<uint32_t>(height)
+    };
 
-        VkExtent2D actualExtent =
-        {
-            static_cast<uint32_t>(width),
-            static_cast<uint32_t>(height)
-        };
+    // Clamp width and height between allowed min and max values of the display manager implementation
+    actualExtent.width = std::clamp(actualExtent.width, capabilites.minImageExtent.width, capabilites.maxImageExtent.width);
+    actualExtent.height = std::clamp(actualExtent.height, capabilites.minImageExtent.height, capabilites.maxImageExtent.height);
 
-        // Clamp width and height between allowed min and max values of the display manager implementation
-        actualExtent.width = std::clamp(actualExtent.width, capabilites.minImageExtent.width, capabilites.maxImageExtent.width);
-        actualExtent.height = std::clamp(actualExtent.height, capabilites.minImageExtent.height, capabilites.maxImageExtent.height);
-
-        return actualExtent;
-    }
+    return actualExtent;
 }
 
 bool HelloTriangle::CheckDeviceExtensionSupport(VkPhysicalDevice device)
@@ -548,4 +552,33 @@ void HelloTriangle::CreateSwapChain()
     vkGetSwapchainImagesKHR(_device, _swapChain, &imageCount, nullptr);
     _swapChainImages.resize(imageCount);
     vkGetSwapchainImagesKHR(_device, _swapChain, &imageCount, _swapChainImages.data());
+}
+
+void HelloTriangle::CreateImageViews()
+{
+    _swapChainImageViews.resize(_swapChainImages.size());
+
+    // Iterate over all swap chain images
+    for(size_t i = 0; i < _swapChainImages.size(); i++)
+    {
+        // Create image view
+        VkImageViewCreateInfo createInfo{};
+        createInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
+        createInfo.image = _swapChainImages[i];
+        createInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
+        createInfo.format = _swapChainProperties.surfaceFormat.format;
+        createInfo.components.r = VK_COMPONENT_SWIZZLE_IDENTITY;
+        createInfo.components.g = VK_COMPONENT_SWIZZLE_IDENTITY;
+        createInfo.components.b = VK_COMPONENT_SWIZZLE_IDENTITY;
+        createInfo.components.a = VK_COMPONENT_SWIZZLE_IDENTITY;
+        createInfo.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+        createInfo.subresourceRange.baseMipLevel = 0;
+        createInfo.subresourceRange.levelCount = 1;
+        createInfo.subresourceRange.baseArrayLayer = 0;
+        createInfo.subresourceRange.layerCount = 1;
+
+        VK_VERIFY_RESULT(vkCreateImageView(_device, &createInfo, nullptr, &_swapChainImageViews[i]));
+    }
+
+    LOG_INFO("Created image views!");
 }
