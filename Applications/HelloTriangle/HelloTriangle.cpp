@@ -53,6 +53,23 @@ static void DestroyDebugUtilsMessengerEXT
     }
 }
 
+static std::vector<char> ReadFileAsBytes(const std::string& fileName)
+{
+    // Start reading file from the end
+    std::ifstream file(fileName, std::ios::ate | std::ios::binary);
+    ASSERT(file.is_open(), "Can't open file: {}", fileName);
+
+    // After getting the size, set pointer to begin and read into buffer
+    size_t fileSize = static_cast<size_t>(file.tellg());
+    std::vector<char> buffer(fileSize);
+    file.seekg(0);
+    file.read(buffer.data(), fileSize);
+    file.close();
+    LOG_INFO("Read in file: {} ({} bytes)", fileName, fileSize);
+
+    return buffer;
+}
+
 // ----- Public -----
 
 void HelloTriangle::Run()
@@ -88,6 +105,7 @@ void HelloTriangle::InitVulkan()
     CreateLogicalDevice();
     CreateSwapChain();
     CreateImageViews();
+    CreateGraphicsPipeline();
 }
 
 void HelloTriangle::MainLoop()
@@ -581,4 +599,51 @@ void HelloTriangle::CreateImageViews()
     }
 
     LOG_INFO("Created image views!");
+}
+
+VkShaderModule HelloTriangle::CreateShaderModule(const std::vector<char>& code)
+{
+    VkShaderModuleCreateInfo createInfo{};
+    createInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
+    createInfo.codeSize = code.size();
+    createInfo.pCode = reinterpret_cast<const uint32_t*>(code.data()); // Bytecode pointer is uint32_t
+
+    VkShaderModule shaderModule;
+    VK_VERIFY_RESULT(vkCreateShaderModule(_device, &createInfo, nullptr, &shaderModule));
+    LOG_INFO("Created shader module!");
+
+    return shaderModule;
+}
+
+void HelloTriangle::CreateGraphicsPipeline()
+{
+    // Read in compiled shader code
+    auto vertShaderCode = ReadFileAsBytes("Shaders/Vert.spv");
+    auto fragShaderCode = ReadFileAsBytes("Shaders/Frag.spv");
+
+    // Create shader modules
+    VkShaderModule vertShaderModule = CreateShaderModule(vertShaderCode);
+    VkShaderModule fragShaderModule = CreateShaderModule(fragShaderCode);
+
+    // Create vertex shader stage
+    VkPipelineShaderStageCreateInfo vertShaderStageInfo{};
+    vertShaderStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
+    vertShaderStageInfo.stage = VK_SHADER_STAGE_VERTEX_BIT;
+    vertShaderStageInfo.module = vertShaderModule;
+    vertShaderStageInfo.pName = "main";
+    vertShaderStageInfo.pSpecializationInfo = nullptr; // It's possible to set constants here
+
+    // Create vertex shader stage
+    VkPipelineShaderStageCreateInfo fragShaderStageInfo{};
+    fragShaderStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
+    fragShaderStageInfo.stage = VK_SHADER_STAGE_FRAGMENT_BIT;
+    fragShaderStageInfo.module = fragShaderModule;
+    fragShaderStageInfo.pName = "main";
+    fragShaderStageInfo.pSpecializationInfo = nullptr; // It's possible to set constants here
+
+    VkPipelineShaderStageCreateInfo shaderStages[] = {vertShaderStageInfo, fragShaderStageInfo};
+
+    // Destroy shader modules
+    vkDestroyShaderModule(_device, vertShaderModule, nullptr);
+    vkDestroyShaderModule(_device, fragShaderModule, nullptr);
 }

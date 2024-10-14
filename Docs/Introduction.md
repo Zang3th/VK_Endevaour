@@ -19,6 +19,7 @@
 - **Blogpost von Elias Dalter** (Writing an Engine with Vulkan): [https://edw.is/learning-vulkan/]
 - **Tutorials von Thorsten Thormälen** (Lektionen zu Shadern): [https://www.youtube.com/playlist?list=PL8vNj3osX2PzZ-cNSqhA8G6C1-Li5-Ck8]
 - **Vulkan Specification**: [https://registry.khronos.org/vulkan/specs/1.2-extensions/pdf/vkspec.pdf]
+- **GLSLC-Manual**: [https://github.com/google/shaderc/tree/main/glslc]
 
 ## Einleitung
 

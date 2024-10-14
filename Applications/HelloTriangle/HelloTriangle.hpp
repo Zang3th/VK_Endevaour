@@ -8,6 +8,7 @@
 #include <set>
 #include <limits>
 #include <algorithm>
+#include <fstream>
 
 #include "Core/Debug/Log.hpp"
 #include "Lookup.hpp"
@@ -102,4 +103,6 @@ class HelloTriangle
         void CreateLogicalDevice();
         void CreateSwapChain();
         void CreateImageViews();
+        VkShaderModule CreateShaderModule(const std::vector<char>& code);
+        void CreateGraphicsPipeline();
 };
