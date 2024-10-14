@@ -123,6 +123,8 @@ void HelloTriangle::CleanUp()
         DestroyDebugUtilsMessengerEXT(_instance, _debugMessenger, nullptr);
     }
 
+    vkDestroyPipelineLayout(_device, _pipelineLayout, nullptr);
+
     for(auto* imageView : _swapChainImageViews)
     {
         vkDestroyImageView(_device, imageView, nullptr);
@@ -646,4 +648,71 @@ void HelloTriangle::CreateGraphicsPipeline()
     // Destroy shader modules
     vkDestroyShaderModule(_device, vertShaderModule, nullptr);
     vkDestroyShaderModule(_device, fragShaderModule, nullptr);
+
+    // Specify dynamic states (can be changed without recreating the whole pipeline)
+    std::vector<VkDynamicState> dynamicStates =
+    {
+        VK_DYNAMIC_STATE_VIEWPORT,
+        VK_DYNAMIC_STATE_SCISSOR
+    };
+
+    VkPipelineDynamicStateCreateInfo dynamicStateInfo{};
+    dynamicStateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
+    dynamicStateInfo.dynamicStateCount = static_cast<uint32_t>(dynamicStates.size());
+    dynamicStateInfo.pDynamicStates = dynamicStates.data();
+
+    // Define vertex input
+    VkPipelineVertexInputStateCreateInfo vertexInputInfo{};
+    vertexInputInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
+    vertexInputInfo.vertexBindingDescriptionCount = 0;
+    vertexInputInfo.vertexAttributeDescriptionCount = 0;
+
+    // Define input assembly
+    VkPipelineInputAssemblyStateCreateInfo inputAssemblyInfo{};
+    inputAssemblyInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
+    inputAssemblyInfo.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
+    inputAssemblyInfo.primitiveRestartEnable = VK_FALSE;
+
+    // Define viewport and scissor count
+    VkPipelineViewportStateCreateInfo viewportStateInfo{};
+    viewportStateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
+    viewportStateInfo.viewportCount = 1;
+    viewportStateInfo.scissorCount = 1;
+
+    // TODO: Define viewport and scissor rectangle at draw time
+
+    // Define rasterizer
+    VkPipelineRasterizationStateCreateInfo rasterizerInfo{};
+    rasterizerInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
+    rasterizerInfo.depthClampEnable = VK_FALSE;
+    rasterizerInfo.rasterizerDiscardEnable = VK_FALSE;
+    rasterizerInfo.polygonMode = VK_POLYGON_MODE_FILL;
+    rasterizerInfo.lineWidth = 1.0f;
+    rasterizerInfo.cullMode = VK_CULL_MODE_BACK_BIT;
+    rasterizerInfo.frontFace = VK_FRONT_FACE_CLOCKWISE;
+    rasterizerInfo.depthBiasEnable = VK_FALSE;
+
+    // Disable multisampling
+    VkPipelineMultisampleStateCreateInfo multisamplingInfo{};
+    multisamplingInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
+    multisamplingInfo.sampleShadingEnable = VK_FALSE;
+    multisamplingInfo.rasterizationSamples = VK_SAMPLE_COUNT_1_BIT;
+
+    // Disable blending (new fragment colors will just get passed through to the framebuffer)
+    VkPipelineColorBlendAttachmentState colorBlendAttachment{};
+    colorBlendAttachment.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
+    colorBlendAttachment.blendEnable = VK_FALSE;
+
+    VkPipelineColorBlendStateCreateInfo colorBlendInfo{};
+    colorBlendInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
+    colorBlendInfo.logicOpEnable = VK_FALSE; // Set true for bitwise combination
+    colorBlendInfo.attachmentCount = 1;
+    colorBlendInfo.pAttachments = &colorBlendAttachment;
+
+    // TODO: Implement alpha blending (https://vulkan-tutorial.com/Drawing_a_triangle/Graphics_pipeline_basics/Fixed_functions#page_Color-blending)
+
+    // Define empty pipeline layout (for uniforms)
+    VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
+    pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
+    VK_VERIFY_RESULT(vkCreatePipelineLayout(_device, &pipelineLayoutInfo, nullptr, &_pipelineLayout));
 }

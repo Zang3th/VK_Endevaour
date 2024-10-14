@@ -26,4 +26,4 @@ add_custom_command(
     COMMAND glslc "${CMAKE_CURRENT_SOURCE_DIR}/Shaders/Vert.glsl" -o "${CMAKE_CURRENT_SOURCE_DIR}/Shaders/Vert.spv"
 )
 
-message(STATUS "Compiled shaders")
+message(STATUS "Compiled shaders: HelloTriangle")

@@ -81,6 +81,7 @@ class HelloTriangle
         VkSwapchainKHR _swapChain;
         std::vector<VkImage> _swapChainImages;
         std::vector<VkImageView> _swapChainImageViews;
+        VkPipelineLayout _pipelineLayout;
 
         void InitWindow();
         void InitVulkan();
