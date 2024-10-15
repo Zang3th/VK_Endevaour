@@ -108,6 +108,8 @@ void HelloTriangle::InitVulkan()
     CreateRenderPass();
     CreateGraphicsPipeline();
     CreateFramebuffers();
+    CreateCommandPool();
+    CreateCommandBuffer();
 }
 
 void HelloTriangle::MainLoop()
@@ -124,6 +126,8 @@ void HelloTriangle::CleanUp()
     {
         DestroyDebugUtilsMessengerEXT(_instance, _debugMessenger, nullptr);
     }
+
+    vkDestroyCommandPool(_device, _commandPool, nullptr);
 
     for(auto* framebuffer : _swapChainFramebuffers)
     {
@@ -717,8 +721,6 @@ void HelloTriangle::CreateGraphicsPipeline()
     viewportStateInfo.viewportCount = 1;
     viewportStateInfo.scissorCount = 1;
 
-    // TODO: Define viewport and scissor rectangle at draw time
-
     // Define rasterizer
     VkPipelineRasterizationStateCreateInfo rasterizerInfo{};
     rasterizerInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
@@ -798,4 +800,77 @@ void HelloTriangle::CreateFramebuffers()
         VK_VERIFY_RESULT(vkCreateFramebuffer(_device, &framebufferInfo, nullptr, &_swapChainFramebuffers[i]));
         LOG_INFO("Created framebuffer from image view {}", i);
     }
+}
+
+void HelloTriangle::CreateCommandPool()
+{
+    VkCommandPoolCreateInfo cmdPoolInfo{};
+    cmdPoolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
+    cmdPoolInfo.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT; // Rerecord cmd buffer every frame
+    cmdPoolInfo.queueFamilyIndex = _queueFamilyIndices.graphicsFamily;
+
+    VK_VERIFY_RESULT(vkCreateCommandPool(_device, &cmdPoolInfo, nullptr, &_commandPool));
+    LOG_INFO("Created command pool!");
+}
+
+void HelloTriangle::CreateCommandBuffer()
+{
+    VkCommandBufferAllocateInfo cmdBufferInfo{};
+    cmdBufferInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+    cmdBufferInfo.commandPool = _commandPool;
+    cmdBufferInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+    cmdBufferInfo.commandBufferCount = 1;
+
+    VK_VERIFY_RESULT(vkAllocateCommandBuffers(_device, &cmdBufferInfo, &_commandBuffer));
+    LOG_INFO("Created command buffer!");
+}
+
+// TODO: Support multiple command buffers
+void HelloTriangle::RecordCommands(uint32_t imageIndex)
+{
+    // Begin command recording
+    VkCommandBufferBeginInfo cmdBufferBeginInfo{};
+    cmdBufferBeginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+
+    VK_VERIFY_RESULT(vkBeginCommandBuffer(_commandBuffer, &cmdBufferBeginInfo));
+
+    // Begin render pass
+    VkRenderPassBeginInfo renderPassBeginInfo{};
+    renderPassBeginInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+    renderPassBeginInfo.renderPass = _renderPass;
+    renderPassBeginInfo.framebuffer = _swapChainFramebuffers[imageIndex];
+    renderPassBeginInfo.renderArea.offset = {0, 0};
+    renderPassBeginInfo.renderArea.extent = _swapChainProperties.extent;
+
+    // Define clear color
+    VkClearValue clearColor = {{{0.0f, 0.0f, 0.0f, 1.0f}}};
+    renderPassBeginInfo.clearValueCount = 1;
+    renderPassBeginInfo.pClearValues = &clearColor;
+
+    vkCmdBeginRenderPass(_commandBuffer, &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
+
+    // Bind graphics pipeline
+    vkCmdBindPipeline(_commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, _graphicsPipeline);
+
+    // Define viewport and scissor
+    VkViewport viewport{};
+    viewport.x = 0.0f;
+    viewport.y = 0.0f;
+    viewport.width = static_cast<float>(_swapChainProperties.extent.width);
+    viewport.height = static_cast<float>(_swapChainProperties.extent.height);
+    viewport.minDepth = 0.0f;
+    viewport.maxDepth = 1.0f;
+    vkCmdSetViewport(_commandBuffer, 0, 1, &viewport);
+
+    VkRect2D scissor{};
+    scissor.offset = {0, 0};
+    scissor.extent = _swapChainProperties.extent;
+    vkCmdSetScissor(_commandBuffer, 0, 1, &scissor);
+
+    // Draw!
+    vkCmdDraw(_commandBuffer, 3, 1, 0, 0); // commandBuffer, vertexCount, instanceCount, firstVertex, firstInstance
+
+    // End render pass and end command buffer recording
+    vkCmdEndRenderPass(_commandBuffer);
+    VK_VERIFY_RESULT(vkEndCommandBuffer(_commandBuffer));
 }

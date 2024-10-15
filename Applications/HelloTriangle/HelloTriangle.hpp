@@ -85,6 +85,8 @@ class HelloTriangle
         VkPipelineLayout _pipelineLayout;
         VkPipeline _graphicsPipeline;
         std::vector<VkFramebuffer> _swapChainFramebuffers;
+        VkCommandPool _commandPool;
+        VkCommandBuffer _commandBuffer;
 
         void InitWindow();
         void InitVulkan();
@@ -111,4 +113,7 @@ class HelloTriangle
         VkShaderModule CreateShaderModule(const std::vector<char>& code);
         void CreateGraphicsPipeline();
         void CreateFramebuffers();
+        void CreateCommandPool();
+        void CreateCommandBuffer();
+        void RecordCommands(uint32_t imageIndex);
 };
