@@ -83,6 +83,7 @@ class HelloTriangle
         std::vector<VkImageView> _swapChainImageViews;
         VkRenderPass _renderPass;
         VkPipelineLayout _pipelineLayout;
+        VkPipeline _graphicsPipeline;
 
         void InitWindow();
         void InitVulkan();

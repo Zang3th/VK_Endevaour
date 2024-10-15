@@ -124,6 +124,7 @@ void HelloTriangle::CleanUp()
         DestroyDebugUtilsMessengerEXT(_instance, _debugMessenger, nullptr);
     }
 
+    vkDestroyPipeline(_device, _graphicsPipeline, nullptr);
     vkDestroyPipelineLayout(_device, _pipelineLayout, nullptr);
 
     for(auto* imageView : _swapChainImageViews)
@@ -680,10 +681,6 @@ void HelloTriangle::CreateGraphicsPipeline()
 
     VkPipelineShaderStageCreateInfo shaderStages[] = {vertShaderStageInfo, fragShaderStageInfo};
 
-    // Destroy shader modules
-    vkDestroyShaderModule(_device, vertShaderModule, nullptr);
-    vkDestroyShaderModule(_device, fragShaderModule, nullptr);
-
     // Specify dynamic states (can be changed without recreating the whole pipeline)
     std::vector<VkDynamicState> dynamicStates =
     {
@@ -750,4 +747,26 @@ void HelloTriangle::CreateGraphicsPipeline()
     VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
     pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
     VK_VERIFY_RESULT(vkCreatePipelineLayout(_device, &pipelineLayoutInfo, nullptr, &_pipelineLayout));
+
+    // Finally create the pipeline itself
+    VkGraphicsPipelineCreateInfo pipelineInfo{};
+    pipelineInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
+    pipelineInfo.stageCount = 2;
+    pipelineInfo.pStages = shaderStages;
+    pipelineInfo.pVertexInputState = &vertexInputInfo;
+    pipelineInfo.pInputAssemblyState = &inputAssemblyInfo;
+    pipelineInfo.pViewportState = &viewportStateInfo;
+    pipelineInfo.pRasterizationState = &rasterizerInfo;
+    pipelineInfo.pMultisampleState = &multisamplingInfo;
+    pipelineInfo.pColorBlendState = &colorBlendInfo;
+    pipelineInfo.pDynamicState = &dynamicStateInfo;
+    pipelineInfo.layout = _pipelineLayout;
+    pipelineInfo.renderPass = _renderPass;
+    pipelineInfo.subpass = 0;
+    VK_VERIFY_RESULT(vkCreateGraphicsPipelines(_device, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &_graphicsPipeline));
+    LOG_INFO("Created graphics pipeline!");
+
+    // Destroy shader modules
+    vkDestroyShaderModule(_device, vertShaderModule, nullptr);
+    vkDestroyShaderModule(_device, fragShaderModule, nullptr);
 }
