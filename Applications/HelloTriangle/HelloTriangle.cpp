@@ -105,6 +105,7 @@ void HelloTriangle::InitVulkan()
     CreateLogicalDevice();
     CreateSwapChain();
     CreateImageViews();
+    CreateRenderPass();
     CreateGraphicsPipeline();
 }
 
@@ -601,6 +602,40 @@ void HelloTriangle::CreateImageViews()
     }
 
     LOG_INFO("Created image views!");
+}
+
+void HelloTriangle::CreateRenderPass()
+{
+    // Create color attachment
+    VkAttachmentDescription colorAttachment{};
+    colorAttachment.format = _swapChainProperties.surfaceFormat.format;
+    colorAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
+    colorAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+    colorAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+    colorAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+    colorAttachment.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+
+    // Define subpass attachment reference
+    VkAttachmentReference colorAttachmentRef{};
+    colorAttachmentRef.attachment = 0;
+    colorAttachmentRef.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+
+    // Define subpass
+    VkSubpassDescription subpass{};
+    subpass.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
+    subpass.colorAttachmentCount = 1; // This directly corresponds to *out vec4 outColor* in the fragment shader!
+    subpass.pColorAttachments = &colorAttachmentRef;
+
+    // Create render pass
+    VkRenderPassCreateInfo renderPassInfo{};
+    renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
+    renderPassInfo.attachmentCount = 1;
+    renderPassInfo.pAttachments = &colorAttachment;
+    renderPassInfo.subpassCount = 1;
+    renderPassInfo.pSubpasses = &subpass;
+
+    VK_VERIFY_RESULT(vkCreateRenderPass(_device, &renderPassInfo, nullptr, &_renderPass));
+    LOG_INFO("Created render pass!");
 }
 
 VkShaderModule HelloTriangle::CreateShaderModule(const std::vector<char>& code)

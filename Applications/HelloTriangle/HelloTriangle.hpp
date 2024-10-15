@@ -81,6 +81,7 @@ class HelloTriangle
         VkSwapchainKHR _swapChain;
         std::vector<VkImage> _swapChainImages;
         std::vector<VkImageView> _swapChainImageViews;
+        VkRenderPass _renderPass;
         VkPipelineLayout _pipelineLayout;
 
         void InitWindow();
@@ -104,6 +105,7 @@ class HelloTriangle
         void CreateLogicalDevice();
         void CreateSwapChain();
         void CreateImageViews();
+        void CreateRenderPass();
         VkShaderModule CreateShaderModule(const std::vector<char>& code);
         void CreateGraphicsPipeline();
 };
