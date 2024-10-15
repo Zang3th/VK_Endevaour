@@ -107,6 +107,7 @@ void HelloTriangle::InitVulkan()
     CreateImageViews();
     CreateRenderPass();
     CreateGraphicsPipeline();
+    CreateFramebuffers();
 }
 
 void HelloTriangle::MainLoop()
@@ -122,6 +123,11 @@ void HelloTriangle::CleanUp()
     if(enableValidationLayers)
     {
         DestroyDebugUtilsMessengerEXT(_instance, _debugMessenger, nullptr);
+    }
+
+    for(auto* framebuffer : _swapChainFramebuffers)
+    {
+        vkDestroyFramebuffer(_device, framebuffer, nullptr);
     }
 
     vkDestroyPipeline(_device, _graphicsPipeline, nullptr);
@@ -746,6 +752,7 @@ void HelloTriangle::CreateGraphicsPipeline()
     // Define empty pipeline layout (for uniforms)
     VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
     pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
+
     VK_VERIFY_RESULT(vkCreatePipelineLayout(_device, &pipelineLayoutInfo, nullptr, &_pipelineLayout));
 
     // Finally create the pipeline itself
@@ -763,10 +770,32 @@ void HelloTriangle::CreateGraphicsPipeline()
     pipelineInfo.layout = _pipelineLayout;
     pipelineInfo.renderPass = _renderPass;
     pipelineInfo.subpass = 0;
+
     VK_VERIFY_RESULT(vkCreateGraphicsPipelines(_device, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &_graphicsPipeline));
     LOG_INFO("Created graphics pipeline!");
 
     // Destroy shader modules
     vkDestroyShaderModule(_device, vertShaderModule, nullptr);
     vkDestroyShaderModule(_device, fragShaderModule, nullptr);
+}
+
+void HelloTriangle::CreateFramebuffers()
+{
+    _swapChainFramebuffers.resize(_swapChainImageViews.size());
+
+    // Iterate over all image views and create framebuffers from them
+    for(size_t i = 0; i < _swapChainImageViews.size(); i++)
+    {
+        VkFramebufferCreateInfo framebufferInfo{};
+        framebufferInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
+        framebufferInfo.renderPass = _renderPass;
+        framebufferInfo.attachmentCount = 1;
+        framebufferInfo.pAttachments = &_swapChainImageViews[i];
+        framebufferInfo.width = _swapChainProperties.extent.width;
+        framebufferInfo.height = _swapChainProperties.extent.height;
+        framebufferInfo.layers = 1;
+
+        VK_VERIFY_RESULT(vkCreateFramebuffer(_device, &framebufferInfo, nullptr, &_swapChainFramebuffers[i]));
+        LOG_INFO("Created framebuffer from image view {}", i);
+    }
 }

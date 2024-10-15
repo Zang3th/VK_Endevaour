@@ -84,6 +84,7 @@ class HelloTriangle
         VkRenderPass _renderPass;
         VkPipelineLayout _pipelineLayout;
         VkPipeline _graphicsPipeline;
+        std::vector<VkFramebuffer> _swapChainFramebuffers;
 
         void InitWindow();
         void InitVulkan();
@@ -109,4 +110,5 @@ class HelloTriangle
         void CreateRenderPass();
         VkShaderModule CreateShaderModule(const std::vector<char>& code);
         void CreateGraphicsPipeline();
+        void CreateFramebuffers();
 };
