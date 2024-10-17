@@ -109,7 +109,7 @@ void HelloTriangle::InitVulkan()
     CreateGraphicsPipeline();
     CreateFramebuffers();
     CreateCommandPool();
-    CreateCommandBuffer();
+    CreateCommandBuffers();
     CreateSyncObjects();
 }
 
@@ -131,9 +131,12 @@ void HelloTriangle::CleanUp()
         DestroyDebugUtilsMessengerEXT(_instance, _debugMessenger, nullptr);
     }
 
-    vkDestroySemaphore(_device, _imageAvailableSemaphore, nullptr);
-    vkDestroySemaphore(_device, _renderFinishedSemaphore, nullptr);
-    vkDestroyFence(_device, _inFlightFence, nullptr);
+    for(size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
+    {
+        vkDestroySemaphore(_device, _imageAvailableSemaphores[i], nullptr);
+        vkDestroySemaphore(_device, _renderFinishedSemaphores[i], nullptr);
+        vkDestroyFence(_device, _inFlightFences[i], nullptr);
+    }
 
     vkDestroyCommandPool(_device, _commandPool, nullptr);
 
@@ -832,26 +835,27 @@ void HelloTriangle::CreateCommandPool()
     LOG_INFO("Created command pool!");
 }
 
-void HelloTriangle::CreateCommandBuffer()
+void HelloTriangle::CreateCommandBuffers()
 {
+    _commandBuffers.resize(MAX_FRAMES_IN_FLIGHT);
+
     VkCommandBufferAllocateInfo cmdBufferInfo{};
     cmdBufferInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
     cmdBufferInfo.commandPool = _commandPool;
     cmdBufferInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-    cmdBufferInfo.commandBufferCount = 1;
+    cmdBufferInfo.commandBufferCount = static_cast<uint32_t>(_commandBuffers.size());
 
-    VK_VERIFY_RESULT(vkAllocateCommandBuffers(_device, &cmdBufferInfo, &_commandBuffer));
-    LOG_INFO("Created command buffer!");
+    VK_VERIFY_RESULT(vkAllocateCommandBuffers(_device, &cmdBufferInfo, _commandBuffers.data()));
+    LOG_INFO("Created command buffers!");
 }
 
-// TODO: Support multiple command buffers
-void HelloTriangle::RecordCommands(uint32_t imageIndex)
+void HelloTriangle::RecordCommands(VkCommandBuffer commandBuffer, uint32_t imageIndex)
 {
     // Begin command recording
     VkCommandBufferBeginInfo cmdBufferBeginInfo{};
     cmdBufferBeginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
 
-    VK_VERIFY_RESULT(vkBeginCommandBuffer(_commandBuffer, &cmdBufferBeginInfo));
+    VK_VERIFY_RESULT(vkBeginCommandBuffer(commandBuffer, &cmdBufferBeginInfo));
 
     // Begin render pass
     VkRenderPassBeginInfo renderPassBeginInfo{};
@@ -866,10 +870,10 @@ void HelloTriangle::RecordCommands(uint32_t imageIndex)
     renderPassBeginInfo.clearValueCount = 1;
     renderPassBeginInfo.pClearValues = &clearColor;
 
-    vkCmdBeginRenderPass(_commandBuffer, &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
+    vkCmdBeginRenderPass(commandBuffer, &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
 
     // Bind graphics pipeline
-    vkCmdBindPipeline(_commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, _graphicsPipeline);
+    vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, _graphicsPipeline);
 
     // Define viewport and scissor
     VkViewport viewport{};
@@ -879,76 +883,89 @@ void HelloTriangle::RecordCommands(uint32_t imageIndex)
     viewport.height = static_cast<float>(_swapChainProperties.extent.height);
     viewport.minDepth = 0.0f;
     viewport.maxDepth = 1.0f;
-    vkCmdSetViewport(_commandBuffer, 0, 1, &viewport);
+    vkCmdSetViewport(commandBuffer, 0, 1, &viewport);
 
     VkRect2D scissor{};
     scissor.offset = {0, 0};
     scissor.extent = _swapChainProperties.extent;
-    vkCmdSetScissor(_commandBuffer, 0, 1, &scissor);
+    vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
 
     // Draw!
-    vkCmdDraw(_commandBuffer, 3, 1, 0, 0); // commandBuffer, vertexCount, instanceCount, firstVertex, firstInstance
+    vkCmdDraw(commandBuffer, 3, 1, 0, 0); // commandBuffer, vertexCount, instanceCount, firstVertex, firstInstance
 
     // End render pass and end command buffer recording
-    vkCmdEndRenderPass(_commandBuffer);
-    VK_VERIFY_RESULT(vkEndCommandBuffer(_commandBuffer));
+    vkCmdEndRenderPass(commandBuffer);
+    VK_VERIFY_RESULT(vkEndCommandBuffer(commandBuffer));
 }
 
 void HelloTriangle::CreateSyncObjects()
 {
-    // Create semaphores
+    // Reserve space
+    _imageAvailableSemaphores.reserve(MAX_FRAMES_IN_FLIGHT);
+    _renderFinishedSemaphores.reserve(MAX_FRAMES_IN_FLIGHT);
+    _inFlightFences.reserve(MAX_FRAMES_IN_FLIGHT);
+
+    // Define semaphores
     VkSemaphoreCreateInfo semaphoreInfo{};
     semaphoreInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
 
-    VK_VERIFY_RESULT(vkCreateSemaphore(_device, &semaphoreInfo, nullptr, &_imageAvailableSemaphore));
-    VK_VERIFY_RESULT(vkCreateSemaphore(_device, &semaphoreInfo, nullptr, &_renderFinishedSemaphore));
-
-    // Create fence
+    // Define fence
     VkFenceCreateInfo fenceInfo{};
     fenceInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
     fenceInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT; // Signaled state to avoid endless waiting for first frame
 
-    VK_VERIFY_RESULT(vkCreateFence(_device, &fenceInfo, nullptr, &_inFlightFence));
+    // Create sync objects
+    for(size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
+    {
+        VK_VERIFY_RESULT(vkCreateSemaphore(_device, &semaphoreInfo, nullptr, &_imageAvailableSemaphores[i]));
+        VK_VERIFY_RESULT(vkCreateSemaphore(_device, &semaphoreInfo, nullptr, &_renderFinishedSemaphores[i]));
+        VK_VERIFY_RESULT(vkCreateFence(_device, &fenceInfo, nullptr, &_inFlightFences[i]));
+    }
+
+    LOG_INFO("Created sync objects!");
 }
 
 void HelloTriangle::DrawFrame()
 {
     // Wait for previous frame to finish
-    vkWaitForFences(_device, 1, &_inFlightFence, VK_TRUE, UINT64_MAX);
+    vkWaitForFences(_device, 1, &_inFlightFences[currentFrame], VK_TRUE, UINT64_MAX);
 
     // Reset fence
-    vkResetFences(_device, 1, &_inFlightFence);
+    vkResetFences(_device, 1, &_inFlightFences[currentFrame]);
 
     // Get image from the swap chain
     uint32_t imageIndex;
-    vkAcquireNextImageKHR(_device, _swapChain, UINT64_MAX, _imageAvailableSemaphore, VK_NULL_HANDLE, &imageIndex);
+    vkAcquireNextImageKHR(_device, _swapChain, UINT64_MAX, _imageAvailableSemaphores[currentFrame], VK_NULL_HANDLE, &imageIndex);
 
     // Record command buffer
-    vkResetCommandBuffer(_commandBuffer, 0);
-    RecordCommands(imageIndex);
+    vkResetCommandBuffer(_commandBuffers[currentFrame], 0);
+    RecordCommands(_commandBuffers[currentFrame], imageIndex);
 
     // Submit command buffer to graphics queue
     VkSubmitInfo submitInfo{};
     submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
     VkPipelineStageFlags waitStages[] = {VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT};
     submitInfo.waitSemaphoreCount = 1;
-    submitInfo.pWaitSemaphores = &_imageAvailableSemaphore; // On which semaphore to wait
+    submitInfo.pWaitSemaphores = &_imageAvailableSemaphores[currentFrame]; // On which semaphore to wait
     submitInfo.pWaitDstStageMask = waitStages;
     submitInfo.commandBufferCount = 1;
-    submitInfo.pCommandBuffers = &_commandBuffer;
+    submitInfo.pCommandBuffers = &_commandBuffers[currentFrame];
     submitInfo.signalSemaphoreCount = 1;
-    submitInfo.pSignalSemaphores = &_renderFinishedSemaphore; // Which semaphore to signal after
+    submitInfo.pSignalSemaphores = &_renderFinishedSemaphores[currentFrame]; // Which semaphore to signal after
 
-    VK_VERIFY_RESULT(vkQueueSubmit(_graphicsQueue, 1, &submitInfo, _inFlightFence));
+    VK_VERIFY_RESULT(vkQueueSubmit(_graphicsQueue, 1, &submitInfo, _inFlightFences[currentFrame]));
 
     // Presentation
     VkPresentInfoKHR presentInfo{};
     presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
     presentInfo.waitSemaphoreCount = 1;
-    presentInfo.pWaitSemaphores = &_renderFinishedSemaphore;
+    presentInfo.pWaitSemaphores = &_renderFinishedSemaphores[currentFrame];
     presentInfo.swapchainCount = 1;
     presentInfo.pSwapchains = &_swapChain;
     presentInfo.pImageIndices = &imageIndex;
 
     VK_VERIFY_RESULT(vkQueuePresentKHR(_presentQueue, &presentInfo));
+
+    // Advance to next frame
+    currentFrame = (currentFrame + 1) & MAX_FRAMES_IN_FLIGHT;
 }

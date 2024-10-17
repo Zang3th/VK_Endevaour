@@ -31,6 +31,7 @@
 
 const uint32_t WIDTH = 800;
 const uint32_t HEIGHT = 600;
+const uint32_t MAX_FRAMES_IN_FLIGHT = 2;
 
 const std::vector<const char*> validationLayers =
 {
@@ -86,10 +87,11 @@ class HelloTriangle
         VkPipeline _graphicsPipeline;
         std::vector<VkFramebuffer> _swapChainFramebuffers;
         VkCommandPool _commandPool;
-        VkCommandBuffer _commandBuffer;
-        VkSemaphore _imageAvailableSemaphore;
-        VkSemaphore _renderFinishedSemaphore;
-        VkFence _inFlightFence;
+        std::vector<VkCommandBuffer> _commandBuffers;
+        std::vector<VkSemaphore> _imageAvailableSemaphores;
+        std::vector<VkSemaphore> _renderFinishedSemaphores;
+        std::vector<VkFence> _inFlightFences;
+        uint32_t currentFrame = 0;
 
         void InitWindow();
         void InitVulkan();
@@ -117,8 +119,8 @@ class HelloTriangle
         void CreateGraphicsPipeline();
         void CreateFramebuffers();
         void CreateCommandPool();
-        void CreateCommandBuffer();
-        void RecordCommands(uint32_t imageIndex);
+        void CreateCommandBuffers();
+        void RecordCommands(VkCommandBuffer commandBuffer, uint32_t imageIndex);
         void CreateSyncObjects();
         void DrawFrame();
 };
