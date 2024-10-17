@@ -70,6 +70,13 @@ static std::vector<char> ReadFileAsBytes(const std::string& fileName)
     return buffer;
 }
 
+static void FramebufferResizeCallback(GLFWwindow* window, int width, int height)
+{
+    auto app = reinterpret_cast<HelloTriangle*>(glfwGetWindowUserPointer(window));
+    app->framebufferResized = true;
+    // WARNING: Don't trigger a manual swap chain recreation from this! Wayland + Nvidia already triggers VK_ERROR_OUR_OF_DATE_KHR
+}
+
 // ----- Public -----
 
 void HelloTriangle::Run()
@@ -94,6 +101,10 @@ void HelloTriangle::InitWindow()
     _window = glfwCreateWindow(WIDTH, HEIGHT, "HelloTriangle", nullptr, nullptr);
     ASSERT(_window, "Failed to create GLFW window: {}", glfwGetError(nullptr));
     LOG_INFO("Created GLFW window!");
+
+    // Save application context and set framebuffer resize callback
+    glfwSetWindowUserPointer(_window, this);
+    glfwSetFramebufferSizeCallback(_window, FramebufferResizeCallback);
 }
 
 void HelloTriangle::InitVulkan()
@@ -126,10 +137,12 @@ void HelloTriangle::MainLoop()
 
 void HelloTriangle::CleanUp()
 {
-    if(enableValidationLayers)
-    {
-        DestroyDebugUtilsMessengerEXT(_instance, _debugMessenger, nullptr);
-    }
+    CleanupSwapChain();
+
+    vkDestroyPipeline(_device, _graphicsPipeline, nullptr);
+    vkDestroyPipelineLayout(_device, _pipelineLayout, nullptr);
+
+    vkDestroyRenderPass(_device, _renderPass, nullptr);
 
     for(size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
     {
@@ -140,23 +153,16 @@ void HelloTriangle::CleanUp()
 
     vkDestroyCommandPool(_device, _commandPool, nullptr);
 
-    for(auto* framebuffer : _swapChainFramebuffers)
-    {
-        vkDestroyFramebuffer(_device, framebuffer, nullptr);
-    }
-
-    vkDestroyPipeline(_device, _graphicsPipeline, nullptr);
-    vkDestroyPipelineLayout(_device, _pipelineLayout, nullptr);
-
-    for(auto* imageView : _swapChainImageViews)
-    {
-        vkDestroyImageView(_device, imageView, nullptr);
-    }
-
-    vkDestroySwapchainKHR(_device, _swapChain, nullptr);
     vkDestroyDevice(_device, nullptr);
+
+    if(enableValidationLayers)
+    {
+        DestroyDebugUtilsMessengerEXT(_instance, _debugMessenger, nullptr);
+    }
+
     vkDestroySurfaceKHR(_instance, _surface, nullptr);
     vkDestroyInstance(_instance, nullptr);
+
     glfwDestroyWindow(_window);
     glfwTerminate();
 }
@@ -928,44 +934,86 @@ void HelloTriangle::CreateSyncObjects()
 void HelloTriangle::DrawFrame()
 {
     // Wait for previous frame to finish
-    vkWaitForFences(_device, 1, &_inFlightFences[currentFrame], VK_TRUE, UINT64_MAX);
-
-    // Reset fence
-    vkResetFences(_device, 1, &_inFlightFences[currentFrame]);
+    vkWaitForFences(_device, 1, &_inFlightFences[_currentFrame], VK_TRUE, UINT64_MAX);
 
     // Get image from the swap chain
     uint32_t imageIndex;
-    vkAcquireNextImageKHR(_device, _swapChain, UINT64_MAX, _imageAvailableSemaphores[currentFrame], VK_NULL_HANDLE, &imageIndex);
+    VkResult result = vkAcquireNextImageKHR(_device, _swapChain, UINT64_MAX, _imageAvailableSemaphores[_currentFrame], VK_NULL_HANDLE, &imageIndex);
+    if(result == VK_ERROR_OUT_OF_DATE_KHR)
+    {
+        RecreateSwapChain();
+        return; // Try again next frame
+    }
+    ASSERT(result == VK_SUCCESS, "Failed to acquire swap chain image!");
+
+    // Reset fence only if we are submitting work
+    vkResetFences(_device, 1, &_inFlightFences[_currentFrame]);
 
     // Record command buffer
-    vkResetCommandBuffer(_commandBuffers[currentFrame], 0);
-    RecordCommands(_commandBuffers[currentFrame], imageIndex);
+    vkResetCommandBuffer(_commandBuffers[_currentFrame], 0);
+    RecordCommands(_commandBuffers[_currentFrame], imageIndex);
 
     // Submit command buffer to graphics queue
     VkSubmitInfo submitInfo{};
     submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
     VkPipelineStageFlags waitStages[] = {VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT};
     submitInfo.waitSemaphoreCount = 1;
-    submitInfo.pWaitSemaphores = &_imageAvailableSemaphores[currentFrame]; // On which semaphore to wait
+    submitInfo.pWaitSemaphores = &_imageAvailableSemaphores[_currentFrame]; // On which semaphore to wait
     submitInfo.pWaitDstStageMask = waitStages;
     submitInfo.commandBufferCount = 1;
-    submitInfo.pCommandBuffers = &_commandBuffers[currentFrame];
+    submitInfo.pCommandBuffers = &_commandBuffers[_currentFrame];
     submitInfo.signalSemaphoreCount = 1;
-    submitInfo.pSignalSemaphores = &_renderFinishedSemaphores[currentFrame]; // Which semaphore to signal after
+    submitInfo.pSignalSemaphores = &_renderFinishedSemaphores[_currentFrame]; // Which semaphore to signal after
 
-    VK_VERIFY_RESULT(vkQueueSubmit(_graphicsQueue, 1, &submitInfo, _inFlightFences[currentFrame]));
+    VK_VERIFY_RESULT(vkQueueSubmit(_graphicsQueue, 1, &submitInfo, _inFlightFences[_currentFrame]));
 
     // Presentation
     VkPresentInfoKHR presentInfo{};
     presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
     presentInfo.waitSemaphoreCount = 1;
-    presentInfo.pWaitSemaphores = &_renderFinishedSemaphores[currentFrame];
+    presentInfo.pWaitSemaphores = &_renderFinishedSemaphores[_currentFrame];
     presentInfo.swapchainCount = 1;
     presentInfo.pSwapchains = &_swapChain;
     presentInfo.pImageIndices = &imageIndex;
 
-    VK_VERIFY_RESULT(vkQueuePresentKHR(_presentQueue, &presentInfo));
+    // Check if swap chain needs recreation
+    result = vkQueuePresentKHR(_presentQueue, &presentInfo);
+    if(result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR)
+    {
+        RecreateSwapChain();
+    }
+    else
+    {
+        ASSERT(result == VK_SUCCESS, "Failed to present swap chain image!");
+    }
 
     // Advance to next frame
-    currentFrame = (currentFrame + 1) & MAX_FRAMES_IN_FLIGHT;
+    _currentFrame = (_currentFrame + 1) & MAX_FRAMES_IN_FLIGHT;
+}
+
+void HelloTriangle::CleanupSwapChain()
+{
+    for(auto* framebuffer : _swapChainFramebuffers)
+    {
+        vkDestroyFramebuffer(_device, framebuffer, nullptr);
+    }
+
+    for(auto* imageView : _swapChainImageViews)
+    {
+        vkDestroyImageView(_device, imageView, nullptr);
+    }
+
+    vkDestroySwapchainKHR(_device, _swapChain, nullptr);
+}
+
+void HelloTriangle::RecreateSwapChain()
+{
+    vkDeviceWaitIdle(_device); // TODO: Check if this is really the best synchronisation method here
+
+    CleanupSwapChain();
+    CreateSwapChain();
+    CreateImageViews();
+    CreateFramebuffers();
+
+    LOG_INFO("Recreated swap chain!");
 }

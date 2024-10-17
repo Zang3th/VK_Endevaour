@@ -67,6 +67,7 @@ class HelloTriangle
 {
     public:
         void Run();
+        bool framebufferResized = false;
 
     private:
         GLFWwindow* _window;
@@ -91,7 +92,7 @@ class HelloTriangle
         std::vector<VkSemaphore> _imageAvailableSemaphores;
         std::vector<VkSemaphore> _renderFinishedSemaphores;
         std::vector<VkFence> _inFlightFences;
-        uint32_t currentFrame = 0;
+        uint32_t _currentFrame = 0;
 
         void InitWindow();
         void InitVulkan();
@@ -123,4 +124,6 @@ class HelloTriangle
         void RecordCommands(VkCommandBuffer commandBuffer, uint32_t imageIndex);
         void CreateSyncObjects();
         void DrawFrame();
+        void CleanupSwapChain();
+        void RecreateSwapChain();
 };
