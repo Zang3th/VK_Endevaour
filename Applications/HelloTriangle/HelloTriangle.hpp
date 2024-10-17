@@ -87,6 +87,9 @@ class HelloTriangle
         std::vector<VkFramebuffer> _swapChainFramebuffers;
         VkCommandPool _commandPool;
         VkCommandBuffer _commandBuffer;
+        VkSemaphore _imageAvailableSemaphore;
+        VkSemaphore _renderFinishedSemaphore;
+        VkFence _inFlightFence;
 
         void InitWindow();
         void InitVulkan();
@@ -116,4 +119,6 @@ class HelloTriangle
         void CreateCommandPool();
         void CreateCommandBuffer();
         void RecordCommands(uint32_t imageIndex);
+        void CreateSyncObjects();
+        void DrawFrame();
 };

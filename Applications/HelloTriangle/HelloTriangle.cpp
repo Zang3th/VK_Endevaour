@@ -110,6 +110,7 @@ void HelloTriangle::InitVulkan()
     CreateFramebuffers();
     CreateCommandPool();
     CreateCommandBuffer();
+    CreateSyncObjects();
 }
 
 void HelloTriangle::MainLoop()
@@ -117,7 +118,10 @@ void HelloTriangle::MainLoop()
     while(!glfwWindowShouldClose(_window))
     {
         glfwPollEvents();
+        DrawFrame();
     }
+
+    vkDeviceWaitIdle(_device);
 }
 
 void HelloTriangle::CleanUp()
@@ -126,6 +130,10 @@ void HelloTriangle::CleanUp()
     {
         DestroyDebugUtilsMessengerEXT(_instance, _debugMessenger, nullptr);
     }
+
+    vkDestroySemaphore(_device, _imageAvailableSemaphore, nullptr);
+    vkDestroySemaphore(_device, _renderFinishedSemaphore, nullptr);
+    vkDestroyFence(_device, _inFlightFence, nullptr);
 
     vkDestroyCommandPool(_device, _commandPool, nullptr);
 
@@ -637,6 +645,15 @@ void HelloTriangle::CreateRenderPass()
     subpass.colorAttachmentCount = 1; // This directly corresponds to *out vec4 outColor* in the fragment shader!
     subpass.pColorAttachments = &colorAttachmentRef;
 
+    // Define subpass dependency
+    VkSubpassDependency dependency{};
+    dependency.srcSubpass = VK_SUBPASS_EXTERNAL;
+    dependency.dstSubpass = 0;
+    dependency.srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+    dependency.srcAccessMask = 0;
+    dependency.dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+    dependency.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+
     // Create render pass
     VkRenderPassCreateInfo renderPassInfo{};
     renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
@@ -644,6 +661,8 @@ void HelloTriangle::CreateRenderPass()
     renderPassInfo.pAttachments = &colorAttachment;
     renderPassInfo.subpassCount = 1;
     renderPassInfo.pSubpasses = &subpass;
+    renderPassInfo.dependencyCount = 1;
+    renderPassInfo.pDependencies = &dependency;
 
     VK_VERIFY_RESULT(vkCreateRenderPass(_device, &renderPassInfo, nullptr, &_renderPass));
     LOG_INFO("Created render pass!");
@@ -873,4 +892,63 @@ void HelloTriangle::RecordCommands(uint32_t imageIndex)
     // End render pass and end command buffer recording
     vkCmdEndRenderPass(_commandBuffer);
     VK_VERIFY_RESULT(vkEndCommandBuffer(_commandBuffer));
+}
+
+void HelloTriangle::CreateSyncObjects()
+{
+    // Create semaphores
+    VkSemaphoreCreateInfo semaphoreInfo{};
+    semaphoreInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
+
+    VK_VERIFY_RESULT(vkCreateSemaphore(_device, &semaphoreInfo, nullptr, &_imageAvailableSemaphore));
+    VK_VERIFY_RESULT(vkCreateSemaphore(_device, &semaphoreInfo, nullptr, &_renderFinishedSemaphore));
+
+    // Create fence
+    VkFenceCreateInfo fenceInfo{};
+    fenceInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
+    fenceInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT; // Signaled state to avoid endless waiting for first frame
+
+    VK_VERIFY_RESULT(vkCreateFence(_device, &fenceInfo, nullptr, &_inFlightFence));
+}
+
+void HelloTriangle::DrawFrame()
+{
+    // Wait for previous frame to finish
+    vkWaitForFences(_device, 1, &_inFlightFence, VK_TRUE, UINT64_MAX);
+
+    // Reset fence
+    vkResetFences(_device, 1, &_inFlightFence);
+
+    // Get image from the swap chain
+    uint32_t imageIndex;
+    vkAcquireNextImageKHR(_device, _swapChain, UINT64_MAX, _imageAvailableSemaphore, VK_NULL_HANDLE, &imageIndex);
+
+    // Record command buffer
+    vkResetCommandBuffer(_commandBuffer, 0);
+    RecordCommands(imageIndex);
+
+    // Submit command buffer to graphics queue
+    VkSubmitInfo submitInfo{};
+    submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+    VkPipelineStageFlags waitStages[] = {VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT};
+    submitInfo.waitSemaphoreCount = 1;
+    submitInfo.pWaitSemaphores = &_imageAvailableSemaphore; // On which semaphore to wait
+    submitInfo.pWaitDstStageMask = waitStages;
+    submitInfo.commandBufferCount = 1;
+    submitInfo.pCommandBuffers = &_commandBuffer;
+    submitInfo.signalSemaphoreCount = 1;
+    submitInfo.pSignalSemaphores = &_renderFinishedSemaphore; // Which semaphore to signal after
+
+    VK_VERIFY_RESULT(vkQueueSubmit(_graphicsQueue, 1, &submitInfo, _inFlightFence));
+
+    // Presentation
+    VkPresentInfoKHR presentInfo{};
+    presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
+    presentInfo.waitSemaphoreCount = 1;
+    presentInfo.pWaitSemaphores = &_renderFinishedSemaphore;
+    presentInfo.swapchainCount = 1;
+    presentInfo.pSwapchains = &_swapChain;
+    presentInfo.pImageIndices = &imageIndex;
+
+    VK_VERIFY_RESULT(vkQueuePresentKHR(_presentQueue, &presentInfo));
 }
