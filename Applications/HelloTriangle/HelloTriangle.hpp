@@ -12,6 +12,7 @@
 
 #include "Core/Debug/Log.hpp"
 #include "Lookup.hpp"
+#include "Vertex.hpp"
 
 #ifdef NDEBUG
     const bool enableValidationLayers = false;
@@ -93,6 +94,8 @@ class HelloTriangle
         std::vector<VkSemaphore> _renderFinishedSemaphores;
         std::vector<VkFence> _inFlightFences;
         uint32_t _currentFrame = 0;
+        VkBuffer _vertexBuffer;
+        VkDeviceMemory _vertexBufferMemory;
 
         void InitWindow();
         void InitVulkan();
@@ -126,4 +129,6 @@ class HelloTriangle
         void DrawFrame();
         void CleanupSwapChain();
         void RecreateSwapChain();
+        uint32_t FindMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties);
+        void CreateVertexBuffer();
 };

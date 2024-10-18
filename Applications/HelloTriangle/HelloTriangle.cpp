@@ -120,6 +120,7 @@ void HelloTriangle::InitVulkan()
     CreateGraphicsPipeline();
     CreateFramebuffers();
     CreateCommandPool();
+    CreateVertexBuffer();
     CreateCommandBuffers();
     CreateSyncObjects();
 }
@@ -138,6 +139,9 @@ void HelloTriangle::MainLoop()
 void HelloTriangle::CleanUp()
 {
     CleanupSwapChain();
+
+    vkDestroyBuffer(_device, _vertexBuffer, nullptr);
+    vkFreeMemory(_device, _vertexBufferMemory, nullptr);
 
     vkDestroyPipeline(_device, _graphicsPipeline, nullptr);
     vkDestroyPipelineLayout(_device, _pipelineLayout, nullptr);
@@ -734,8 +738,12 @@ void HelloTriangle::CreateGraphicsPipeline()
     // Define vertex input
     VkPipelineVertexInputStateCreateInfo vertexInputInfo{};
     vertexInputInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
-    vertexInputInfo.vertexBindingDescriptionCount = 0;
-    vertexInputInfo.vertexAttributeDescriptionCount = 0;
+    auto bindingDescription = Vertex::GetBindingDescription();
+    auto attributeDescriptions = Vertex::GetAttributeDescriptions();
+    vertexInputInfo.vertexBindingDescriptionCount = 1;
+    vertexInputInfo.pVertexBindingDescriptions = &bindingDescription;
+    vertexInputInfo.vertexAttributeDescriptionCount = static_cast<uint32_t>(attributeDescriptions.size());
+    vertexInputInfo.pVertexAttributeDescriptions = attributeDescriptions.data();
 
     // Define input assembly
     VkPipelineInputAssemblyStateCreateInfo inputAssemblyInfo{};
@@ -881,6 +889,10 @@ void HelloTriangle::RecordCommands(VkCommandBuffer commandBuffer, uint32_t image
     // Bind graphics pipeline
     vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, _graphicsPipeline);
 
+    // Bind vertex buffer
+    VkDeviceSize offsets[] = {0};
+    vkCmdBindVertexBuffers(commandBuffer, 0, 1, &_vertexBuffer, offsets);
+
     // Define viewport and scissor
     VkViewport viewport{};
     viewport.x = 0.0f;
@@ -897,7 +909,7 @@ void HelloTriangle::RecordCommands(VkCommandBuffer commandBuffer, uint32_t image
     vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
 
     // Draw!
-    vkCmdDraw(commandBuffer, 3, 1, 0, 0); // commandBuffer, vertexCount, instanceCount, firstVertex, firstInstance
+    vkCmdDraw(commandBuffer, static_cast<uint32_t>(vertices.size()), 1, 0, 0); // commandBuffer, vertexCount, instanceCount, firstVertex, firstInstance
 
     // End render pass and end command buffer recording
     vkCmdEndRenderPass(commandBuffer);
@@ -1016,4 +1028,58 @@ void HelloTriangle::RecreateSwapChain()
     CreateFramebuffers();
 
     LOG_INFO("Recreated swap chain!");
+}
+
+uint32_t HelloTriangle::FindMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties)
+{
+    // Query available memory
+    VkPhysicalDeviceMemoryProperties memProperties;
+    vkGetPhysicalDeviceMemoryProperties(_physicalDevice, &memProperties);
+
+    // Find suitable memory
+    for(uint32_t i = 0; i < memProperties.memoryTypeCount; i++)
+    {
+        if(typeFilter & (1 << i) && (memProperties.memoryTypes[i].propertyFlags & properties) == properties)
+        {
+            return i;
+        }
+    }
+
+    ASSERT(false, "Failed to find suitable memory type!");
+    return -1;
+}
+
+void HelloTriangle::CreateVertexBuffer()
+{
+    // Define vertex buffer
+    VkBufferCreateInfo bufferInfo{};
+    bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+    bufferInfo.size = sizeof(Vertex) * vertices.size();
+    bufferInfo.usage = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
+    bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+
+    // Create vertex buffer
+    VK_VERIFY_RESULT(vkCreateBuffer(_device, &bufferInfo, nullptr, &_vertexBuffer));
+
+    // Check memory requirements
+    VkMemoryRequirements memRequirements;
+    vkGetBufferMemoryRequirements(_device, _vertexBuffer, &memRequirements);
+
+    // Define memory allocation
+    VkMemoryAllocateInfo allocInfo{};
+    allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
+    allocInfo.allocationSize = memRequirements.size;
+    allocInfo.memoryTypeIndex = FindMemoryType(memRequirements.memoryTypeBits, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+
+    // Allocate memory
+    VK_VERIFY_RESULT(vkAllocateMemory(_device, &allocInfo, nullptr, &_vertexBufferMemory));
+
+    // Bind memory to buffer
+    vkBindBufferMemory(_device, _vertexBuffer, _vertexBufferMemory, 0);
+
+    // Copy vertex data to buffer
+    void* data;
+    vkMapMemory(_device, _vertexBufferMemory, 0, bufferInfo.size, 0, &data);
+    memcpy(data, vertices.data(), static_cast<size_t>(bufferInfo.size));
+    vkUnmapMemory(_device, _vertexBufferMemory);
 }
