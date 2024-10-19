@@ -133,7 +133,7 @@ void HelloTriangle::MainLoop()
         DrawFrame();
     }
 
-    vkDeviceWaitIdle(_device);
+    VK_VERIFY_RESULT(vkDeviceWaitIdle(_device));
 }
 
 void HelloTriangle::CleanUp()
@@ -1051,35 +1051,97 @@ uint32_t HelloTriangle::FindMemoryType(uint32_t typeFilter, VkMemoryPropertyFlag
 
 void HelloTriangle::CreateVertexBuffer()
 {
+    // Get buffer size
+    VkDeviceSize bufferSize = sizeof(Vertex) * vertices.size();
+
+    // Create staging buffer
+    VkBuffer stagingBuffer;
+    VkDeviceMemory stagingBufferMemory;
+    CreateBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, &stagingBuffer, &stagingBufferMemory);
+
+    // Copy/map vertex data to buffer
+    void* data;
+    vkMapMemory(_device, stagingBufferMemory, 0, bufferSize, 0, &data);
+    memcpy(data, vertices.data(), static_cast<size_t>(bufferSize));
+    vkUnmapMemory(_device, stagingBufferMemory);
+
+    // Create device local buffer
+    CreateBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, &_vertexBuffer, &_vertexBufferMemory);
+
+    // Copy vertex data to device local buffer
+    CopyBuffer(stagingBuffer, _vertexBuffer, bufferSize);
+
+    // Destroy staging buffer
+    vkDestroyBuffer(_device, stagingBuffer, nullptr);
+    vkFreeMemory(_device, stagingBufferMemory, nullptr);
+}
+
+void HelloTriangle::CreateBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer* buffer, VkDeviceMemory* bufferMemory)
+{
     // Define vertex buffer
     VkBufferCreateInfo bufferInfo{};
     bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-    bufferInfo.size = sizeof(Vertex) * vertices.size();
-    bufferInfo.usage = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
+    bufferInfo.size = size;
+    bufferInfo.usage = usage;
     bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
 
     // Create vertex buffer
-    VK_VERIFY_RESULT(vkCreateBuffer(_device, &bufferInfo, nullptr, &_vertexBuffer));
+    VK_VERIFY_RESULT(vkCreateBuffer(_device, &bufferInfo, nullptr, buffer));
 
     // Check memory requirements
     VkMemoryRequirements memRequirements;
-    vkGetBufferMemoryRequirements(_device, _vertexBuffer, &memRequirements);
+    vkGetBufferMemoryRequirements(_device, *buffer, &memRequirements);
 
     // Define memory allocation
     VkMemoryAllocateInfo allocInfo{};
     allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
     allocInfo.allocationSize = memRequirements.size;
-    allocInfo.memoryTypeIndex = FindMemoryType(memRequirements.memoryTypeBits, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+    allocInfo.memoryTypeIndex = FindMemoryType(memRequirements.memoryTypeBits, properties);
 
     // Allocate memory
-    VK_VERIFY_RESULT(vkAllocateMemory(_device, &allocInfo, nullptr, &_vertexBufferMemory));
+    VK_VERIFY_RESULT(vkAllocateMemory(_device, &allocInfo, nullptr, bufferMemory));
 
     // Bind memory to buffer
-    vkBindBufferMemory(_device, _vertexBuffer, _vertexBufferMemory, 0);
+    vkBindBufferMemory(_device, *buffer, *bufferMemory, 0);
+}
 
-    // Copy vertex data to buffer
-    void* data;
-    vkMapMemory(_device, _vertexBufferMemory, 0, bufferInfo.size, 0, &data);
-    memcpy(data, vertices.data(), static_cast<size_t>(bufferInfo.size));
-    vkUnmapMemory(_device, _vertexBufferMemory);
+void HelloTriangle::CopyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size)
+{
+    // Define memory transfer operation via command buffers
+    // TODO: Define separate command pool for short-lived buffers
+    VkCommandBufferAllocateInfo allocInfo{};
+    allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+    allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+    allocInfo.commandPool = _commandPool;
+    allocInfo.commandBufferCount = 1;
+
+    // Create command buffer
+    VkCommandBuffer commandBuffer;
+    VK_VERIFY_RESULT(vkAllocateCommandBuffers(_device, &allocInfo, &commandBuffer));
+
+    // Begin recording
+    VkCommandBufferBeginInfo beginInfo{};
+    beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+    beginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
+    VK_VERIFY_RESULT(vkBeginCommandBuffer(commandBuffer, &beginInfo));
+
+    // Define copy
+    VkBufferCopy copyRegion{};
+    copyRegion.size = size;
+    vkCmdCopyBuffer(commandBuffer, srcBuffer, dstBuffer, 1, &copyRegion);
+
+    // End recording
+    VK_VERIFY_RESULT(vkEndCommandBuffer(commandBuffer));
+
+    // Immediately submit recorded commands
+    VkSubmitInfo submitInfo{};
+    submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+    submitInfo.commandBufferCount = 1;
+    submitInfo.pCommandBuffers = &commandBuffer;
+
+    VK_VERIFY_RESULT(vkQueueSubmit(_graphicsQueue, 1, &submitInfo, VK_NULL_HANDLE));
+    VK_VERIFY_RESULT(vkQueueWaitIdle(_graphicsQueue));
+
+    // Clean up command buffer
+    vkFreeCommandBuffers(_device, _commandPool, 1, &commandBuffer);
 }
