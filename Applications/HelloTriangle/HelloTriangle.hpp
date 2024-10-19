@@ -30,8 +30,8 @@
     } \
 }
 
-const uint32_t WIDTH = 800;
-const uint32_t HEIGHT = 600;
+const uint32_t WIDTH = 1920;
+const uint32_t HEIGHT = 1080;
 const uint32_t MAX_FRAMES_IN_FLIGHT = 2;
 
 const std::vector<const char*> validationLayers =
@@ -96,6 +96,8 @@ class HelloTriangle
         uint32_t _currentFrame = 0;
         VkBuffer _vertexBuffer;
         VkDeviceMemory _vertexBufferMemory;
+        VkBuffer _indexBuffer;
+        VkDeviceMemory _indexBufferMemory;
 
         void InitWindow();
         void InitVulkan();
@@ -133,4 +135,5 @@ class HelloTriangle
         void CreateVertexBuffer();
         void CreateBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer* buffer, VkDeviceMemory* bufferMemory);
         void CopyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size);
+        void CreateIndexBuffer();
 };

@@ -74,7 +74,8 @@ static void FramebufferResizeCallback(GLFWwindow* window, int width, int height)
 {
     auto app = reinterpret_cast<HelloTriangle*>(glfwGetWindowUserPointer(window));
     app->framebufferResized = true;
-    // WARNING: Don't trigger a manual swap chain recreation from this! Wayland + Nvidia already triggers VK_ERROR_OUR_OF_DATE_KHR
+    LOG_WARN("Swapchain needs recreation!");
+    // WARNING: Don't trigger a manual swap chain recreation from this! Wayland + Nvidia driver already triggers VK_ERROR_OUR_OF_DATE_KHR all the time
 }
 
 // ----- Public -----
@@ -96,7 +97,6 @@ void HelloTriangle::InitWindow()
 
     glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
     glfwWindowHint(GLFW_CONTEXT_CREATION_API, GLFW_EGL_CONTEXT_API);
-    glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
 
     _window = glfwCreateWindow(WIDTH, HEIGHT, "HelloTriangle", nullptr, nullptr);
     ASSERT(_window, "Failed to create GLFW window: {}", glfwGetError(nullptr));
@@ -121,6 +121,7 @@ void HelloTriangle::InitVulkan()
     CreateFramebuffers();
     CreateCommandPool();
     CreateVertexBuffer();
+    CreateIndexBuffer();
     CreateCommandBuffers();
     CreateSyncObjects();
 }
@@ -142,6 +143,9 @@ void HelloTriangle::CleanUp()
 
     vkDestroyBuffer(_device, _vertexBuffer, nullptr);
     vkFreeMemory(_device, _vertexBufferMemory, nullptr);
+
+    vkDestroyBuffer(_device, _indexBuffer, nullptr);
+    vkFreeMemory(_device, _indexBufferMemory, nullptr);
 
     vkDestroyPipeline(_device, _graphicsPipeline, nullptr);
     vkDestroyPipelineLayout(_device, _pipelineLayout, nullptr);
@@ -893,6 +897,9 @@ void HelloTriangle::RecordCommands(VkCommandBuffer commandBuffer, uint32_t image
     VkDeviceSize offsets[] = {0};
     vkCmdBindVertexBuffers(commandBuffer, 0, 1, &_vertexBuffer, offsets);
 
+    // Bind index buffer
+    vkCmdBindIndexBuffer(commandBuffer, _indexBuffer, 0, VK_INDEX_TYPE_UINT32);
+
     // Define viewport and scissor
     VkViewport viewport{};
     viewport.x = 0.0f;
@@ -908,8 +915,8 @@ void HelloTriangle::RecordCommands(VkCommandBuffer commandBuffer, uint32_t image
     scissor.extent = _swapChainProperties.extent;
     vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
 
-    // Draw!
-    vkCmdDraw(commandBuffer, static_cast<uint32_t>(vertices.size()), 1, 0, 0); // commandBuffer, vertexCount, instanceCount, firstVertex, firstInstance
+    // Draw indexed
+    vkCmdDrawIndexed(commandBuffer, static_cast<uint32_t>(indices.size()), 1, 0, 0, 0);
 
     // End render pass and end command buffer recording
     vkCmdEndRenderPass(commandBuffer);
@@ -1028,6 +1035,7 @@ void HelloTriangle::RecreateSwapChain()
     CreateFramebuffers();
 
     LOG_INFO("Recreated swap chain!");
+    framebufferResized = false;
 }
 
 uint32_t HelloTriangle::FindMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties)
@@ -1144,4 +1152,32 @@ void HelloTriangle::CopyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceS
 
     // Clean up command buffer
     vkFreeCommandBuffers(_device, _commandPool, 1, &commandBuffer);
+}
+
+// TODO: Check if you want to use a single buffer for vertex and index data (more cache friendly)
+void HelloTriangle::CreateIndexBuffer()
+{
+    // Get buffer size
+    VkDeviceSize bufferSize = sizeof(indices[0]) * indices.size();
+
+    // Create staging buffer
+    VkBuffer stagingBuffer;
+    VkDeviceMemory stagingBufferMemory;
+    CreateBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, &stagingBuffer, &stagingBufferMemory);
+
+    // Copy/map index data to buffer
+    void* data;
+    vkMapMemory(_device, stagingBufferMemory, 0, bufferSize, 0, &data);
+    memcpy(data, indices.data(), static_cast<size_t>(bufferSize));
+    vkUnmapMemory(_device, stagingBufferMemory);
+
+    // Create device local buffer
+    CreateBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, &_indexBuffer, &_indexBufferMemory);
+
+    // Copy index data to device local buffer
+    CopyBuffer(stagingBuffer, _indexBuffer, bufferSize);
+
+    // Destroy staging buffer
+    vkDestroyBuffer(_device, stagingBuffer, nullptr);
+    vkFreeMemory(_device, stagingBufferMemory, nullptr);
 }
