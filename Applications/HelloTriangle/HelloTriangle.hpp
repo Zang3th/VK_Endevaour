@@ -9,7 +9,9 @@
 #include <limits>
 #include <algorithm>
 #include <fstream>
+#include <chrono>
 
+#include "Vendor/glm/gtc/matrix_transform.hpp"
 #include "Core/Debug/Log.hpp"
 #include "Lookup.hpp"
 #include "Vertex.hpp"
@@ -85,6 +87,7 @@ class HelloTriangle
         std::vector<VkImage> _swapChainImages;
         std::vector<VkImageView> _swapChainImageViews;
         VkRenderPass _renderPass;
+        VkDescriptorSetLayout _descriptorSetLayout;
         VkPipelineLayout _pipelineLayout;
         VkPipeline _graphicsPipeline;
         std::vector<VkFramebuffer> _swapChainFramebuffers;
@@ -98,6 +101,11 @@ class HelloTriangle
         VkDeviceMemory _vertexBufferMemory;
         VkBuffer _indexBuffer;
         VkDeviceMemory _indexBufferMemory;
+        std::vector<VkBuffer> _uniformBuffers;
+        std::vector<VkDeviceMemory> _uniformBuffersMemory;
+        std::vector<void*> _uniformBuffersMapped;
+        VkDescriptorPool _descriptorPool;
+        std::vector<VkDescriptorSet> _descriptorSets;
 
         void InitWindow();
         void InitVulkan();
@@ -136,4 +144,9 @@ class HelloTriangle
         void CreateBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer* buffer, VkDeviceMemory* bufferMemory);
         void CopyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size);
         void CreateIndexBuffer();
+        void CreateDescriptorSetLayout();
+        void CreateUniformBuffers();
+        void UpdateUniformBuffer(uint32_t frame);
+        void CreateDescriptorPool();
+        void CreateDescriptorSets();
 };
