@@ -4,8 +4,8 @@
 
 #include <string>
 
-// TODO: Move into query code of the physical device class. Also this is not really constexpr
-constexpr std::string VkDriverVersionToString(uint32_t version)
+// TODO: Move into query code of the physical device class
+inline static std::string VkDriverVersionToString(uint32_t version)
 {
     char buf[32];
 
@@ -16,8 +16,50 @@ constexpr std::string VkDriverVersionToString(uint32_t version)
             (version)       & 0x003f,
             (version >> 6)  & 0x0ff);
 
-    return std::string(buf);
+    return {buf};
 }
+
+constexpr const char* VkColorSpaceToString(VkColorSpaceKHR colorSpace)
+{
+    switch (colorSpace)
+    {
+        case VK_COLOR_SPACE_SRGB_NONLINEAR_KHR: return "VK_COLOR_SPACE_SRGB_NONLINEAR_KHR";
+        case VK_COLOR_SPACE_DISPLAY_P3_NONLINEAR_EXT: return "VK_COLOR_SPACE_DISPLAY_P3_NONLINEAR_EXT";
+        case VK_COLOR_SPACE_EXTENDED_SRGB_LINEAR_EXT: return "VK_COLOR_SPACE_EXTENDED_SRGB_LINEAR_EXT";
+        case VK_COLOR_SPACE_DISPLAY_P3_LINEAR_EXT: return "VK_COLOR_SPACE_DISPLAY_P3_LINEAR_EXT";
+        case VK_COLOR_SPACE_DCI_P3_NONLINEAR_EXT: return "VK_COLOR_SPACE_DCI_P3_NONLINEAR_EXT";
+        case VK_COLOR_SPACE_BT709_LINEAR_EXT: return "VK_COLOR_SPACE_BT709_LINEAR_EXT";
+        case VK_COLOR_SPACE_BT709_NONLINEAR_EXT: return "VK_COLOR_SPACE_BT709_NONLINEAR_EXT";
+        case VK_COLOR_SPACE_BT2020_LINEAR_EXT: return "VK_COLOR_SPACE_BT2020_LINEAR_EXT";
+        case VK_COLOR_SPACE_HDR10_ST2084_EXT: return "VK_COLOR_SPACE_HDR10_ST2084_EXT";
+        case VK_COLOR_SPACE_DOLBYVISION_EXT: return "VK_COLOR_SPACE_DOLBYVISION_EXT";
+        case VK_COLOR_SPACE_HDR10_HLG_EXT: return "VK_COLOR_SPACE_HDR10_HLG_EXT";
+        case VK_COLOR_SPACE_ADOBERGB_LINEAR_EXT: return "VK_COLOR_SPACE_ADOBERGB_LINEAR_EXT";
+        case VK_COLOR_SPACE_ADOBERGB_NONLINEAR_EXT: return "VK_COLOR_SPACE_ADOBERGB_NONLINEAR_EXT";
+        case VK_COLOR_SPACE_PASS_THROUGH_EXT: return "VK_COLOR_SPACE_PASS_THROUGH_EXT";
+        case VK_COLOR_SPACE_EXTENDED_SRGB_NONLINEAR_EXT: return "VK_COLOR_SPACE_EXTENDED_SRGB_NONLINEAR_EXT";
+        case VK_COLOR_SPACE_DISPLAY_NATIVE_AMD: return "VK_COLOR_SPACE_DISPLAY_NATIVE_AMD";
+        case VK_COLOR_SPACE_MAX_ENUM_KHR: return "VK_COLOR_SPACE_MAX_ENUM_KHR";
+        default: return "Unknown color space";
+    }
+}
+
+
+constexpr const char* VkPresentModeToString(uint32_t mode)
+{
+    switch(mode)
+    {
+        case 0:           return "VK_PRESENT_MODE_IMMEDIATE_KHR";
+        case 1:           return "VK_PRESENT_MODE_MAILBOX_KHR";
+        case 2:           return "VK_PRESENT_MODE_FIFO_KHR";
+        case 3:           return "VK_PRESENT_MODE_FIFO_RELAXED_KHR";
+        case 1000111000:  return "VK_PRESENT_MODE_SHARED_DEMAND_REFRESH_KHR";
+        case 01000111001: return "VK_PRESENT_MODE_SHARED_CONTINUOUS_REFRESH_KHR";
+        case 0x7FFFFFFF:  return "VK_PRESENT_MODE_MAX_ENUM_KHR";
+        default:          return "Unknown present mode";
+    }
+};
+
 
 constexpr const char* VkVendorIDToString(uint32_t id)
 {
@@ -37,7 +79,7 @@ constexpr const char* VkVendorIDToString(uint32_t id)
         case 0x13B5:  return "ARM";
         case 0x5143:  return "Qualcomm";
         case 0x8086:  return "Intel";
-        default:      return "Unknown";
+        default:      return "Unknown vendor";
     }
 }
 
@@ -48,7 +90,7 @@ constexpr const char* VkMsgTypeToString(const VkDebugUtilsMessageTypeFlagsEXT ty
         case VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT:       return "General";
         case VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT:    return "Validation";
         case VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT:   return "Performance";
-        default:                                                return "Unknown";
+        default:                                                return "Unknown msg type";
     }
 }
 
@@ -104,6 +146,6 @@ constexpr const char* VkResultToString(VkResult result)
         case VK_OPERATION_DEFERRED_KHR: return "VK_OPERATION_DEFERRED_KHR";
         case VK_OPERATION_NOT_DEFERRED_KHR: return "VK_OPERATION_NOT_DEFERRED_KHR";
         case VK_PIPELINE_COMPILE_REQUIRED_EXT: return "VK_PIPELINE_COMPILE_REQUIRED_EXT";
-        default: return nullptr;
+        default: return "Unknown result";
     }
 }

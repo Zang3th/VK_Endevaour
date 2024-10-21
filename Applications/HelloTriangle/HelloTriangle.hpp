@@ -3,7 +3,6 @@
 #include <vulkan/vulkan.h>
 #include <vulkan/vulkan_core.h>
 #include <GLFW/glfw3.h>
-
 #include <vector>
 #include <set>
 #include <limits>
@@ -82,7 +81,9 @@ class HelloTriangle
         QueueFamilyIndices _queueFamilyIndices;
         VkDevice _device;
         VkQueue _graphicsQueue, _presentQueue;
+    public:
         SwapChainProperties _swapChainProperties;
+    private:
         VkSwapchainKHR _swapChain;
         std::vector<VkImage> _swapChainImages;
         std::vector<VkImageView> _swapChainImageViews;

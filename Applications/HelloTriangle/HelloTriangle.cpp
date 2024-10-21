@@ -73,9 +73,15 @@ static std::vector<char> ReadFileAsBytes(const std::string& fileName)
 static void FramebufferResizeCallback(GLFWwindow* window, int width, int height)
 {
     auto app = reinterpret_cast<HelloTriangle*>(glfwGetWindowUserPointer(window));
+    LOG_WARN("GLFW: Swapchain may needs recreation (New dimensions: {}x{})", width, height);
+
+    if(static_cast<uint32_t>(width)  == app->_swapChainProperties.extent.width &&
+       static_cast<uint32_t>(height) == app->_swapChainProperties.extent.height)
+    {
+        LOG_WARN("GLFW: Swapchain already got the right dimensions");
+        return;
+    }
     app->framebufferResized = true;
-    LOG_WARN("Swapchain needs recreation!");
-    // WARNING: Don't trigger a manual swap chain recreation from this! Wayland + Nvidia driver already triggers VK_ERROR_OUR_OF_DATE_KHR all the time
 }
 
 // ----- Public -----
@@ -565,7 +571,8 @@ void HelloTriangle::CreateLogicalDevice()
 
 void HelloTriangle::CreateSwapChain()
 {
-    // Swap chain got already queried at this point, so extract all the preferable settings
+    // Query for swap chain properties
+    _swapChainSupport = QuerySwapChainSupport(_physicalDevice);
     _swapChainProperties.extent = ChooseSwapExtent(_swapChainSupport.capabilities);
     _swapChainProperties.surfaceFormat = ChooseSwapSurfaceFormat(_swapChainSupport.formats);
     _swapChainProperties.presentMode = ChooseSwapPresentMode(_swapChainSupport.presentModes);
@@ -616,8 +623,11 @@ void HelloTriangle::CreateSwapChain()
 
     VK_VERIFY_RESULT(vkCreateSwapchainKHR(_device, &createInfo, nullptr, &_swapChain));
 
-    // TODO: Log swap chain parameters (e.g. format, colorSpace ...)
-    LOG_INFO("Created swap chain!");
+    LOG_INFO("Created swap chain!\n\t\t       {}x{}, {}, {}, Format: {}",
+             _swapChainProperties.extent.width, _swapChainProperties.extent.height,
+             VkPresentModeToString(_swapChainProperties.presentMode),
+             VkColorSpaceToString(_swapChainProperties.surfaceFormat.colorSpace),
+             (uint32_t)_swapChainProperties.surfaceFormat.format);
 
     // Retrieve handles for swap chain images
     vkGetSwapchainImagesKHR(_device, _swapChain, &imageCount, nullptr);
@@ -854,7 +864,7 @@ void HelloTriangle::CreateFramebuffers()
         framebufferInfo.layers = 1;
 
         VK_VERIFY_RESULT(vkCreateFramebuffer(_device, &framebufferInfo, nullptr, &_swapChainFramebuffers[i]));
-        LOG_INFO("Created framebuffer from image view {}", i);
+        // LOG_INFO("Created framebuffer from image view {}", i);
     }
 }
 
@@ -980,6 +990,7 @@ void HelloTriangle::DrawFrame()
     if(result == VK_ERROR_OUT_OF_DATE_KHR)
     {
         RecreateSwapChain();
+        LOG_WARN("vkAcquireNextImageKHR recreated swap chain!");
         return; // Try again next frame
     }
     ASSERT(result == VK_SUCCESS, "Failed to acquire swap chain image!");
@@ -1019,8 +1030,10 @@ void HelloTriangle::DrawFrame()
 
     // Check if swap chain needs recreation
     result = vkQueuePresentKHR(_presentQueue, &presentInfo);
-    if(result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR)
+    if(result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR || framebufferResized)
     {
+        LOG_WARN("vkQueuePresentKHR recreated swap chain!");
+        framebufferResized = false;
         RecreateSwapChain();
     }
     else
@@ -1055,9 +1068,6 @@ void HelloTriangle::RecreateSwapChain()
     CreateSwapChain();
     CreateImageViews();
     CreateFramebuffers();
-
-    LOG_INFO("Recreated swap chain!");
-    framebufferResized = false;
 }
 
 uint32_t HelloTriangle::FindMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties)
