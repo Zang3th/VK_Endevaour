@@ -10,10 +10,12 @@
 #include <fstream>
 #include <chrono>
 
+#define GLM_FORCE_DEPTH_ZERO_TO_ONE // Map depth range from 0.0 to 1.0 (instead of OpenGL's -1.0 to 1.0)
 #include "Vendor/glm/gtc/matrix_transform.hpp"
 #include "Core/Debug/Log.hpp"
 #include "Lookup.hpp"
 #include "Vertex.hpp"
+#include "Vendor/stb_image/stb_image.hpp"
 
 #ifdef NDEBUG
     const bool enableValidationLayers = false;
@@ -31,8 +33,8 @@
     } \
 }
 
-const uint32_t WIDTH = 1920;
-const uint32_t HEIGHT = 1080;
+const uint32_t WIDTH = 1200;
+const uint32_t HEIGHT = 1200;
 const uint32_t MAX_FRAMES_IN_FLIGHT = 2;
 
 const std::vector<const char*> validationLayers =
@@ -107,6 +109,8 @@ class HelloTriangle
         std::vector<void*> _uniformBuffersMapped;
         VkDescriptorPool _descriptorPool;
         std::vector<VkDescriptorSet> _descriptorSets;
+        VkImage _textureImage;
+        VkDeviceMemory _textureImageMemory;
 
         void InitWindow();
         void InitVulkan();
@@ -150,4 +154,6 @@ class HelloTriangle
         void UpdateUniformBuffer(uint32_t frame);
         void CreateDescriptorPool();
         void CreateDescriptorSets();
+        void CreateImage(uint32_t width, uint32_t height, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties, VkImage* image, VkDeviceMemory* imageMemory);
+        void CreateTextureImage(const std::string& filepath);
 };

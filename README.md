@@ -34,5 +34,6 @@ This project is currently only tested on Linux with Wayland.
 
 | **Library**                                                          | **Version** | **Updated in Engine** | **Functionality**           | **Type**       |
 |:--------------------------------------------------------------------:|:-----------:|:---------------------:|:---------------------------:|:--------------:|
+| [stb_image](https://github.com/nothings/stb/blob/master/stb_image.h) | 2.30        | 21.10.2024            | Image loading               | Header only    |
 | [glm](https://github.com/g-truc/glm)                                 | 1.0.1       | 29.08.2024            | Mathematics                 | Header only    |
 | [fmt](https://github.com/fmtlib/fmt)                                 | 11.0.2      | 28.08.2024            | Formatting and logging      | Static library |

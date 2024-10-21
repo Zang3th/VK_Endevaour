@@ -17,6 +17,7 @@ mv compile_commands.json $PROJECT_ROOT
 
 # Launch app from within the directory
 cd "$APP_DIR/HelloTriangle"
+echo "Application launched from:" $(pwd)
 $HELLO_EXE
 
 cd $PROJECT_ROOT
