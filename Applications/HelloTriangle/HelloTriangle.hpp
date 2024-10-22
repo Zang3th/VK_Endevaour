@@ -111,6 +111,8 @@ class HelloTriangle
         std::vector<VkDescriptorSet> _descriptorSets;
         VkImage _textureImage;
         VkDeviceMemory _textureImageMemory;
+        VkImageView _textureImageView;
+        VkSampler _textureSampler;
 
         void InitWindow();
         void InitVulkan();
@@ -132,6 +134,7 @@ class HelloTriangle
         QueueFamilyIndices FindQueueFamilies(VkPhysicalDevice device);
         void CreateLogicalDevice();
         void CreateSwapChain();
+        VkImageView CreateImageView(VkImage image, VkFormat format);
         void CreateImageViews();
         void CreateRenderPass();
         VkShaderModule CreateShaderModule(const std::vector<char>& code);
@@ -160,4 +163,6 @@ class HelloTriangle
         void CreateTextureImage(const std::string& filepath);
         void TransitionImageLayout(VkImage image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout);
         void CopyBufferToImage(VkBuffer buffer, VkImage image, uint32_t width, uint32_t height);
+        void CreateTextureImageView();
+        void CreateTextureSampler();
 };

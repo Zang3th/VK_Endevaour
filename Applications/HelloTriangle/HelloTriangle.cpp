@@ -126,6 +126,8 @@ void HelloTriangle::InitVulkan()
     CreateFramebuffers();
     CreateCommandPool();
     CreateTextureImage("Textures/Tex512.jpg");
+    CreateTextureImageView();
+    CreateTextureSampler();
     CreateVertexBuffer();
     CreateIndexBuffer();
     CreateUniformBuffers();
@@ -149,6 +151,9 @@ void HelloTriangle::MainLoop()
 void HelloTriangle::CleanUp()
 {
     CleanupSwapChain();
+
+    vkDestroySampler(_device, _textureSampler, nullptr);
+    vkDestroyImageView(_device, _textureImageView, nullptr);
 
     vkDestroyImage(_device, _textureImage, nullptr);
     vkFreeMemory(_device, _textureImageMemory, nullptr);
@@ -348,25 +353,34 @@ void HelloTriangle::PickPhysicalDevice()
 
 bool HelloTriangle::IsDeviceSuitable(VkPhysicalDevice device)
 {
+    // Query device properties
     VkPhysicalDeviceProperties deviceProperties;
     vkGetPhysicalDeviceProperties(device, &deviceProperties);
 
-    // Check requirements (discrete GPU and support for swap chain)
+    // Check for requirements (discrete GPU and support for extensions)
     if(deviceProperties.deviceType == VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU && CheckDeviceExtensionSupport(device))
     {
-        LOG_INFO("Found discrete GPU with swap chain support!");
+        LOG_INFO("Found discrete GPU with support for all requested extensions!");
+
+        // Query swap chain support
         _swapChainSupport = QuerySwapChainSupport(device);
 
         if(!_swapChainSupport.formats.empty() && !_swapChainSupport.presentModes.empty())
         {
-            LOG_INFO("Found adequate swap chain support!");
+            LOG_INFO("Device has adequate swap chain support!");
 
-            // Query and print device features
+            // Query device features
             VkPhysicalDeviceFeatures deviceFeatures;
             vkGetPhysicalDeviceFeatures(device, &deviceFeatures);
-            LOG_INFO("GPU: {} ({}), Driver: {}", deviceProperties.deviceName, VkVendorIDToString(deviceProperties.vendorID), VkDriverVersionToString(deviceProperties.driverVersion));
 
-            return true;
+            if(deviceFeatures.samplerAnisotropy)
+            {
+                LOG_INFO("Device supports anisotropic filtering!");
+
+                LOG_INFO("GPU: {} ({}), Driver: {}", deviceProperties.deviceName, VkVendorIDToString(deviceProperties.vendorID), VkDriverVersionToString(deviceProperties.driverVersion));
+
+                return true;
+            }
         }
     }
 
@@ -547,6 +561,7 @@ void HelloTriangle::CreateLogicalDevice()
 
     // Define features you want to use (e.g. geometry shaders)
     VkPhysicalDeviceFeatures deviceFeatures{};
+    deviceFeatures.samplerAnisotropy = VK_TRUE;
 
     // Configure logical device
     VkDeviceCreateInfo createInfo{};
@@ -635,6 +650,27 @@ void HelloTriangle::CreateSwapChain()
     vkGetSwapchainImagesKHR(_device, _swapChain, &imageCount, _swapChainImages.data());
 }
 
+VkImageView HelloTriangle::CreateImageView(VkImage image, VkFormat format)
+{
+    // Define image view
+    VkImageViewCreateInfo imageViewInfo{};
+    imageViewInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
+    imageViewInfo.image = image;
+    imageViewInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
+    imageViewInfo.format = format;
+    imageViewInfo.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+    imageViewInfo.subresourceRange.baseMipLevel = 0;
+    imageViewInfo.subresourceRange.levelCount = 1;
+    imageViewInfo.subresourceRange.baseArrayLayer = 0;
+    imageViewInfo.subresourceRange.layerCount = 1;
+
+    // Create image view
+    VkImageView imageView;
+    VK_VERIFY_RESULT(vkCreateImageView(_device, &imageViewInfo, nullptr, &imageView));
+
+    return imageView;
+}
+
 void HelloTriangle::CreateImageViews()
 {
     _swapChainImageViews.resize(_swapChainImages.size());
@@ -642,23 +678,8 @@ void HelloTriangle::CreateImageViews()
     // Iterate over all swap chain images
     for(size_t i = 0; i < _swapChainImages.size(); i++)
     {
-        // Create image view
-        VkImageViewCreateInfo createInfo{};
-        createInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
-        createInfo.image = _swapChainImages[i];
-        createInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
-        createInfo.format = _swapChainProperties.surfaceFormat.format;
-        createInfo.components.r = VK_COMPONENT_SWIZZLE_IDENTITY;
-        createInfo.components.g = VK_COMPONENT_SWIZZLE_IDENTITY;
-        createInfo.components.b = VK_COMPONENT_SWIZZLE_IDENTITY;
-        createInfo.components.a = VK_COMPONENT_SWIZZLE_IDENTITY;
-        createInfo.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-        createInfo.subresourceRange.baseMipLevel = 0;
-        createInfo.subresourceRange.levelCount = 1;
-        createInfo.subresourceRange.baseArrayLayer = 0;
-        createInfo.subresourceRange.layerCount = 1;
-
-        VK_VERIFY_RESULT(vkCreateImageView(_device, &createInfo, nullptr, &_swapChainImageViews[i]));
+        // Create image views
+        _swapChainImageViews[i] = CreateImageView(_swapChainImages[i], _swapChainProperties.surfaceFormat.format);
     }
 
     LOG_INFO("Created image views!");
@@ -1475,4 +1496,42 @@ void HelloTriangle::CopyBufferToImage(VkBuffer buffer, VkImage image, uint32_t w
     vkCmdCopyBufferToImage(commandBuffer, buffer, image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &imageCopy);
 
     EndSingleTimeCommands(commandBuffer);
+}
+
+void HelloTriangle::CreateTextureImageView()
+{
+    _textureImageView = CreateImageView(_textureImage, VK_FORMAT_R8G8B8A8_SRGB);
+}
+
+void HelloTriangle::CreateTextureSampler()
+{
+    // Define texture sampler
+    VkSamplerCreateInfo samplerInfo{};
+    samplerInfo.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
+    samplerInfo.magFilter = VK_FILTER_LINEAR;
+    samplerInfo.minFilter = VK_FILTER_LINEAR;
+    samplerInfo.addressModeU = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+    samplerInfo.addressModeV = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+    samplerInfo.addressModeW = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+    samplerInfo.anisotropyEnable = VK_TRUE;
+
+    // Query phyiscal device for maximum possible amount of texels to sample
+    // TODO: Move into class variable that's only getting queried once
+    VkPhysicalDeviceProperties properties{};
+    vkGetPhysicalDeviceProperties(_physicalDevice, &properties);
+
+    samplerInfo.maxAnisotropy = properties.limits.maxSamplerAnisotropy;
+    samplerInfo.borderColor = VK_BORDER_COLOR_INT_OPAQUE_BLACK;
+    samplerInfo.unnormalizedCoordinates = VK_FALSE;
+    samplerInfo.compareEnable = VK_FALSE;
+    samplerInfo.compareOp = VK_COMPARE_OP_ALWAYS;
+    samplerInfo.mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;
+    samplerInfo.mipLodBias = 0.0f;
+    samplerInfo.minLod = 0.0f;
+    samplerInfo.maxLod = 0.0f;
+
+    // Create texture sampler
+    VK_VERIFY_RESULT(vkCreateSampler(_device, &samplerInfo, nullptr, &_textureSampler));
+
+    LOG_INFO("Created texture sampler!");
 }
