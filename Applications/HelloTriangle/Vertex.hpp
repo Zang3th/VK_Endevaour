@@ -6,6 +6,8 @@
 #include <array>
 
 #include "Vendor/glm/glm.hpp"
+#define GLM_ENABLE_EXPERIMENTAL
+#include "Vendor/glm/gtx/hash.hpp"
 
 struct Vertex
 {
@@ -43,26 +45,32 @@ struct Vertex
 
         return attributeDescriptions;
     }
+
+    bool operator==(const Vertex& other) const
+    {
+        return pos == other.pos && color == other.color && texCoord == other.texCoord;
+    }
 };
 
-const std::vector<Vertex> vertices =
-{
-    {{-0.5f, -0.5f, 0.2f}, {1.0f, 1.0f, 0.0f}, {1.0f, 0.0f}},
-    {{ 0.5f, -0.5f, 0.2f}, {0.0f, 1.0f, 1.0f}, {0.0f, 0.0f}},
-    {{ 0.5f,  0.5f, 0.2f}, {1.0f, 1.0f, 0.0f}, {0.0f, 1.0f}},
-    {{-0.5f,  0.5f, 0.2f}, {0.0f, 0.0f, 0.0f}, {1.0f, 1.0f}},
-
-    {{-0.5f, -0.5f, 0.0f}, {1.0f, 0.0f, 0.0f}, {1.0f, 0.0f}},
-    {{ 0.5f, -0.5f, 0.0f}, {0.0f, 1.0f, 0.0f}, {0.0f, 0.0f}},
-    {{ 0.5f,  0.5f, 0.0f}, {0.0f, 0.0f, 1.0f}, {0.0f, 1.0f}},
-    {{-0.5f,  0.5f, 0.0f}, {1.0f, 1.0f, 1.0f}, {1.0f, 1.0f}},
-};
-
-const std::vector<uint32_t> indices =
-{
-    0, 1, 2, 2, 3, 0,
-    4, 5, 6, 6, 7, 4
-};
+// Vertice and indice data for 2 parallel planes
+// const std::vector<Vertex> vertices =
+// {
+//     {{-0.5f, -0.5f, 0.2f}, {1.0f, 1.0f, 0.0f}, {1.0f, 0.0f}},
+//     {{ 0.5f, -0.5f, 0.2f}, {0.0f, 1.0f, 1.0f}, {0.0f, 0.0f}},
+//     {{ 0.5f,  0.5f, 0.2f}, {1.0f, 1.0f, 0.0f}, {0.0f, 1.0f}},
+//     {{-0.5f,  0.5f, 0.2f}, {0.0f, 0.0f, 0.0f}, {1.0f, 1.0f}},
+//
+//     {{-0.5f, -0.5f, 0.0f}, {1.0f, 0.0f, 0.0f}, {1.0f, 0.0f}},
+//     {{ 0.5f, -0.5f, 0.0f}, {0.0f, 1.0f, 0.0f}, {0.0f, 0.0f}},
+//     {{ 0.5f,  0.5f, 0.0f}, {0.0f, 0.0f, 1.0f}, {0.0f, 1.0f}},
+//     {{-0.5f,  0.5f, 0.0f}, {1.0f, 1.0f, 1.0f}, {1.0f, 1.0f}},
+// };
+//
+// const std::vector<uint32_t> indices =
+// {
+//     0, 1, 2, 2, 3, 0,
+//     4, 5, 6, 6, 7, 4
+// };
 
 struct UniformBufferObject
 {
@@ -70,3 +78,16 @@ struct UniformBufferObject
     alignas(16) glm::mat4 view;
     alignas(16) glm::mat4 proj;
 };
+
+namespace std
+{
+    template<> struct hash<Vertex>
+    {
+        size_t operator()(Vertex const& vertex) const
+        {
+            return ((hash<glm::vec3>()(vertex.pos) ^
+                    (hash<glm::vec3>()(vertex.color) << 1)) >> 1) ^
+                    (hash<glm::vec2>()(vertex.texCoord) << 1);
+        }
+    };
+}

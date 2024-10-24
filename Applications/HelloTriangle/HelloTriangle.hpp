@@ -9,6 +9,7 @@
 #include <algorithm>
 #include <fstream>
 #include <chrono>
+#include <unordered_map>
 
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE // Map depth range from 0.0 to 1.0 (instead of OpenGL's -1.0 to 1.0)
 #include "Vendor/glm/gtc/matrix_transform.hpp"
@@ -16,6 +17,7 @@
 #include "Lookup.hpp"
 #include "Vertex.hpp"
 #include "Vendor/stb_image/stb_image.hpp"
+#include "Vendor/tinyobjloader/tiny_obj_loader.hpp"
 
 #ifdef NDEBUG
     const bool enableValidationLayers = false;
@@ -36,6 +38,9 @@
 const uint32_t WIDTH = 1200;
 const uint32_t HEIGHT = 1200;
 const uint32_t MAX_FRAMES_IN_FLIGHT = 2;
+
+const std::string MODEL_PATH = "Models/viking_room.obj";
+const std::string TEXTURE_PATH = "Textures/viking_room.png";
 
 const std::vector<const char*> validationLayers =
 {
@@ -100,10 +105,14 @@ class HelloTriangle
         std::vector<VkSemaphore> _renderFinishedSemaphores;
         std::vector<VkFence> _inFlightFences;
         uint32_t _currentFrame = 0;
+
+        std::vector<Vertex> _vertices;
+        std::vector<uint32_t> _indices;
         VkBuffer _vertexBuffer;
         VkDeviceMemory _vertexBufferMemory;
         VkBuffer _indexBuffer;
         VkDeviceMemory _indexBufferMemory;
+
         std::vector<VkBuffer> _uniformBuffers;
         std::vector<VkDeviceMemory> _uniformBuffersMemory;
         std::vector<void*> _uniformBuffersMapped;
@@ -169,4 +178,5 @@ class HelloTriangle
         void CreateTextureImageView();
         void CreateTextureSampler();
         void CreateDepthResources();
+        void LoadModel(const std::string& filepath);
 };

@@ -126,9 +126,10 @@ void HelloTriangle::InitVulkan()
     CreateCommandPool();
     CreateDepthResources();
     CreateFramebuffers();
-    CreateTextureImage("Textures/Tex512.jpg");
+    CreateTextureImage(TEXTURE_PATH);
     CreateTextureImageView();
     CreateTextureSampler();
+    LoadModel(MODEL_PATH);
     CreateVertexBuffer();
     CreateIndexBuffer();
     CreateUniformBuffers();
@@ -1015,7 +1016,7 @@ void HelloTriangle::RecordCommands(VkCommandBuffer commandBuffer, uint32_t image
     vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
 
     // Draw indexed
-    vkCmdDrawIndexed(commandBuffer, static_cast<uint32_t>(indices.size()), 1, 0, 0, 0);
+    vkCmdDrawIndexed(commandBuffer, static_cast<uint32_t>(_indices.size()), 1, 0, 0, 0);
 
     // End render pass and end command buffer recording
     vkCmdEndRenderPass(commandBuffer);
@@ -1167,7 +1168,7 @@ uint32_t HelloTriangle::FindMemoryType(uint32_t typeFilter, VkMemoryPropertyFlag
 void HelloTriangle::CreateVertexBuffer()
 {
     // Get buffer size
-    VkDeviceSize bufferSize = sizeof(Vertex) * vertices.size();
+    VkDeviceSize bufferSize = sizeof(Vertex) * _vertices.size();
 
     // Create staging buffer
     VkBuffer stagingBuffer;
@@ -1177,7 +1178,7 @@ void HelloTriangle::CreateVertexBuffer()
     // Copy/map vertex data to buffer
     void* data;
     vkMapMemory(_device, stagingBufferMemory, 0, bufferSize, 0, &data);
-    memcpy(data, vertices.data(), static_cast<size_t>(bufferSize));
+    memcpy(data, _vertices.data(), static_cast<size_t>(bufferSize));
     vkUnmapMemory(_device, stagingBufferMemory);
 
     // Create device local buffer
@@ -1276,7 +1277,7 @@ void HelloTriangle::CopyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceS
 void HelloTriangle::CreateIndexBuffer()
 {
     // Get buffer size
-    VkDeviceSize bufferSize = sizeof(indices[0]) * indices.size();
+    VkDeviceSize bufferSize = sizeof(_indices[0]) * _indices.size();
 
     // Create staging buffer
     VkBuffer stagingBuffer;
@@ -1286,7 +1287,7 @@ void HelloTriangle::CreateIndexBuffer()
     // Copy/map index data to buffer
     void* data;
     vkMapMemory(_device, stagingBufferMemory, 0, bufferSize, 0, &data);
-    memcpy(data, indices.data(), static_cast<size_t>(bufferSize));
+    memcpy(data, _indices.data(), static_cast<size_t>(bufferSize));
     vkUnmapMemory(_device, stagingBufferMemory);
 
     // Create device local buffer
@@ -1627,4 +1628,51 @@ void HelloTriangle::CreateDepthResources()
     // Create image and image view
     CreateImage(width, height, depthFormat, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, &_depthImage, &_depthImageMemory);
     _depthImageView = CreateImageView(_depthImage, depthFormat, VK_IMAGE_ASPECT_DEPTH_BIT);
+}
+
+void HelloTriangle::LoadModel(const std::string& filepath)
+{
+    tinyobj::attrib_t attrib;
+    std::vector<tinyobj::shape_t> shapes;
+    std::vector<tinyobj::material_t> materials;
+    std::string warn, error;
+
+    // Load file (already triangulated)
+    ASSERT(tinyobj::LoadObj(&attrib, &shapes, &materials, &warn, &error, filepath.c_str()), "Failed to load model: {} | {}", warn, error);
+    LOG_INFO("Loaded obj model: {} (Vertices: {})", filepath, attrib.vertices.size());
+
+    // Cache and reuse vertices (needs a hashing function and overload comparison operator. TODO: Simplify)
+    std::unordered_map<Vertex, uint32_t> uniqueVertices{};
+
+    // Combine all faces into a single model by iterating over all shapes
+    for(const auto& shape : shapes)
+    {
+        for(const auto& index : shape.mesh.indices)
+        {
+            Vertex vertex{};
+
+            vertex.pos =
+            {
+                attrib.vertices[3 * index.vertex_index + 0],
+                attrib.vertices[3 * index.vertex_index + 1],
+                attrib.vertices[3 * index.vertex_index + 2]
+            };
+
+            vertex.color = {1.0f, 1.0f, 1.0f};
+
+            vertex.texCoord =
+            {
+                attrib.texcoords[2 * index.texcoord_index + 0],
+                1.0f - attrib.texcoords[2 * index.texcoord_index + 1] // Flip v axis
+            };
+
+            if(uniqueVertices.count(vertex) == 0)
+            {
+                uniqueVertices[vertex] = static_cast<uint32_t>(_vertices.size());
+                _vertices.push_back(vertex);
+            }
+
+            _indices.push_back(uniqueVertices[vertex]);
+        }
+    }
 }
