@@ -126,6 +126,10 @@ class HelloTriangle
         VkImage _depthImage;
         VkDeviceMemory _depthImageMemory;
         VkImageView _depthImageView;
+        VkSampleCountFlagBits _msaaSamples = VK_SAMPLE_COUNT_1_BIT;
+        VkImage _colorImage;
+        VkDeviceMemory _colorImageMemory;
+        VkImageView _colorImageView;
 
         void InitWindow();
         void InitVulkan();
@@ -172,7 +176,7 @@ class HelloTriangle
         void UpdateUniformBuffer(uint32_t frame);
         void CreateDescriptorPool();
         void CreateDescriptorSets();
-        void CreateImage(uint32_t width, uint32_t height, uint32_t mipLevels, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties, VkImage* image, VkDeviceMemory* imageMemory);
+        void CreateImage(uint32_t width, uint32_t height, uint32_t mipLevels, VkSampleCountFlagBits numSamples, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties, VkImage* image, VkDeviceMemory* imageMemory);
         void CreateTextureImage(const std::string& filepath);
         void TransitionImageLayout(VkImage image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout, uint32_t mipLevels);
         void CopyBufferToImage(VkBuffer buffer, VkImage image, uint32_t width, uint32_t height);
@@ -181,4 +185,6 @@ class HelloTriangle
         void CreateDepthResources();
         void LoadModel(const std::string& filepath);
         void GenerateMipmaps(VkImage image, VkFormat imageFormat, int32_t texWidth, int32_t texHeight, uint32_t mipLevels);
+        VkSampleCountFlagBits GetMSAASampleCount();
+        void CreateColorResources();
 };
