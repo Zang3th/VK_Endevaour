@@ -34,7 +34,8 @@ This project is currently only tested on Linux with Wayland.
 
 | **Library**                                                          | **Version** | **Updated in Engine** | **Functionality**           | **Type**       |
 |:--------------------------------------------------------------------:|:-----------:|:---------------------:|:---------------------------:|:--------------:|
-| [tinyobjloader](https://github.com/tinyobjloader/tinyobjloader)      | 2.0.0       | 24.10.2024            | OBJ file loading            | Header only    |
-| [stb_image](https://github.com/nothings/stb/blob/master/stb_image.h) | 2.30        | 21.10.2024            | Image loading               | Header only    |
-| [glm](https://github.com/g-truc/glm)                                 | 1.0.1       | 29.08.2024            | Mathematics                 | Header only    |
+| [imgui](https://github.com/ocornut/imgui)                            | 1.91.5      | 12.11.2024            | GUI                         | Source include |
+| [tinyobjloader](https://github.com/tinyobjloader/tinyobjloader)      | 2.0.0       | 24.10.2024            | OBJ file loading            | Source include |
+| [stb_image](https://github.com/nothings/stb/blob/master/stb_image.h) | 2.30        | 21.10.2024            | Image loading               | Source include |
+| [glm](https://github.com/g-truc/glm)                                 | 1.0.1       | 29.08.2024            | Mathematics                 | Source include |
 | [fmt](https://github.com/fmtlib/fmt)                                 | 11.0.2      | 28.08.2024            | Formatting and logging      | Static library |

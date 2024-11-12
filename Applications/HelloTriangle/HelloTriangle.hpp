@@ -19,6 +19,10 @@
 #include "Vendor/stb_image/stb_image.hpp"
 #include "Vendor/tinyobjloader/tiny_obj_loader.hpp"
 
+#include "Vendor/imgui/imgui.h"
+#include "Vendor/imgui/imgui_impl_glfw.h"
+#include "Vendor/imgui/imgui_impl_vulkan.h"
+
 #ifdef NDEBUG
     const bool enableValidationLayers = false;
 #else
@@ -131,8 +135,14 @@ class HelloTriangle
         VkDeviceMemory _colorImageMemory;
         VkImageView _colorImageView;
 
+        VkPipelineCache _pipelineCache = VK_NULL_HANDLE;
+        uint32_t _minImageCount = 2;
+        uint32_t _imageCount = 2;
+        // VkCommandBuffer _imguiCommandBuffer;
+
         void InitWindow();
         void InitVulkan();
+        void InitImGui();
         void MainLoop();
         void CleanUp();
         void CreateInstance();
@@ -157,11 +167,13 @@ class HelloTriangle
         VkShaderModule CreateShaderModule(const std::vector<char>& code);
         void CreateGraphicsPipeline();
         void CreateFramebuffers();
+        void RecreateImGuiContext();
         void CreateCommandPool();
         void CreateCommandBuffers();
         void RecordCommands(VkCommandBuffer commandBuffer, uint32_t imageIndex);
         void CreateSyncObjects();
         void DrawFrame();
+        void RenderImGuiFrame();
         void CleanupSwapChain();
         void RecreateSwapChain();
         uint32_t FindMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties);
