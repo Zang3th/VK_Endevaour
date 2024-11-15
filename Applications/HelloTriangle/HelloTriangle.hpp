@@ -135,10 +135,9 @@ class HelloTriangle
         VkDeviceMemory _colorImageMemory;
         VkImageView _colorImageView;
 
-        VkPipelineCache _pipelineCache = VK_NULL_HANDLE;
+        VkDescriptorPool _imguiPool;
         uint32_t _minImageCount = 2;
         uint32_t _imageCount = 2;
-        // VkCommandBuffer _imguiCommandBuffer;
 
         void InitWindow();
         void InitVulkan();

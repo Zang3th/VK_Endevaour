@@ -130,38 +130,63 @@ static void imgui_check_vk_result(VkResult err)
 
 void HelloTriangle::InitImGui()
 {
+    // Create a very oversized descriptor pool for Imgui
+    VkDescriptorPoolSize poolSizes[] =
+    {
+        { VK_DESCRIPTOR_TYPE_SAMPLER, 1000 },
+        { VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1000 },
+        { VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE, 1000 },
+        { VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, 1000 },
+        { VK_DESCRIPTOR_TYPE_UNIFORM_TEXEL_BUFFER, 1000 },
+        { VK_DESCRIPTOR_TYPE_STORAGE_TEXEL_BUFFER, 1000 },
+        { VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1000 },
+        { VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 1000 },
+        { VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC, 1000 },
+        { VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC, 1000 },
+        { VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT, 1000 }
+    };
+
+    VkDescriptorPoolCreateInfo poolInfo = {};
+    poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
+    poolInfo.flags = VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT;
+    poolInfo.maxSets = 1000;
+    poolInfo.poolSizeCount = std::size(poolSizes);
+    poolInfo.pPoolSizes = poolSizes;
+
+    VK_VERIFY_RESULT(vkCreateDescriptorPool(_device, &poolInfo, nullptr, &_imguiPool));
+
     // Setup Dear ImGui context
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
-    ImGuiIO& io = ImGui::GetIO(); (void)io;
-    io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // Enable Keyboard Controls
-    io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable Gamepad Controls
+    // ImGuiIO& io = ImGui::GetIO(); (void)io;
+    // io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // Enable Keyboard Controls
+    // io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable Gamepad Controls
 
     // Setup Dear ImGui style
     ImGui::StyleColorsDark();
     //ImGui::StyleColorsLight();
 
     // Fetch for current swap chain dimensions
-    RecreateImGuiContext();
+    // RecreateImGuiContext();
 
     // Setup Platform/Renderer backends
     ImGui_ImplGlfw_InitForVulkan(_window, true);
-    ImGui_ImplVulkan_InitInfo init_info = {};
-    init_info.Instance = _instance;
-    init_info.PhysicalDevice = _physicalDevice;
-    init_info.Device = _device;
-    init_info.QueueFamily = _queueFamilyIndices.graphicsFamily;
-    init_info.Queue = _graphicsQueue;
-    init_info.PipelineCache = _pipelineCache;
-    init_info.DescriptorPool = _descriptorPool;
-    init_info.RenderPass = _renderPass;
-    init_info.Subpass = 0;
-    init_info.MinImageCount = _minImageCount;
-    init_info.ImageCount = _imageCount;
-    init_info.MSAASamples = _msaaSamples;
-    init_info.Allocator = nullptr;
-    init_info.CheckVkResultFn = imgui_check_vk_result;
-    ImGui_ImplVulkan_Init(&init_info);
+    ImGui_ImplVulkan_InitInfo initInfo = {};
+    initInfo.Instance = _instance;
+    initInfo.PhysicalDevice = _physicalDevice;
+    initInfo.Device = _device;
+    initInfo.QueueFamily = _queueFamilyIndices.graphicsFamily;
+    initInfo.Queue = _graphicsQueue;
+    initInfo.PipelineCache = nullptr;
+    initInfo.DescriptorPool = _imguiPool;
+    initInfo.RenderPass = _renderPass;
+    initInfo.Subpass = 0;
+    initInfo.MinImageCount = _minImageCount;
+    initInfo.ImageCount = _imageCount;
+    initInfo.MSAASamples = _msaaSamples;
+    initInfo.Allocator = nullptr;
+    initInfo.CheckVkResultFn = imgui_check_vk_result;
+    ImGui_ImplVulkan_Init(&initInfo);
 
     LOG_INFO("Initialized ImGui!");
 }
@@ -207,16 +232,14 @@ void HelloTriangle::MainLoop()
     {
         glfwPollEvents();
 
-        DrawFrame();
-
         // Start the Dear ImGui frame
-        // ImGui_ImplVulkan_NewFrame();
-        // ImGui_ImplGlfw_NewFrame();
-        // ImGui::NewFrame();
+        ImGui_ImplVulkan_NewFrame();
+        ImGui_ImplGlfw_NewFrame();
+        ImGui::NewFrame();
 
-        // ImGui::ShowDemoWindow();
-        // ImGui::Render();
-        // RenderImGuiFrame();
+        ImGui::ShowDemoWindow();
+
+        DrawFrame();
     }
 
     VK_VERIFY_RESULT(vkDeviceWaitIdle(_device));
@@ -227,6 +250,7 @@ void HelloTriangle::CleanUp()
     ImGui_ImplVulkan_Shutdown();
     ImGui_ImplGlfw_Shutdown();
     ImGui::DestroyContext();
+    vkDestroyDescriptorPool(_device, _imguiPool, nullptr);
 
     CleanupSwapChain();
 
@@ -1116,6 +1140,9 @@ void HelloTriangle::RecordCommands(VkCommandBuffer commandBuffer, uint32_t image
     // Draw indexed
     vkCmdDrawIndexed(commandBuffer, static_cast<uint32_t>(_indices.size()), 1, 0, 0, 0);
 
+    // Draw imgui stuff as part of the main renderpass
+    ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), commandBuffer);
+
     // End render pass and end command buffer recording
     vkCmdEndRenderPass(commandBuffer);
     VK_VERIFY_RESULT(vkEndCommandBuffer(commandBuffer));
@@ -1150,6 +1177,8 @@ void HelloTriangle::CreateSyncObjects()
 
 void HelloTriangle::DrawFrame()
 {
+    ImGui::Render();
+
     // Wait for previous frame to finish
     vkWaitForFences(_device, 1, &_inFlightFences[_currentFrame], VK_TRUE, UINT64_MAX);
 
