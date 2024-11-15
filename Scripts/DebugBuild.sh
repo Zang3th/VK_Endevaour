@@ -12,6 +12,7 @@ rm -f $APP_EXE
 mkdir -p Debug
 cd Debug
 cmake ../.. -DCMAKE_CXX_COMPILER=clang++-17 -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_FLAGS="-glldb"
+# cmake ../.. -DCMAKE_CXX_COMPILER=g++ -DCMAKE_BUILD_TYPE=Debug
 make -j
 mv compile_commands.json $PROJECT_ROOT
 

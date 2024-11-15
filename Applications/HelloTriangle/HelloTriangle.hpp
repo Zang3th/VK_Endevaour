@@ -35,7 +35,7 @@
     if(res != VK_SUCCESS) \
     { \
         LOG_ERROR("[VkResult] {} in\n\t\t\t{}:{}", VkResultToString(res), __FILE__, __LINE__); \
-        __builtin_debugtrap(); \
+        __builtin_trap(); \
     } \
 }
 

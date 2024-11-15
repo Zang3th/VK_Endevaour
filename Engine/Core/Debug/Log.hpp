@@ -62,5 +62,5 @@ namespace Engine
                    __VA_OPT__(,) __VA_ARGS__); \
     } while(0)
 
-    #define ASSERT(condition, ...) { if(!condition) { LOG_ASSERT(__VA_ARGS__); __builtin_debugtrap(); }}
+    #define ASSERT(condition, ...) { if(!(condition)) { LOG_ASSERT(__VA_ARGS__); __builtin_trap(); }}
 }
