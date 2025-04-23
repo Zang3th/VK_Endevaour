@@ -1,4 +1,7 @@
 Build/
 compile_commands.json
 .cache/
+.idea/
+Build_CLion/
 *.spv
+imgui.ini

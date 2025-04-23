@@ -2,15 +2,15 @@
 
 Accommodating repository while learning Vulkan. This includes:
 
-- Some basic engine code
-- Learning materials and documentation (some of it may be in German)
+- Basic engine code
+- Some first applications
 
 ## Building and compiling
 
 ### What you need
 
 - C++20 compiler
-  - The provided build script uses Clang++-17
+  - The provided build script uses clang++
 - CMake 3.25 or above
 - Vulkan compatible graphics card, driver and the SDK
 - An installation of all external dependencies
@@ -34,8 +34,8 @@ This project is currently only tested on Linux with Wayland.
 
 | **Library**                                                          | **Version** | **Updated in Engine** | **Functionality**           | **Type**       |
 |:--------------------------------------------------------------------:|:-----------:|:---------------------:|:---------------------------:|:--------------:|
+| [fmt](https://github.com/fmtlib/fmt)                                 | 11.1.4      | 23.04.2025            | Formatting and logging      | Static library |
 | [imgui](https://github.com/ocornut/imgui)                            | 1.91.5      | 12.11.2024            | GUI                         | Source include |
 | [tinyobjloader](https://github.com/tinyobjloader/tinyobjloader)      | 2.0.0       | 24.10.2024            | OBJ file loading            | Source include |
 | [stb_image](https://github.com/nothings/stb/blob/master/stb_image.h) | 2.30        | 21.10.2024            | Image loading               | Source include |
 | [glm](https://github.com/g-truc/glm)                                 | 1.0.1       | 29.08.2024            | Mathematics                 | Source include |
-| [fmt](https://github.com/fmtlib/fmt)                                 | 11.0.2      | 28.08.2024            | Formatting and logging      | Static library |

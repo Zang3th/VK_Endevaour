@@ -1151,9 +1151,9 @@ void HelloTriangle::RecordCommands(VkCommandBuffer commandBuffer, uint32_t image
 void HelloTriangle::CreateSyncObjects()
 {
     // Reserve space
-    _imageAvailableSemaphores.reserve(MAX_FRAMES_IN_FLIGHT);
-    _renderFinishedSemaphores.reserve(MAX_FRAMES_IN_FLIGHT);
-    _inFlightFences.reserve(MAX_FRAMES_IN_FLIGHT);
+    _imageAvailableSemaphores.resize(MAX_FRAMES_IN_FLIGHT);
+    _renderFinishedSemaphores.resize(MAX_FRAMES_IN_FLIGHT);
+    _inFlightFences.resize(MAX_FRAMES_IN_FLIGHT);
 
     // Define semaphores
     VkSemaphoreCreateInfo semaphoreInfo{};

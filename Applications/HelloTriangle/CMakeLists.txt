@@ -22,6 +22,7 @@ target_link_libraries(HelloTriangle PRIVATE Engine)
 # Compile shaders
 add_custom_command(
     TARGET HelloTriangle
+    POST_BUILD
     COMMAND glslc "${CMAKE_CURRENT_SOURCE_DIR}/Shaders/Frag.glsl" -o "${CMAKE_CURRENT_SOURCE_DIR}/Shaders/Frag.spv"
     COMMAND glslc "${CMAKE_CURRENT_SOURCE_DIR}/Shaders/Vert.glsl" -o "${CMAKE_CURRENT_SOURCE_DIR}/Shaders/Vert.spv"
 )
