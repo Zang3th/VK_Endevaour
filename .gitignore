@@ -1,7 +1,8 @@
 Build/
-compile_commands.json
+Build_CLion/
+Backup/
 .cache/
 .idea/
-Build_CLion/
+compile_commands.json
 *.spv
 imgui.ini

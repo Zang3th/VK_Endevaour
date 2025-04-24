@@ -14,17 +14,17 @@ file(
 )
 
 # Compile to an executable
-add_executable(HelloTriangle ${APP_SOURCES})
+add_executable(Sandbox ${APP_SOURCES})
 
 # Link application against the engine
-target_link_libraries(HelloTriangle PRIVATE Engine)
+target_link_libraries(Sandbox PRIVATE Engine)
 
 # Compile shaders
 add_custom_command(
-    TARGET HelloTriangle
+    TARGET Sandbox
     POST_BUILD
     COMMAND glslc "${CMAKE_CURRENT_SOURCE_DIR}/Shaders/Frag.glsl" -o "${CMAKE_CURRENT_SOURCE_DIR}/Shaders/Frag.spv"
     COMMAND glslc "${CMAKE_CURRENT_SOURCE_DIR}/Shaders/Vert.glsl" -o "${CMAKE_CURRENT_SOURCE_DIR}/Shaders/Vert.spv"
 )
 
-message(STATUS "Compiled shaders: HelloTriangle")
+message(STATUS "Compiled shaders: Sandbox")
