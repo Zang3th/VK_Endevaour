@@ -1,8 +1,16 @@
 #include "Sandbox.hpp"
 
-#include "Core/Debug/Log.hpp"
+#include <Core/Window.hpp>
 
 void Sandbox::Run()
 {
-    LOG_INFO("Hello World!");
+    Engine::Window::Init
+    ({
+        .Title = "Sandbox"
+    });
+
+    while(!Engine::Window::ShouldClose())
+    {
+        Engine::Window::PollEvents();
+    }
 }

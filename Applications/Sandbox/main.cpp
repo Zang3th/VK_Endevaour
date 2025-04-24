@@ -2,6 +2,8 @@
 
 int main()
 {
-    Sandbox app;
-    app.Run();
+    Sandbox sandbox;
+    sandbox.Run();
+
+    return 0;
 }
