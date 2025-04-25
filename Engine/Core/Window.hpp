@@ -9,9 +9,9 @@ namespace Engine
 {
     struct WindowSpecification
     {
-        std::string Title = "Engine";
-        u32 Width = 1920;
-        u32 Height = 1080;
+        std::string Title  = "DefaultWindowTitle";
+        u32         Width  = 1080;
+        u32         Height = 1080;
     };
 
     class Window
@@ -23,12 +23,13 @@ namespace Engine
 
             static void PollEvents();
             static bool ShouldClose();
-            [[nodiscard]] static void* GetHandle() { return m_Window; }
-            [[nodiscard]] static u32   GetWidth()  { return m_Spec.Width; }
-            [[nodiscard]] static u32   GetHeight() { return m_Spec.Height; }
+            [[nodiscard]] static void*              GetHandle() { return m_Window;      }
+            [[nodiscard]] static const std::string& GetTitle()  { return m_Spec.Title;  }
+            [[nodiscard]] static u32                GetWidth()  { return m_Spec.Width;  }
+            [[nodiscard]] static u32                GetHeight() { return m_Spec.Height; }
 
         private:
-            inline static GLFWwindow* m_Window       = nullptr;
-            inline static WindowSpecification m_Spec = WindowSpecification();
+            inline static GLFWwindow*         m_Window = nullptr;
+            inline static WindowSpecification m_Spec   = WindowSpecification();
     };
 }

@@ -39,5 +39,5 @@ Checks: "*,
         -altera-unroll-loops,
 "
 WarningsAsErrors: ''
-HeaderFilterRegex: ''
+HeaderFilterRegex: 'Engine/.*, Application/.*'
 FormatStyle: none

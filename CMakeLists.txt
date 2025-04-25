@@ -10,8 +10,9 @@ project(
     LANGUAGES CXX
 )
 
-# Add compile options
-include("CMake/AddCompileOptions.cmake")
+# Add compile options and definitions
+include("CMake/CompileOptions.cmake")
+include("CMake/CompileDefinitions.cmake")
 
 # Add global include directory
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/Engine)

@@ -1,4 +1,4 @@
-#include "Core/Window.hpp"
+#include "Window.hpp"
 #include "Debug/Log.hpp"
 
 namespace Engine
@@ -7,18 +7,22 @@ namespace Engine
 
     void Window::Init(const WindowSpecification& spec)
     {
+        m_Spec = spec;
+
         ASSERT(glfwInit(), "Failed to initialize GLFW: {}", glfwGetError(nullptr));
         LOG_INFO("Initialized GLFW ...");
 
         glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
 
-        m_Window = glfwCreateWindow((int)spec.Width, (int)spec.Height, spec.Title.c_str(), nullptr, nullptr);
+        m_Window = glfwCreateWindow((int)m_Spec.Width, (int)m_Spec.Height, m_Spec.Title.c_str(), nullptr, nullptr);
         ASSERT(m_Window, "Failed to create GLFW window: {}", glfwGetError(nullptr));
-        LOG_INFO("Created GLFW window for application '{}' ...", spec.Title);
+        LOG_INFO("Created GLFW window for application '{}' (Width: {}, Height: {}) ...",
+                 m_Spec.Title, m_Spec.Width, m_Spec.Height);
     }
 
     void Window::Shutdown()
     {
+        glfwDestroyWindow(m_Window);
         glfwTerminate();
     }
 
