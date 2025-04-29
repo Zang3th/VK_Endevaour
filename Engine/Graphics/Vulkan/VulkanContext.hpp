@@ -15,7 +15,7 @@ namespace Engine
 
         private:
             void CreateInstance();
-            void SetupDebugMessenger();
+            void CreateDebugMessenger();
 
             vk::Instance               m_Instance;
             vk::DebugUtilsMessengerEXT m_DebugMessenger;

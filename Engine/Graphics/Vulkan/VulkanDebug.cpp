@@ -1,7 +1,9 @@
 #include "VulkanDebug.hpp"
+#include "VulkanDefines.hpp"
+#include "Debug/Log.hpp"
+#include "Core/Window.hpp"
 
-// Define two function pointers in anonymous namespace
-// They will later point to Vulkan extension functions
+// Define two function pointers in anonymous namespace. They will later point to Vulkan extension functions
 namespace
 {
     PFN_vkCreateDebugUtilsMessengerEXT  pfnVkCreateDebugUtilsMessengerEXT;
@@ -27,11 +29,63 @@ VKAPI_ATTR void VKAPI_CALL vkDestroyDebugUtilsMessengerEXT
     VkAllocationCallbacks const* pAllocator
 )
 {
-    return pfnVkDestroyDebugUtilsMessengerEXT(instance, messenger, pAllocator);
+    pfnVkDestroyDebugUtilsMessengerEXT(instance, messenger, pAllocator);
 }
 
 namespace Engine
 {
+    // ----- Public -----
+
+    bool VulkanDebug::CheckValidationLayerSupport(const std::vector<const char*>& validationLayers)
+    {
+        LOG_INFO("Check for {} requested validation layer(s) ...", validationLayers.size());
+
+        uint32_t layerCount;
+        vkEnumerateInstanceLayerProperties(&layerCount, nullptr);
+
+        std::vector<VkLayerProperties> availableLayers(layerCount);
+        vkEnumerateInstanceLayerProperties(&layerCount, availableLayers.data());
+
+        for(const char* layerName : validationLayers)
+        {
+            bool layerFound = false;
+
+            for(const auto& layerProperties : availableLayers)
+            {
+                if(strcmp(layerName, layerProperties.layerName) == 0)
+                {
+                    LOG_INFO("Found layer: {} ...", layerName);
+                    layerFound = true;
+                    break;
+                }
+            }
+
+            if(!layerFound)
+            {
+                LOG_ERROR("Validation layer is missing: {}", layerName);
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    std::vector<const char*> VulkanDebug::GetExtensions()
+    {
+        uint32_t glfwExtensionCount = 0;
+        const char** glfwExtensions = glfwGetRequiredInstanceExtensions(&glfwExtensionCount);
+
+        std::vector<const char*> extensions(glfwExtensions, glfwExtensions + glfwExtensionCount);
+
+        // Add the debug messenger extension conditionally
+        if(ENABLE_VALIDATION_LAYERS)
+        {
+            extensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
+        }
+
+        return extensions;
+    }
+
     VKAPI_ATTR VkBool32 VKAPI_CALL VulkanDebug::Callback
     (
         vk::DebugUtilsMessageSeverityFlagBitsEXT      messageSeverity,
@@ -45,36 +99,38 @@ namespace Engine
         switch (messageSeverity)
         {
             case Severity::eVerbose:
-                LOG_VERBOSE("[VkMsg | {}]\n{}", vk::to_string(messageType), pCallbackData->pMessage);
+                LOG_VERBOSE("{} {}", vk::to_string(messageType), pCallbackData->pMessage);
                 break;
 
             case Severity::eInfo:
-                LOG_INFO("[VkMsg | {}]\n{}", vk::to_string(messageType), pCallbackData->pMessage);
+                LOG_INFO("{} {}", vk::to_string(messageType), pCallbackData->pMessage);
                 break;
 
             case Severity::eWarning:
-                LOG_WARN("[VkMsg | {}]\n{}", vk::to_string(messageType), pCallbackData->pMessage);
+                LOG_WARN("{} {}", vk::to_string(messageType), pCallbackData->pMessage);
                 break;
 
             case Severity::eError:
-                LOG_ERROR("[VkMsg | {}]\n{}", vk::to_string(messageType), pCallbackData->pMessage);
-                ASSERT(false, "VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT");
+                LOG_ERROR("##################################");
+                LOG_ERROR("##### VulkanDebug::Callback ######");
+                LOG_ERROR("##################################");
+                LOG_ERROR("{} {}", vk::to_string(messageType), pCallbackData->pMessage);
+                ASSERT(false, "Caught an error with VulkanDebug::Callback!");
                 break;
 
             default:
-                LOG_ERROR("Caught unknown severity in VulkanDebug::Callback!");
+                LOG_ERROR("Caught an unknown severity in VulkanDebug::Callback!");
                 break;
         }
 
         return VK_FALSE;
     }
 
-    vk::DebugUtilsMessengerCreateInfoEXT VulkanDebug::GetCreateInfo()
+    vk::DebugUtilsMessengerCreateInfoEXT VulkanDebug::GetDebugCreateInfo()
     {
         return
         {
             .messageSeverity =
-                // vk::DebugUtilsMessageSeverityFlagBitsEXT::eInfo |
                 vk::DebugUtilsMessageSeverityFlagBitsEXT::eWarning |
                 vk::DebugUtilsMessageSeverityFlagBitsEXT::eError,
             .messageType =
@@ -87,7 +143,7 @@ namespace Engine
     }
 
     // Load and assign Vulkan extension functions
-    void VulkanDebug::LoadExtensionFunctions(vk::Instance instance)
+    void VulkanDebug::LoadDebugExtensionFunctions(vk::Instance instance)
     {
         pfnVkCreateDebugUtilsMessengerEXT = reinterpret_cast<PFN_vkCreateDebugUtilsMessengerEXT>
         (
@@ -100,5 +156,7 @@ namespace Engine
             instance.getProcAddr("vkDestroyDebugUtilsMessengerEXT")
         );
         ASSERT(pfnVkDestroyDebugUtilsMessengerEXT, "Unable to load vkDestroyDebugUtilsMessengerEXT");
+
+        LOG_INFO("Loaded debug extension functions ...");
     }
 }
