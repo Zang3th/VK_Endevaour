@@ -32,6 +32,7 @@ namespace Engine
     VulkanPhysicalDevice::VulkanPhysicalDevice(vk::Instance instance)
     {
         PickDevice(instance);
+        PrintDeviceSpecifics();
     }
 
     void VulkanPhysicalDevice::PickDevice(vk::Instance instance)
@@ -49,7 +50,8 @@ namespace Engine
             if(IsDeviceSuitable(device))
             {
                 m_PhysicalDevice = device;
-                PrintDeviceSpecifics(m_PhysicalDevice);
+                m_Properties = device.getProperties();
+                LOG_INFO("Found suitable device ...");
                 break;
             }
         }
@@ -87,15 +89,9 @@ namespace Engine
         return queueFamilyIndices;
     }
 
-    void VulkanPhysicalDevice::PrintDeviceSpecifics(vk::PhysicalDevice device)
+    void VulkanPhysicalDevice::PrintDeviceSpecifics()
     {
-        LOG_INFO("Found suitable device ...");
-
-        auto deviceProperties = device.getProperties();
-        LOG_INFO
-        (
-            "GPU: {}, Driver: {}", (const char*)deviceProperties.deviceName,
-            GetDriverVersionString(deviceProperties)
-        );
+        LOG_INFO("GPU: {}, Driver: {}", (const char*)m_Properties.deviceName,
+                 GetDriverVersionString(m_Properties));
     }
 }

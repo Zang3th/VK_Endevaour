@@ -1,24 +1,14 @@
 #include "VulkanContext.hpp"
-#include "Core/Memory.hpp"
-#include "VulkanDefines.hpp"
+#include "VulkanGlobals.hpp"
 #include "VulkanAssert.hpp"
 #include "VulkanDebug.hpp"
+#include "Core/Memory.hpp"
 #include "Core/Window.hpp"
 
 #include <vulkan/vulkan.hpp>
 #include <vulkan/vulkan_structs.hpp>
 #include <vulkan/vulkan_handles.hpp>
 #include <vulkan/vulkan_core.h>
-
-namespace
-{
-    // ----- Internal -----
-
-    const std::vector<const char*> s_ValidationLayers =
-    {
-        "VK_LAYER_KHRONOS_validation"
-    };
-}
 
 namespace Engine
 {
@@ -34,6 +24,7 @@ namespace Engine
         }
 
         m_PhysicalDevice = MakeScope<VulkanPhysicalDevice>(m_Instance);
+        m_Device         = MakeScope<VulkanDevice>(*m_PhysicalDevice);
     }
 
     VulkanContext::~VulkanContext()
@@ -52,7 +43,7 @@ namespace Engine
     {
         if(ENABLE_VALIDATION_LAYERS)
         {
-            ASSERT(VulkanDebug::CheckValidationLayerSupport(s_ValidationLayers),
+            ASSERT(VulkanDebug::CheckValidationLayerSupport(g_ValidationLayers),
                    "Validation layers were requested, but not available!");
         }
         const std::string& title = Window::GetTitle();
@@ -75,8 +66,8 @@ namespace Engine
         {
             .pNext                   = ENABLE_VALIDATION_LAYERS ? &debugCreateInfo : nullptr,
             .pApplicationInfo        = &appInfo,
-            .enabledLayerCount       = ENABLE_VALIDATION_LAYERS ? (u32)(s_ValidationLayers.size()) : 0,
-            .ppEnabledLayerNames     = ENABLE_VALIDATION_LAYERS ? s_ValidationLayers.data() : nullptr,
+            .enabledLayerCount       = ENABLE_VALIDATION_LAYERS ? (u32)(g_ValidationLayers.size()) : 0,
+            .ppEnabledLayerNames     = ENABLE_VALIDATION_LAYERS ? g_ValidationLayers.data() : nullptr,
             .enabledExtensionCount   = static_cast<uint32_t>(extensions.size()),
             .ppEnabledExtensionNames = extensions.data(),
         };
