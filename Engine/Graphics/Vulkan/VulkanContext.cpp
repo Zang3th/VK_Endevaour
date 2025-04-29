@@ -1,4 +1,5 @@
 #include "VulkanContext.hpp"
+#include "Core/Memory.hpp"
 #include "VulkanDefines.hpp"
 #include "VulkanAssert.hpp"
 #include "VulkanDebug.hpp"
@@ -31,6 +32,8 @@ namespace Engine
         {
             CreateDebugMessenger();
         }
+
+        m_PhysicalDevice = MakeScope<VulkanPhysicalDevice>(m_Instance);
     }
 
     VulkanContext::~VulkanContext()

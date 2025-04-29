@@ -1,5 +1,8 @@
 #pragma once
 
+#include "Core/Memory.hpp"
+#include "VulkanPhysicalDevice.hpp"
+
 #include "vulkan/vulkan.hpp"
 #include "vulkan/vulkan_handles.hpp"
 
@@ -16,8 +19,10 @@ namespace Engine
         private:
             void CreateInstance();
             void CreateDebugMessenger();
+            void CreatePhysicalDevice();
 
-            vk::Instance               m_Instance;
-            vk::DebugUtilsMessengerEXT m_DebugMessenger;
+            vk::Instance                m_Instance;
+            vk::DebugUtilsMessengerEXT  m_DebugMessenger;
+            Scope<VulkanPhysicalDevice> m_PhysicalDevice;
     };
 }

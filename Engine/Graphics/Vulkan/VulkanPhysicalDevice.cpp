@@ -1,0 +1,101 @@
+#include "VulkanPhysicalDevice.hpp"
+#include "Debug/Log.hpp"
+
+#include <vulkan/vulkan_core.h>
+#include <vulkan/vulkan_enums.hpp>
+#include <vulkan/vulkan_structs.hpp>
+
+namespace
+{
+    // ----- Internal -----
+
+    inline std::string GetDriverVersionString(vk::PhysicalDeviceProperties properties)
+    {
+        if(properties.vendorID != 0x10DE) // Nvidia
+        {
+            LOG_WARN("GPU vendor isn't Nvidia. Driver version may be false ...");
+        }
+
+        uint32_t major     = (properties.driverVersion >> 22) & 0x3ff;
+        uint32_t minor     = (properties.driverVersion >> 14) & 0x0ff;
+        uint32_t secondary = (properties.driverVersion >> 6)  & 0x0ff;
+        uint32_t tertiary  = properties.driverVersion & 0x3f;
+
+        return fmt::format("{}.{}.{}.{}", major, minor, secondary, tertiary);
+    }
+}
+
+namespace Engine
+{
+    // ----- Public -----
+
+    VulkanPhysicalDevice::VulkanPhysicalDevice(vk::Instance instance)
+    {
+        PickDevice(instance);
+    }
+
+    void VulkanPhysicalDevice::PickDevice(vk::Instance instance)
+    {
+        // Query for devices
+        auto devices = instance.enumeratePhysicalDevices();
+        ASSERT(!devices.empty(), "Failed to find GPUs with Vulkan support!");
+
+        LOG_INFO("Check for suitable device ...");
+
+        // Check each device for suitability
+        for(const auto& device : devices)
+        {
+            // Break at first suitable device
+            if(IsDeviceSuitable(device))
+            {
+                m_PhysicalDevice = device;
+                PrintDeviceSpecifics(m_PhysicalDevice);
+                break;
+            }
+        }
+
+        ASSERT(m_PhysicalDevice, "Failed to find suitable device!");
+    }
+
+    // ----- Private -----
+
+    bool VulkanPhysicalDevice::IsDeviceSuitable(vk::PhysicalDevice device)
+    {
+        m_queueFamilyIndices = FindQueueFamilyIndices(device);
+        return m_queueFamilyIndices.isComplete();
+    }
+
+    QueueFamilyIndices VulkanPhysicalDevice::FindQueueFamilyIndices(vk::PhysicalDevice device)
+    {
+        QueueFamilyIndices queueFamilyIndices;
+        u32 index = 0;
+
+        auto queueFamilies = device.getQueueFamilyProperties();
+
+        // Iterate over queue familys
+        for(const auto& queueFamily : queueFamilies)
+        {
+            // Query for first graphics capable queue family
+            if(queueFamily.queueFlags & vk::QueueFlagBits::eGraphics)
+            {
+                queueFamilyIndices.GraphicsFamily = index;
+            }
+
+            index++;
+        }
+
+        return queueFamilyIndices;
+    }
+
+    void VulkanPhysicalDevice::PrintDeviceSpecifics(vk::PhysicalDevice device)
+    {
+        LOG_INFO("Found suitable device ...");
+
+        auto deviceProperties = device.getProperties();
+        LOG_INFO
+        (
+            "GPU: {}, Driver: {}", (const char*)deviceProperties.deviceName,
+            GetDriverVersionString(deviceProperties)
+        );
+    }
+}
