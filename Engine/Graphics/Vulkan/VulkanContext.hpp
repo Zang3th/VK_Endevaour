@@ -15,14 +15,17 @@ namespace Engine
             VulkanContext();
             ~VulkanContext();
 
-            [[nodiscard]] const vk::Instance& GetInstance() const { return m_Instance; }
+            [[nodiscard]] const vk::Instance&   GetInstance() const { return m_Instance; }
+            [[nodiscard]] const vk::SurfaceKHR& GetSurface()  const { return m_Surface;  }
 
         private:
             void CreateInstance();
+            void CreateSurface();
             void CreateDebugMessenger();
             void CreatePhysicalDevice();
 
             vk::Instance                m_Instance;
+            vk::SurfaceKHR              m_Surface;
             vk::DebugUtilsMessengerEXT  m_DebugMessenger;
             Scope<VulkanPhysicalDevice> m_PhysicalDevice;
             Scope<VulkanDevice>         m_Device;

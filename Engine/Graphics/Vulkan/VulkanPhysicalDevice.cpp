@@ -1,4 +1,5 @@
 #include "VulkanPhysicalDevice.hpp"
+#include "VulkanAssert.hpp"
 #include "Debug/Log.hpp"
 
 #include <vulkan/vulkan_core.h>
@@ -29,13 +30,13 @@ namespace Engine
 {
     // ----- Public -----
 
-    VulkanPhysicalDevice::VulkanPhysicalDevice(vk::Instance instance)
+    VulkanPhysicalDevice::VulkanPhysicalDevice(vk::Instance instance, vk::SurfaceKHR surface)
     {
-        PickDevice(instance);
+        PickDevice(instance, surface);
         PrintDeviceSpecifics();
     }
 
-    void VulkanPhysicalDevice::PickDevice(vk::Instance instance)
+    void VulkanPhysicalDevice::PickDevice(vk::Instance instance, vk::SurfaceKHR surface)
     {
         // Query for devices
         auto devices = instance.enumeratePhysicalDevices();
@@ -47,7 +48,7 @@ namespace Engine
         for(const auto& device : devices)
         {
             // Break at first suitable device
-            if(IsDeviceSuitable(device))
+            if(IsDeviceSuitable(device, surface))
             {
                 m_PhysicalDevice = device;
                 m_Properties = device.getProperties();
@@ -61,26 +62,33 @@ namespace Engine
 
     // ----- Private -----
 
-    bool VulkanPhysicalDevice::IsDeviceSuitable(vk::PhysicalDevice device)
+    bool VulkanPhysicalDevice::IsDeviceSuitable(vk::PhysicalDevice device, vk::SurfaceKHR surface)
     {
-        m_queueFamilyIndices = FindQueueFamilyIndices(device);
+        m_queueFamilyIndices = FindQueueFamilyIndices(device, surface);
         return m_queueFamilyIndices.isComplete();
     }
 
-    QueueFamilyIndices VulkanPhysicalDevice::FindQueueFamilyIndices(vk::PhysicalDevice device)
+    QueueFamilyIndices VulkanPhysicalDevice::FindQueueFamilyIndices(vk::PhysicalDevice device, vk::SurfaceKHR surface)
     {
         QueueFamilyIndices queueFamilyIndices;
-        u32 index = 0;
+        VkBool32 presentSupport = false;
+        i32 index = 0;
 
         auto queueFamilies = device.getQueueFamilyProperties();
 
         // Iterate over queue familys
         for(const auto& queueFamily : queueFamilies)
         {
-            // Query for first graphics capable queue family
+            // Query for graphics capable queue family
             if(queueFamily.queueFlags & vk::QueueFlagBits::eGraphics)
             {
-                queueFamilyIndices.GraphicsFamily = index;
+                // Query for capability of presenting to a window surface
+                VK_VERIFY((vk::Result)device.getSurfaceSupportKHR(index, surface, &presentSupport));
+
+                if(presentSupport)
+                {
+                    queueFamilyIndices.GraphicsFamily = index;
+                }
             }
 
             index++;

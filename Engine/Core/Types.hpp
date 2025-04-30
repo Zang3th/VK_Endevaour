@@ -2,6 +2,9 @@
 
 #include <cstdint>
 
+using b8  = bool;
+using c8  = char8_t;
+
 using i8  = std::int8_t;
 using i16 = std::int16_t;
 using i32 = std::int32_t;

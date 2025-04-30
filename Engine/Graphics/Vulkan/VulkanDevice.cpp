@@ -26,7 +26,7 @@ namespace Engine
 
         vk::DeviceQueueCreateInfo queueCreateInfo
         {
-            .queueFamilyIndex = queueFamilyIndices.GraphicsFamily.value(),
+            .queueFamilyIndex = (u32)queueFamilyIndices.GraphicsFamily,
             .queueCount       = 1,
             .pQueuePriorities = &queuePriority,
         };
@@ -49,6 +49,6 @@ namespace Engine
         LOG_INFO("Created logical device ...");
 
         // Retrieve graphics queue handle
-        m_Device.getQueue(queueFamilyIndices.GraphicsFamily.value(), 0, &m_GraphicsQueue);
+        m_Device.getQueue(queueFamilyIndices.GraphicsFamily, 0, &m_GraphicsQueue);
     }
 }

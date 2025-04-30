@@ -23,7 +23,8 @@ namespace Engine
             CreateDebugMessenger();
         }
 
-        m_PhysicalDevice = MakeScope<VulkanPhysicalDevice>(m_Instance);
+        CreateSurface();
+        m_PhysicalDevice = MakeScope<VulkanPhysicalDevice>(m_Instance, m_Surface);
         m_Device         = MakeScope<VulkanDevice>(*m_PhysicalDevice);
     }
 
@@ -34,6 +35,7 @@ namespace Engine
             m_Instance.destroyDebugUtilsMessengerEXT(m_DebugMessenger);
         }
 
+        m_Instance.destroySurfaceKHR(m_Surface);
         m_Instance.destroy();
     }
 
@@ -74,6 +76,13 @@ namespace Engine
 
         VK_VERIFY(vk::createInstance(&createInfo, nullptr, &m_Instance));
         LOG_INFO("Created Vulkan instance ...");
+    }
+
+    void VulkanContext::CreateSurface()
+    {
+        VK_VERIFY((vk::Result)(glfwCreateWindowSurface(m_Instance, Window::GetHandle(), nullptr,
+                                                      (VkSurfaceKHR*)&m_Surface)));
+        LOG_INFO("Created window surface ...");
     }
 
     void VulkanContext::CreateDebugMessenger()

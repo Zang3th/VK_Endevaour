@@ -23,7 +23,7 @@ namespace Engine
 
             static void PollEvents();
             static bool ShouldClose();
-            [[nodiscard]] static void*              GetHandle() { return m_Window;      }
+            [[nodiscard]] static GLFWwindow*        GetHandle() { return m_Window;      }
             [[nodiscard]] static const std::string& GetTitle()  { return m_Spec.Title;  }
             [[nodiscard]] static u32                GetWidth()  { return m_Spec.Width;  }
             [[nodiscard]] static u32                GetHeight() { return m_Spec.Height; }
