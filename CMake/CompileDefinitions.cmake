@@ -1,3 +1,4 @@
 add_compile_definitions(
     VULKAN_HPP_NO_CONSTRUCTORS
+    VULKAN_HPP_NO_EXCEPTIONS
 )

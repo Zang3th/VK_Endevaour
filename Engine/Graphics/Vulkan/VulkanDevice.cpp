@@ -8,9 +8,10 @@ namespace Engine
 {
     // ----- Public -----
 
-    VulkanDevice::VulkanDevice(const VulkanPhysicalDevice& physicalDevice)
+    VulkanDevice::VulkanDevice(const VulkanPhysicalDevice* physicalDevice)
     {
-        CreateLogicalDevice(physicalDevice);
+        m_PhysicalDevice = physicalDevice;
+        CreateLogicalDevice();
     }
 
     VulkanDevice::~VulkanDevice()
@@ -18,10 +19,10 @@ namespace Engine
         m_Device.destroy();
     }
 
-    void VulkanDevice::CreateLogicalDevice(const VulkanPhysicalDevice& physicalDevice)
+    void VulkanDevice::CreateLogicalDevice()
     {
         // Add graphics queue
-        const auto& queueFamilyIndices = physicalDevice.GetIndices();
+        const auto& queueFamilyIndices = m_PhysicalDevice->GetIndices();
         static const float queuePriority = 1.0f;
 
         vk::DeviceQueueCreateInfo queueCreateInfo
@@ -45,7 +46,7 @@ namespace Engine
         };
 
         // Create logical device
-        VK_VERIFY(physicalDevice.GetHandle().createDevice(&deviceCreateInfo, nullptr, &m_Device));
+        VK_VERIFY(m_PhysicalDevice->GetHandle().createDevice(&deviceCreateInfo, nullptr, &m_Device));
         LOG_INFO("Created logical device ...");
 
         // Retrieve graphics queue handle

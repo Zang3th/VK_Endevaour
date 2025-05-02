@@ -18,8 +18,8 @@ mkdir -p Debug
 cd Debug
 cmake ../.. -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_BUILD_TYPE=Debug || exit 1
 # cmake ../.. -DCMAKE_CXX_COMPILER=g++ -DCMAKE_BUILD_TYPE=Debug || exit 1
-make -j || exit 1
 mv compile_commands.json $PROJECT_ROOT
+make -j || exit 1
 
 # Launch app from within the directory
 cd "$APP_DIR/$APP_NAME"

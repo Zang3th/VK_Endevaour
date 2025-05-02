@@ -3,6 +3,7 @@
 #include "Core/Memory.hpp"
 #include "VulkanPhysicalDevice.hpp"
 #include "VulkanDevice.hpp"
+#include "VulkanSwapchain.hpp"
 
 #include "vulkan/vulkan.hpp"
 #include "vulkan/vulkan_handles.hpp"
@@ -29,5 +30,6 @@ namespace Engine
             vk::DebugUtilsMessengerEXT  m_DebugMessenger;
             Scope<VulkanPhysicalDevice> m_PhysicalDevice;
             Scope<VulkanDevice>         m_Device;
+            Scope<VulkanSwapchain>      m_Swapchain;
     };
 }

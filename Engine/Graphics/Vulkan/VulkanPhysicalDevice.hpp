@@ -22,17 +22,18 @@ namespace Engine
             VulkanPhysicalDevice(vk::Instance instance, vk::SurfaceKHR surface);
 
             [[nodiscard]] const vk::PhysicalDevice&           GetHandle()     const { return m_PhysicalDevice; };
-            [[nodiscard]] const QueueFamilyIndices&           GetIndices()    const { return m_queueFamilyIndices; };
+            [[nodiscard]] const QueueFamilyIndices&           GetIndices()    const { return m_QueueFamilyIndices; };
             [[nodiscard]] const vk::PhysicalDeviceProperties& GetProperties() const { return m_Properties; };
 
         private:
             void PickDevice(vk::Instance instance, vk::SurfaceKHR surface);
             bool IsDeviceSuitable(vk::PhysicalDevice device, vk::SurfaceKHR surface);
             QueueFamilyIndices FindQueueFamilyIndices(vk::PhysicalDevice device, vk::SurfaceKHR surface);
+            bool CheckDeviceExtensionSupport(vk::PhysicalDevice device);
             void PrintDeviceSpecifics();
 
-            vk::PhysicalDevice m_PhysicalDevice;
-            QueueFamilyIndices m_queueFamilyIndices;
+            vk::PhysicalDevice           m_PhysicalDevice;
+            QueueFamilyIndices           m_QueueFamilyIndices;
             vk::PhysicalDeviceProperties m_Properties;
     };
 }

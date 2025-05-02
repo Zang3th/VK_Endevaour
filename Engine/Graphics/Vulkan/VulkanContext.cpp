@@ -25,11 +25,18 @@ namespace Engine
 
         CreateSurface();
         m_PhysicalDevice = MakeScope<VulkanPhysicalDevice>(m_Instance, m_Surface);
-        m_Device         = MakeScope<VulkanDevice>(*m_PhysicalDevice);
+        m_Device         = MakeScope<VulkanDevice>(m_PhysicalDevice.get());
+
+        // Initialize and create swapchain
+        m_Swapchain = MakeScope<VulkanSwapchain>();
+        m_Swapchain->Init(m_Device.get(), &m_Surface);
+        m_Swapchain->Create(Window::GetWidth(), Window::GetHeight());
     }
 
     VulkanContext::~VulkanContext()
     {
+        m_Swapchain->Destroy();
+
         if(ENABLE_VALIDATION_LAYERS)
         {
             m_Instance.destroyDebugUtilsMessengerEXT(m_DebugMessenger);
@@ -88,7 +95,7 @@ namespace Engine
     void VulkanContext::CreateDebugMessenger()
     {
         VulkanDebug::LoadDebugExtensionFunctions(m_Instance);
-        m_DebugMessenger = m_Instance.createDebugUtilsMessengerEXT(VulkanDebug::GetDebugCreateInfo());
+        const auto [result, m_DebugMessenger] = m_Instance.createDebugUtilsMessengerEXT(VulkanDebug::GetDebugCreateInfo());
         ASSERT(m_DebugMessenger , "Failed to create debug messenger!");
         LOG_INFO("Created debug messenger ...");
     }

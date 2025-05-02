@@ -1,10 +1,13 @@
 #include "VulkanPhysicalDevice.hpp"
 #include "VulkanAssert.hpp"
+#include "VulkanGlobals.hpp"
 #include "Debug/Log.hpp"
 
 #include <vulkan/vulkan_core.h>
 #include <vulkan/vulkan_enums.hpp>
 #include <vulkan/vulkan_structs.hpp>
+
+#include <set>
 
 namespace
 {
@@ -39,7 +42,8 @@ namespace Engine
     void VulkanPhysicalDevice::PickDevice(vk::Instance instance, vk::SurfaceKHR surface)
     {
         // Query for devices
-        auto devices = instance.enumeratePhysicalDevices();
+        const auto [result, devices] = instance.enumeratePhysicalDevices();
+        VK_VERIFY(result);
         ASSERT(!devices.empty(), "Failed to find GPUs with Vulkan support!");
 
         LOG_INFO("Check for suitable device ...");
@@ -64,8 +68,8 @@ namespace Engine
 
     bool VulkanPhysicalDevice::IsDeviceSuitable(vk::PhysicalDevice device, vk::SurfaceKHR surface)
     {
-        m_queueFamilyIndices = FindQueueFamilyIndices(device, surface);
-        return m_queueFamilyIndices.isComplete();
+        m_QueueFamilyIndices = FindQueueFamilyIndices(device, surface);
+        return m_QueueFamilyIndices.isComplete() && CheckDeviceExtensionSupport(device);
     }
 
     QueueFamilyIndices VulkanPhysicalDevice::FindQueueFamilyIndices(vk::PhysicalDevice device, vk::SurfaceKHR surface)
@@ -74,7 +78,8 @@ namespace Engine
         VkBool32 presentSupport = false;
         i32 index = 0;
 
-        auto queueFamilies = device.getQueueFamilyProperties();
+        // Query for queue families
+        const auto queueFamilies = device.getQueueFamilyProperties();
 
         // Iterate over queue familys
         for(const auto& queueFamily : queueFamilies)
@@ -95,6 +100,32 @@ namespace Engine
         }
 
         return queueFamilyIndices;
+    }
+
+    bool VulkanPhysicalDevice::CheckDeviceExtensionSupport(vk::PhysicalDevice device)
+    {
+        // Query for available extensions
+        const auto [result, availableExtensions] = device.enumerateDeviceExtensionProperties();
+        VK_VERIFY(result);
+
+        // Package globally definied device extensions
+        std::set<std::string> requiredExtensions(g_DeviceExtensions.begin(), g_DeviceExtensions.end());
+
+        // Delete if available
+        for(const auto& extension : availableExtensions)
+        {
+            requiredExtensions.erase(extension.extensionName);
+        }
+
+        if(!requiredExtensions.empty())
+        {
+            for(const auto& ext : requiredExtensions)
+            {
+                LOG_WARN("Missing required device extension: {}", ext);
+            }
+        }
+
+        return requiredExtensions.empty();
     }
 
     void VulkanPhysicalDevice::PrintDeviceSpecifics()
