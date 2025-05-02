@@ -21,9 +21,17 @@ cmake ../.. -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_BUILD_TYPE=Debug || exit 1
 mv compile_commands.json $PROJECT_ROOT
 make -j || exit 1
 
+# Count lines of code
+echo -e "\nCode statistics (Lines of code):"
+echo -n "Engine/Core:     "; find "$PROJECT_ROOT/Engine/Core"     -name '*.cpp' -o -name '*.hpp' | xargs cat | wc -l
+echo -n "Engine/Debug:    "; find "$PROJECT_ROOT/Engine/Debug"    -name '*.cpp' -o -name '*.hpp' | xargs cat | wc -l
+echo -n "Engine/Graphics: "; find "$PROJECT_ROOT/Engine/Graphics" -name '*.cpp' -o -name '*.hpp' | xargs cat | wc -l
+echo -n "Engine/Vendor:   "; find "$PROJECT_ROOT/Engine/Vendor"   -name '*.cpp' -o -name '*.hpp' | xargs cat | wc -l
+echo -n "Applications:    "; find "$PROJECT_ROOT/Applications"    -name '*.cpp' -o -name '*.hpp' | xargs cat | wc -l
+
 # Launch app from within the directory
 cd "$APP_DIR/$APP_NAME"
-echo "Application launched from:" $(pwd)
+echo -e "\nApplication launched from:" $(pwd)
 $APP_PATH
 
 cd $PROJECT_ROOT
