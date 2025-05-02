@@ -22,7 +22,7 @@ namespace Engine
     void VulkanDevice::CreateLogicalDevice()
     {
         // Add graphics queue
-        const auto& queueFamilyIndices = m_PhysicalDevice->GetIndices();
+        const auto& queueFamilyIndices = m_PhysicalDevice->GetQueueFamilys();
         static const float queuePriority = 1.0f;
 
         vk::DeviceQueueCreateInfo queueCreateInfo

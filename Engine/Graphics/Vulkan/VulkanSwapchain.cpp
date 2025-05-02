@@ -1,5 +1,65 @@
 #include "VulkanSwapchain.hpp"
-#include "VulkanAssert.hpp"
+#include "Core/Window.hpp"
+
+namespace
+{
+    // ----- Internal -----
+
+    vk::Extent2D ChooseExtent(vk::SurfaceCapabilitiesKHR capabilities)
+    {
+        // Swapchain dimensions are fixed by the surface. Don't change anything
+        if(capabilities.currentExtent.width != std::numeric_limits<uint32_t>::max())
+        {
+            Engine::Window::SetFramebufferWidth(capabilities.currentExtent.width);
+            Engine::Window::SetFramebufferHeight(capabilities.currentExtent.height);
+            return capabilities.currentExtent;
+        }
+
+        Engine::Window::UpdateFramebufferSize();
+        vk::Extent2D extent =
+        {
+            .width  = Engine::Window::GetFramebufferWidth(),
+            .height = Engine::Window::GetFramebufferHeight()
+        };
+
+        // Clamp width and height between allowed min and max values of the display manager implementation
+        extent.width = std::clamp(extent.width, capabilities.minImageExtent.width, capabilities.maxImageExtent.width);
+        extent.height = std::clamp(extent.height, capabilities.minImageExtent.height, capabilities.maxImageExtent.height);
+
+        return extent;
+    }
+
+    vk::SurfaceFormatKHR ChooseSurfaceFormat(const std::vector<vk::SurfaceFormatKHR>& surfaceFormats)
+    {
+        // Check if prefered format is available
+        for(const auto& surfaceFormat : surfaceFormats)
+        {
+            if(surfaceFormat.format == vk::Format::eB8G8R8A8Srgb &&
+               surfaceFormat.colorSpace == vk::ColorSpaceKHR::eSrgbNonlinear)
+            {
+                return surfaceFormat;
+            }
+        }
+
+        // If that's not available return the first specified format
+        return surfaceFormats[0];
+    }
+
+    vk::PresentModeKHR ChoosePresentMode(const std::vector<vk::PresentModeKHR>& presentModes)
+    {
+        // Check if mailbox mode aka triple buffering is available
+        for(const auto& presentMode : presentModes)
+        {
+            if(presentMode == vk::PresentModeKHR::eMailbox)
+            {
+                return presentMode;
+            }
+        }
+
+        // Queue mode is guaranteed to be available
+        return vk::PresentModeKHR::eFifo;
+    }
+}
 
 namespace Engine
 {
@@ -7,18 +67,13 @@ namespace Engine
 
     void VulkanSwapchain::Init(const VulkanDevice* device, const vk::SurfaceKHR* surface)
     {
-        m_Device         = device;
-        m_Surface        = surface;
+        m_Device  = device;
+        m_Surface = surface;
 
-        QuerySwapchainSupport(m_Device->GetPhysicalDevice()->GetHandle());
+        Create();
     }
 
-    void VulkanSwapchain::Create(u32 width, u32 height)
-    {
-
-    }
-
-    void VulkanSwapchain::Recreate(u32 width, u32 height)
+    void VulkanSwapchain::Recreate()
     {
 
     }
@@ -30,16 +85,21 @@ namespace Engine
 
     // ----- Private -----
 
-    void VulkanSwapchain::QuerySwapchainSupport(vk::PhysicalDevice physicalDevice)
+    void VulkanSwapchain::Create()
     {
-        // m_Support.Capabilities = physicalDevice.getSurfaceCapabilitiesKHR(*m_Surface);
-        // m_Support.Formats      = physicalDevice.getSurfaceFormatsKHR(*m_Surface);
-        // m_Support.PresentModes = physicalDevice.getSurfacePresentModesKHR(*m_Surface);
+        // Choose most optimal swapchain properties
+        const SwapchainSupport swapChainSupport = m_Device->GetPhysicalDevice()->GetSwapchainSupport();
+        m_Extent        = ChooseExtent(swapChainSupport.Capabilities);
+        m_SurfaceFormat = ChooseSurfaceFormat(swapChainSupport.Formats);
+        m_PresentMode   = ChoosePresentMode(swapChainSupport.PresentModes);
 
-        // auto [result, formats] = physicalDevice.getSurfaceFormatsKHR(*m_Surface);
-        // VK_VERIFY(result);
-        // m_Support.Formats = std::move(formats);
+        // TODO: Create swapchain
 
-        // TODO: Enable structured bindings
+        PrintDetails();
+    }
+
+    void VulkanSwapchain::PrintDetails()
+    {
+        // TODO: Implement
     }
 }

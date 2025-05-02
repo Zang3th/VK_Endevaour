@@ -30,7 +30,6 @@ namespace Engine
         // Initialize and create swapchain
         m_Swapchain = MakeScope<VulkanSwapchain>();
         m_Swapchain->Init(m_Device.get(), &m_Surface);
-        m_Swapchain->Create(Window::GetWidth(), Window::GetHeight());
     }
 
     VulkanContext::~VulkanContext()

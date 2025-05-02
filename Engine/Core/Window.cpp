@@ -41,4 +41,9 @@ namespace Engine
 
         return false;
     }
+
+    void Window::UpdateFramebufferSize()
+    {
+        glfwGetFramebufferSize(m_Window, (int*)&m_FramebufferWidth, (int*)&m_FramebufferHeight);
+    }
 }

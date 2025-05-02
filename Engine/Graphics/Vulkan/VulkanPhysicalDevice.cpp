@@ -36,7 +36,7 @@ namespace Engine
     VulkanPhysicalDevice::VulkanPhysicalDevice(vk::Instance instance, vk::SurfaceKHR surface)
     {
         PickDevice(instance, surface);
-        PrintDeviceSpecifics();
+        PrintHardwareDetails();
     }
 
     void VulkanPhysicalDevice::PickDevice(vk::Instance instance, vk::SurfaceKHR surface)
@@ -69,7 +69,11 @@ namespace Engine
     bool VulkanPhysicalDevice::IsDeviceSuitable(vk::PhysicalDevice device, vk::SurfaceKHR surface)
     {
         m_QueueFamilyIndices = FindQueueFamilyIndices(device, surface);
-        return m_QueueFamilyIndices.isComplete() && CheckDeviceExtensionSupport(device);
+        m_SwapchainSupport   = QuerySwapchainSupport(device, surface);
+
+        return m_QueueFamilyIndices.isComplete() &&
+               m_SwapchainSupport.isComplete()   &&
+               CheckDeviceExtensionSupport(device);
     }
 
     QueueFamilyIndices VulkanPhysicalDevice::FindQueueFamilyIndices(vk::PhysicalDevice device, vk::SurfaceKHR surface)
@@ -102,6 +106,29 @@ namespace Engine
         return queueFamilyIndices;
     }
 
+    SwapchainSupport VulkanPhysicalDevice::QuerySwapchainSupport(vk::PhysicalDevice physicalDevice, vk::SurfaceKHR surface)
+    {
+        SwapchainSupport swapchainSupport;
+
+        {
+            auto [result, capabilities] = physicalDevice.getSurfaceCapabilitiesKHR(surface);
+            VK_VERIFY(result);
+            swapchainSupport.Capabilities = capabilities;
+        }
+        {
+            auto [result, surfaceFormats] = physicalDevice.getSurfaceFormatsKHR(surface);
+            VK_VERIFY(result);
+            swapchainSupport.Formats = std::move(surfaceFormats);
+        }
+        {
+            auto [result, presentModes] = physicalDevice.getSurfacePresentModesKHR(surface);
+            VK_VERIFY(result);
+            swapchainSupport.PresentModes = std::move(presentModes);
+        }
+
+        return swapchainSupport;
+    }
+
     bool VulkanPhysicalDevice::CheckDeviceExtensionSupport(vk::PhysicalDevice device)
     {
         // Query for available extensions
@@ -128,7 +155,7 @@ namespace Engine
         return requiredExtensions.empty();
     }
 
-    void VulkanPhysicalDevice::PrintDeviceSpecifics()
+    void VulkanPhysicalDevice::PrintHardwareDetails()
     {
         LOG_INFO("GPU: {}, Driver: {}", (const char*)m_Properties.deviceName,
                  GetDriverVersionString(m_Properties));
