@@ -16,7 +16,7 @@ namespace Engine
 
         m_Window = glfwCreateWindow((int)m_Spec.Width, (int)m_Spec.Height, m_Spec.Title.c_str(), nullptr, nullptr);
         ASSERT(m_Window, "Failed to create GLFW window: {}", glfwGetError(nullptr));
-        LOG_INFO("Created GLFW window for application '{}' (Width: {}, Height: {}) ...",
+        LOG_INFO("Created GLFW window ... (Application: '{}', Size: {}x{})",
                  m_Spec.Title, m_Spec.Width, m_Spec.Height);
     }
 

@@ -1,4 +1,5 @@
 #include "VulkanSwapchain.hpp"
+#include "VulkanAssert.hpp"
 #include "Core/Window.hpp"
 
 namespace
@@ -80,7 +81,7 @@ namespace Engine
 
     void VulkanSwapchain::Destroy()
     {
-
+        m_Device->GetHandle().destroySwapchainKHR(m_Swapchain);
     }
 
     // ----- Private -----
@@ -88,18 +89,47 @@ namespace Engine
     void VulkanSwapchain::Create()
     {
         // Choose most optimal swapchain properties
-        const SwapchainSupport swapChainSupport = m_Device->GetPhysicalDevice()->GetSwapchainSupport();
-        m_Extent        = ChooseExtent(swapChainSupport.Capabilities);
-        m_SurfaceFormat = ChooseSurfaceFormat(swapChainSupport.Formats);
-        m_PresentMode   = ChoosePresentMode(swapChainSupport.PresentModes);
+        const SwapchainSupport swapchainSupport = m_Device->GetPhysicalDevice()->GetSwapchainSupport();
+        m_Extent        = ChooseExtent(swapchainSupport.Capabilities);
+        m_SurfaceFormat = ChooseSurfaceFormat(swapchainSupport.Formats);
+        m_PresentMode   = ChoosePresentMode(swapchainSupport.PresentModes);
 
-        // TODO: Create swapchain
+        // Specify amount of images in swap chain
+        m_ImageCount = swapchainSupport.Capabilities.minImageCount + 1;
 
-        PrintDetails();
-    }
+        // Make sure to not exceed bounds (0 := means no limit)
+        if(swapchainSupport.Capabilities.maxImageCount > 0 &&
+           m_ImageCount > swapchainSupport.Capabilities.maxImageCount)
+        {
+            m_ImageCount = swapchainSupport.Capabilities.maxImageCount;
+        }
 
-    void VulkanSwapchain::PrintDetails()
-    {
-        // TODO: Implement
+        vk::SwapchainCreateInfoKHR swapchainCreate
+        {
+            .surface          = *m_Surface,
+            .minImageCount    = m_ImageCount,
+            .imageFormat      = m_SurfaceFormat.format,
+            .imageColorSpace  = m_SurfaceFormat.colorSpace,
+            .imageExtent      = m_Extent,
+            .imageArrayLayers = 1,
+            .imageUsage       = vk::ImageUsageFlagBits::eColorAttachment,
+            .imageSharingMode = vk::SharingMode::eExclusive,
+            .preTransform     = swapchainSupport.Capabilities.currentTransform,
+            .compositeAlpha   = vk::CompositeAlphaFlagBitsKHR::eOpaque,
+            .presentMode      = m_PresentMode,
+            .clipped          = vk::True,
+            .oldSwapchain     = nullptr
+        };
+
+        VK_VERIFY(m_Device->GetHandle().createSwapchainKHR(&swapchainCreate, nullptr, &m_Swapchain));
+
+        LOG_INFO("Created swapchain ... (Size: {}x{}, Format: {}, Color: {}, Mode: {})",
+                 m_Extent.width, m_Extent.height, vk::to_string(m_SurfaceFormat.format),
+                 vk::to_string(m_SurfaceFormat.colorSpace), vk::to_string(m_PresentMode));
+
+        // Retrieve image handles
+        auto [result, images] = m_Device->GetHandle().getSwapchainImagesKHR(m_Swapchain);
+        VK_VERIFY(result);
+        m_Images = std::move(images);
     }
 }

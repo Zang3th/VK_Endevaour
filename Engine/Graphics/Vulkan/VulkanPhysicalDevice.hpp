@@ -44,7 +44,6 @@ namespace Engine
             QueueFamilyIndices FindQueueFamilyIndices(vk::PhysicalDevice device, vk::SurfaceKHR surface);
             SwapchainSupport   QuerySwapchainSupport(vk::PhysicalDevice physicalDevice, vk::SurfaceKHR surface);
             bool               CheckDeviceExtensionSupport(vk::PhysicalDevice device);
-            void               PrintHardwareDetails();
 
             vk::PhysicalDevice           m_PhysicalDevice;
             QueueFamilyIndices           m_QueueFamilyIndices;

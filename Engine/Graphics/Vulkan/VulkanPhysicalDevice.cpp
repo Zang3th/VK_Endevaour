@@ -36,7 +36,6 @@ namespace Engine
     VulkanPhysicalDevice::VulkanPhysicalDevice(vk::Instance instance, vk::SurfaceKHR surface)
     {
         PickDevice(instance, surface);
-        PrintHardwareDetails();
     }
 
     void VulkanPhysicalDevice::PickDevice(vk::Instance instance, vk::SurfaceKHR surface)
@@ -56,7 +55,8 @@ namespace Engine
             {
                 m_PhysicalDevice = device;
                 m_Properties = device.getProperties();
-                LOG_INFO("Found suitable device ...");
+                LOG_INFO("Found suitable device ... (GPU: {}, Driver: {})",
+                        (const char*)m_Properties.deviceName, GetDriverVersionString(m_Properties));
                 break;
             }
         }
@@ -153,11 +153,5 @@ namespace Engine
         }
 
         return requiredExtensions.empty();
-    }
-
-    void VulkanPhysicalDevice::PrintHardwareDetails()
-    {
-        LOG_INFO("GPU: {}, Driver: {}", (const char*)m_Properties.deviceName,
-                 GetDriverVersionString(m_Properties));
     }
 }

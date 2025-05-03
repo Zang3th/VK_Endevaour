@@ -19,14 +19,15 @@ namespace Engine
 
        private:
             void Create();
-            void PrintDetails();
 
             const VulkanDevice*   m_Device  = nullptr;
             const vk::SurfaceKHR* m_Surface = nullptr;
 
-            vk::SwapchainKHR     m_Swapchain;
-            vk::Extent2D         m_Extent;
-            vk::SurfaceFormatKHR m_SurfaceFormat;
-            vk::PresentModeKHR   m_PresentMode;
+            vk::SwapchainKHR       m_Swapchain;
+            vk::Extent2D           m_Extent;
+            vk::SurfaceFormatKHR   m_SurfaceFormat;
+            vk::PresentModeKHR     m_PresentMode;
+            u32                    m_ImageCount = 0;
+            std::vector<vk::Image> m_Images;
     };
 }
