@@ -16,8 +16,9 @@ namespace Engine
             VulkanContext();
             ~VulkanContext();
 
-            [[nodiscard]] const vk::Instance&   GetInstance() const { return m_Instance; }
-            [[nodiscard]] const vk::SurfaceKHR& GetSurface()  const { return m_Surface;  }
+            [[nodiscard]] const vk::Instance&   GetInstance() const { return m_Instance;     }
+            [[nodiscard]] const vk::SurfaceKHR& GetSurface()  const { return m_Surface;      }
+            [[nodiscard]] const VulkanDevice*   GetDevice()   const { return m_Device.get(); }
 
         private:
             void CreateInstance();
