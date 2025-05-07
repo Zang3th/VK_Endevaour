@@ -1,7 +1,8 @@
 #pragma once
 
-#include <vector>
 #include <vulkan/vulkan.hpp>
+
+#include <vector>
 
 #ifdef NDEBUG
     const bool ENABLE_VALIDATION_LAYERS = false;

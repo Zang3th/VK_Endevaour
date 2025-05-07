@@ -1,10 +1,8 @@
 #include "SandboxApp.hpp"
 
 #include <Core/Window.hpp>
+
 #include <Graphics/Vulkan/VulkanRenderer.hpp>
-// #include <Graphics/Vulkan/VulkanModel.hpp>
-// #include <Graphics/Vulkan/VulkanShader.hpp>
-// #include <Graphics/Vulkan/VulkanPipeline.hpp>
 
 Sandbox::Sandbox()
 {
@@ -25,16 +23,18 @@ void Sandbox::Run()
     vkRenderer.LoadShader("DefaultVert", vk::ShaderStageFlagBits::eVertex, "Shaders/Vert.spv");
     vkRenderer.LoadShader("DefaultFrag", vk::ShaderStageFlagBits::eFragment, "Shaders/Frag.spv");
 
-    // Load model
-
     // TODO: Create pipeline
+    // vkRenderer.CreatePipeline("ForwardRenderingPipeline", "DefaultVert", "DefaultFrag");
 
-    // TODO: Submit model and pipeline to renderer
+    // TODO: Load model
+    // vkRenderer.LoadObjModel("VikingRoom", "Models/viking_room.obj");
+    // vkRenderer.AssignPipeline("VikingRoom", "ForwardRenderingPipeline");
 
     while(!Engine::Window::ShouldClose())
     {
         Engine::Window::PollEvents();
 
-        // TODO: Let renderer draw frame
+        // TODO: Draw frame
+        // vkRenderer.DrawFrame();
     }
 }

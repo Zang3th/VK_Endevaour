@@ -3,6 +3,7 @@ Build_CLion/
 Backup/
 .cache/
 .idea/
+*.obj
 compile_commands.json
 *.spv
 imgui.ini

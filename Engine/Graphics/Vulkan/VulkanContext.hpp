@@ -1,12 +1,12 @@
 #pragma once
 
-#include "Core/Memory.hpp"
 #include "VulkanPhysicalDevice.hpp"
 #include "VulkanDevice.hpp"
 #include "VulkanSwapchain.hpp"
 
-#include "vulkan/vulkan.hpp"
-#include "vulkan/vulkan_handles.hpp"
+#include "Core/Memory.hpp"
+
+#include <vulkan/vulkan_handles.hpp>
 
 namespace Engine
 {

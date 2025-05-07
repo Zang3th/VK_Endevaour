@@ -2,8 +2,6 @@
 
 #include "VulkanDevice.hpp"
 
-#include <vulkan/vulkan.hpp>
-
 namespace Engine
 {
     struct SwapchainImage

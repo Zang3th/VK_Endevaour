@@ -1,5 +1,6 @@
 #include "VulkanDebug.hpp"
 #include "VulkanGlobals.hpp"
+
 #include "Debug/Log.hpp"
 #include "Core/Window.hpp"
 

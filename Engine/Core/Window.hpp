@@ -17,9 +17,9 @@ namespace Engine
     class Window
     {
         public:
+            Window() = delete;
             static void Init(const WindowSpecification& spec);
             static void Shutdown();
-            ~Window() = delete;
 
             static void PollEvents();
             static bool ShouldClose();

@@ -1,5 +1,6 @@
 #include "VulkanSwapchain.hpp"
 #include "VulkanAssert.hpp"
+
 #include "Core/Window.hpp"
 
 namespace

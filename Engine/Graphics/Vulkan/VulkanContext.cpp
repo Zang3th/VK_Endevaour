@@ -2,6 +2,7 @@
 #include "VulkanGlobals.hpp"
 #include "VulkanAssert.hpp"
 #include "VulkanDebug.hpp"
+
 #include "Core/Memory.hpp"
 #include "Core/Window.hpp"
 

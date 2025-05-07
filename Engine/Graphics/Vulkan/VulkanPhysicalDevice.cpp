@@ -1,6 +1,7 @@
 #include "VulkanPhysicalDevice.hpp"
 #include "VulkanAssert.hpp"
 #include "VulkanGlobals.hpp"
+
 #include "Debug/Log.hpp"
 
 #include <vulkan/vulkan_core.h>
