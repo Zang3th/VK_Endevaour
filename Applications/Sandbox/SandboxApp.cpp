@@ -26,8 +26,8 @@ void Sandbox::Run()
     // TODO: Create pipeline
     // vkRenderer.CreatePipeline("ForwardRenderingPipeline", "DefaultVert", "DefaultFrag");
 
-    // TODO: Load model
-    // vkRenderer.LoadObjModel("VikingRoom", "Models/viking_room.obj");
+    // Load model
+    vkRenderer.LoadModel("VikingRoom", "Models/viking_room.obj");
     // vkRenderer.AssignPipeline("VikingRoom", "ForwardRenderingPipeline");
 
     while(!Engine::Window::ShouldClose())

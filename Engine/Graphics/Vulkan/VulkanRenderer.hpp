@@ -2,6 +2,7 @@
 
 #include "VulkanContext.hpp"
 #include "VulkanShader.hpp"
+#include "VulkanModel.hpp"
 
 #include <unordered_map>
 
@@ -13,6 +14,7 @@ namespace Engine
             VulkanRenderer();
 
             void LoadShader(const std::string& name, vk::ShaderStageFlagBits stage, const std::filesystem::path& path);
+            void LoadModel(const std::string& name, const std::filesystem::path& path);
 
             [[nodiscard]] const VulkanShader* GetShader(const std::string& name) const;
 
@@ -21,5 +23,6 @@ namespace Engine
             const VulkanDevice*  m_Device;
 
             std::unordered_map<std::string, Scope<VulkanShader>> m_Shaders;
+            std::unordered_map<std::string, Scope<VulkanModel>>  m_Models;
     };
 }

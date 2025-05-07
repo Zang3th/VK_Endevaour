@@ -9,6 +9,7 @@ namespace Engine
     {
         public:
             Utility() = delete;
+
             static std::vector<char> ReadFileAsBytes(const std::filesystem::path& path);
     };
 }
