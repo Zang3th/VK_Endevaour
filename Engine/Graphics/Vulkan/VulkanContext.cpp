@@ -52,6 +52,11 @@ namespace Engine
         m_Instance.destroy();
     }
 
+    void VulkanContext::CopyBuffer(vk::Buffer srcBuffer, vk::Buffer dstBuffer, vk::DeviceSize size)
+    {
+        // TODO: Implement
+    }
+
     // ----- Private -----
 
     void VulkanContext::CreateInstance()

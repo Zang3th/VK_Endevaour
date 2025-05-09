@@ -21,7 +21,7 @@ namespace Engine
     void VulkanRenderer::LoadModel(const std::string& name, const std::filesystem::path& path)
     {
         ASSERT(!m_Models.contains(name), "Duplicate model name '{}'. Did not load anything ...", name);
-        m_Models[name] = MakeScope<VulkanModel>(m_Device->GetHandle(), path);
+        m_Models[name] = MakeScope<VulkanModel>(m_Context.get(), path);
     }
 
     [[nodiscard]] const VulkanShader* VulkanRenderer::GetShader(const std::string& name) const

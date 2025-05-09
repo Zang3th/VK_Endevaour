@@ -64,6 +64,9 @@ namespace Engine
     {
         std::vector<Vertex> Vertices;
         std::vector<u32>    Indices;
+
+        [[nodiscard]] u32 GetVerticeSize() const { return sizeof(Vertex) * Vertices.size(); };
+        [[nodiscard]] u32 GetIndiceSize()  const { return sizeof(u32)    * Indices.size();  };
     };
 }
 

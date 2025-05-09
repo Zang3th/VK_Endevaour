@@ -20,6 +20,8 @@ namespace Engine
             [[nodiscard]] const vk::SurfaceKHR& GetSurface()  const { return m_Surface;      }
             [[nodiscard]] const VulkanDevice*   GetDevice()   const { return m_Device.get(); }
 
+            void CopyBuffer(vk::Buffer srcBuffer, vk::Buffer dstBuffer, vk::DeviceSize size);
+
         private:
             void CreateInstance();
             void CreateSurface();

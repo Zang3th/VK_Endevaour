@@ -1,5 +1,8 @@
 #pragma once
 
+#include "VulkanAllocator.hpp"
+#include "VulkanContext.hpp"
+
 #include "Graphics/Mesh.hpp"
 
 #include <vulkan/vulkan.hpp>
@@ -11,7 +14,7 @@ namespace Engine
     class VulkanModel
     {
         public:
-            VulkanModel(const vk::Device& device, const std::filesystem::path& path);
+            VulkanModel(VulkanContext* context, const std::filesystem::path& path);
             ~VulkanModel();
 
             [[nodiscard]] vk::Buffer GetVertexBuffer() const { return m_VertexBuffer;        };
@@ -22,9 +25,11 @@ namespace Engine
             void CreateVertexBuffer();
             void CreateIndexBuffer();
 
-            vk::Device m_Device       = nullptr;
-            vk::Buffer m_VertexBuffer = nullptr;
-            vk::Buffer m_IndexBuffer  = nullptr;
-            Mesh       m_Mesh;
+            VulkanContext*       m_Context          = nullptr;
+            vk::Buffer           m_VertexBuffer     = nullptr;
+            VmaAllocation        m_VertexAllocation = nullptr;
+            vk::Buffer           m_IndexBuffer      = nullptr;
+            VmaAllocation        m_IndexAllocation  = nullptr;
+            Mesh                 m_Mesh;
     };
 }

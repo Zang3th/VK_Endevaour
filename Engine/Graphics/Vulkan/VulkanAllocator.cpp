@@ -1,6 +1,8 @@
 #include "VulkanAllocator.hpp"
 #include "VulkanAssert.hpp"
 
+#include "Core/Utility.hpp"
+
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wmissing-field-initializers"
 #pragma clang diagnostic ignored "-Wdeprecated-declarations"
@@ -57,12 +59,52 @@ namespace Engine
         LOG_INFO("Created allocator with vma ...");
     }
 
+    std::pair<vk::Buffer, VmaAllocation> VulkanAllocator::AllocateBuffer(vk::DeviceSize size, vk::BufferUsageFlags usage, MemoryUsage memoryUsage)
+    {
+        vk::BufferCreateInfo bufferInfo
+        {
+            .size        = size,
+            .usage       = usage,
+            .sharingMode = vk::SharingMode::eExclusive
+        };
+
+        vk::Buffer buffer;
+        VmaAllocation allocation = VulkanAllocator::InternalAllocateBuffer(bufferInfo, memoryUsage, buffer);
+
+        return { buffer, allocation };
+    }
+
     void VulkanAllocator::Shutdown()
     {
         vmaDestroyAllocator(s_Allocator);
     }
 
-    VmaAllocation VulkanAllocator::AllocateBuffer(const vk::BufferCreateInfo& bufferCreateInfo, MemoryUsage usage, vk::Buffer& outBuffer)
+    void VulkanAllocator::DestroyBuffer(vk::Buffer buffer, VmaAllocation allocation)
+    {
+        VmaAllocationInfo allocationInfo{};
+        vmaGetAllocationInfo(s_Allocator, allocation, &allocationInfo);
+        s_totalMemory -= allocationInfo.size;
+
+        vmaDestroyBuffer(s_Allocator, (VkBuffer)buffer, allocation);
+
+        LOG_VERBOSE("Allocator freed {} of memory. Total memory consumption is {} ...", Utility::BytesToString(allocationInfo.size), Utility::BytesToString(s_totalMemory));
+    }
+
+    void* VulkanAllocator::MapMemory(VmaAllocation allocation)
+    {
+        void* dataPtr;
+        vmaMapMemory(s_Allocator, allocation, &dataPtr);
+        return dataPtr;
+    }
+
+    void VulkanAllocator::UnmapMemory(VmaAllocation allocation)
+    {
+        vmaUnmapMemory(s_Allocator, allocation);
+    }
+
+    // ----- Private -----
+
+    VmaAllocation VulkanAllocator::InternalAllocateBuffer(const vk::BufferCreateInfo& bufferCreateInfo, MemoryUsage usage, vk::Buffer& outBuffer)
     {
         ASSERT(bufferCreateInfo.size > 0, "Provided buffer size was less or equal to zero!");
 
@@ -80,13 +122,8 @@ namespace Engine
         )));
         s_totalMemory += allocationInfo.size;
 
-        LOG_VERBOSE("Allocator allocated {} bytes of memory. Total memory consumption is {} bytes ...", allocationInfo.size, s_totalMemory);
+        LOG_VERBOSE("Allocator allocated {} of memory. Total memory consumption is {} ...", Utility::BytesToString(allocationInfo.size), Utility::BytesToString(s_totalMemory));
 
         return allocation;
-    }
-
-    void VulkanAllocator::DestroyBuffer(vk::Buffer buffer, VmaAllocation allocation)
-    {
-        vmaDestroyBuffer(s_Allocator, (VkBuffer)buffer, allocation);
     }
 }

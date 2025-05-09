@@ -31,7 +31,14 @@ namespace Engine
 
             static void Init(vk::PhysicalDevice physicalDevice, vk::Device device, vk::Instance instance);
             static void Shutdown();
-            static VmaAllocation AllocateBuffer(const vk::BufferCreateInfo& bufferCreateInfo, MemoryUsage usage, vk::Buffer& outBuffer);
+
+            static std::pair<vk::Buffer, VmaAllocation> AllocateBuffer(vk::DeviceSize size, vk::BufferUsageFlags usage, MemoryUsage memoryUsage);
             static void DestroyBuffer(vk::Buffer buffer, VmaAllocation allocation);
+
+            static void* MapMemory(VmaAllocation allocation);
+            static void  UnmapMemory(VmaAllocation allocation);
+
+        private:
+            static VmaAllocation InternalAllocateBuffer(const vk::BufferCreateInfo& bufferCreateInfo, MemoryUsage memoryUsage, vk::Buffer& outBuffer);
     };
 }

@@ -1,5 +1,7 @@
 #pragma once
 
+#include "Types.hpp"
+
 #include <vector>
 #include <filesystem>
 
@@ -11,5 +13,6 @@ namespace Engine
             Utility() = delete;
 
             static std::vector<char> ReadFileAsBytes(const std::filesystem::path& path);
+            static std::string       BytesToString(u64 bytes);
     };
 }
