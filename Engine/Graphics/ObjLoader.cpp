@@ -1,6 +1,7 @@
 #include "ObjLoader.hpp"
 #include "Debug/Log.hpp"
 
+#define TINYOBJLOADER_IMPLEMENTATION
 #include "Vendor/tinyobjloader/tiny_obj_loader.hpp"
 
 namespace Engine

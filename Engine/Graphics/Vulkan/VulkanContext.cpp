@@ -77,7 +77,7 @@ namespace Engine
             .pApplicationInfo        = &appInfo,
             .enabledLayerCount       = ENABLE_VALIDATION_LAYERS ? (u32)(g_ValidationLayers.size()) : 0,
             .ppEnabledLayerNames     = ENABLE_VALIDATION_LAYERS ? g_ValidationLayers.data() : nullptr,
-            .enabledExtensionCount   = static_cast<uint32_t>(extensions.size()),
+            .enabledExtensionCount   = (u32)(extensions.size()),
             .ppEnabledExtensionNames = extensions.data(),
         };
 

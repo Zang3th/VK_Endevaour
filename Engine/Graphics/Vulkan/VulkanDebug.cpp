@@ -39,8 +39,6 @@ namespace Engine
 
     bool VulkanDebug::CheckValidationLayerSupport(const std::vector<const char*>& validationLayers)
     {
-        LOG_INFO("Check for {} requested validation layer(s) ...", validationLayers.size());
-
         uint32_t layerCount;
         vkEnumerateInstanceLayerProperties(&layerCount, nullptr);
 
@@ -55,7 +53,7 @@ namespace Engine
             {
                 if(strcmp(layerName, layerProperties.layerName) == 0)
                 {
-                    LOG_INFO("Found layer: {} ...", layerName);
+                    LOG_INFO("Found requested validation layer ... ({})", layerName);
                     layerFound = true;
                     break;
                 }
@@ -78,10 +76,22 @@ namespace Engine
 
         std::vector<const char*> extensions(glfwExtensions, glfwExtensions + glfwExtensionCount);
 
-        // Add the debug messenger extension conditionally
         if(ENABLE_VALIDATION_LAYERS)
         {
+            // Add the debug messenger extension conditionally
             extensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
+
+            // Log extension names
+            std::string extNames;
+            for(u32 i = 0; i < extensions.size(); i++)
+            {
+                extNames += extensions.at(i);
+                if(i != extensions.size() - 1)
+                {
+                    extNames += ", ";
+                }
+            }
+            LOG_INFO("Application requires extensions ... ({})", extNames);
         }
 
         return extensions;
