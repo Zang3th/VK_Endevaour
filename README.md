@@ -9,14 +9,16 @@ Accommodating repository while learning Vulkan. This includes:
 
 ### What you need
 
-- C++20 compiler
+- Modern version of Clang
+  - It is technically possible to compile the project via GCC with relative minimal effort
+  - I just didn't bother integrating compiler specific pragmas for now
 - CMake 3.25 or above
 - Vulkan 1.4 compatible graphics card, driver and an installation of the SDK
 - An installation of all external dependencies
 
 ### Notes
 
-- This project is currently only tested on Linux with Wayland
+- This project is currently only tested on Linux (Wayland) with Clang 20.x
 - Please note the path from which you start up the application, because resource loading is relative for now
 
 ### External dependencies

@@ -17,7 +17,6 @@ rm -f $APP_EXE
 mkdir -p Debug
 cd Debug
 cmake ../.. -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_BUILD_TYPE=Debug || exit 1
-# cmake ../.. -DCMAKE_CXX_COMPILER=g++ -DCMAKE_BUILD_TYPE=Debug || exit 1
 mv compile_commands.json $PROJECT_ROOT
 make -j || exit 1
 

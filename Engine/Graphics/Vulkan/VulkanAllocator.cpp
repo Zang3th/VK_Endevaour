@@ -1,11 +1,20 @@
 #include "VulkanAllocator.hpp"
 #include "VulkanAssert.hpp"
 
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wmissing-field-initializers"
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+#pragma clang diagnostic ignored "-Wunused-private-field"
+
+#define VMA_IMPLEMENTATION
+
 // Deactivate clang extensions
 #define VMA_NULLABLE
 #define VMA_NOT_NULL
 #define VMA_NOT_NULL_NON_DISPATCHABLE
 #include "Vendor/VulkanMemoryAllocator/vk_mem_alloc.hpp"
+
+#pragma clang diagnostic pop
 
 namespace
 {
