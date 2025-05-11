@@ -54,7 +54,11 @@ namespace Engine
 
     void VulkanContext::CopyBuffer(vk::Buffer srcBuffer, vk::Buffer dstBuffer, vk::DeviceSize size)
     {
-        // TODO: Implement
+        vk::CommandBuffer commandBuffer = m_Swapchain->CreateTransferCommandBuffer();
+        vk::BufferCopy bufferCopy = { .size = size };
+        commandBuffer.copyBuffer(srcBuffer, dstBuffer, 1, &bufferCopy);
+        m_Swapchain->SubmitTransferCommandBuffer(commandBuffer);
+        LOG_INFO("Copied {} bytes from CPU => GPU ...", size);
     }
 
     // ----- Private -----

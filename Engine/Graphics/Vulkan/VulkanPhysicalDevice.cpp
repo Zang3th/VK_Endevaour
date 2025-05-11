@@ -81,7 +81,7 @@ namespace Engine
     {
         QueueFamilyIndices queueFamilyIndices;
         VkBool32 presentSupport = false;
-        i32 index = 0;
+        u32 index = 0;
 
         // Query for queue families
         const auto queueFamilies = device.getQueueFamilyProperties();
@@ -99,6 +99,17 @@ namespace Engine
                 {
                     queueFamilyIndices.GraphicsFamily = index;
                 }
+
+                // If no dedicated transfer queue was found, use graphics queue for transfer
+                if(queueFamilyIndices.TransferFamily < 0)
+                {
+                    queueFamilyIndices.TransferFamily = index;
+                }
+            }
+            // Query for dedicated transfer queue
+            else if(queueFamily.queueFlags & vk::QueueFlagBits::eTransfer)
+            {
+                queueFamilyIndices.TransferFamily = index;
             }
 
             index++;

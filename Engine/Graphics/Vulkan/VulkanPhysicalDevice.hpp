@@ -8,11 +8,12 @@ namespace Engine
 {
     struct QueueFamilyIndices
     {
-        i32 GraphicsFamily = -1;
+        u32 GraphicsFamily = UINT32_MAX;
+        u32 TransferFamily = UINT32_MAX;
 
         [[nodiscard]] b8 isComplete() const
         {
-            return (GraphicsFamily >= 0);
+            return ((GraphicsFamily != UINT32_MAX) && (TransferFamily != UINT32_MAX));
         };
     };
 

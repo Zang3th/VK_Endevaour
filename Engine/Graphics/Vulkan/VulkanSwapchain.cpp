@@ -70,7 +70,8 @@ namespace Engine
     VulkanSwapchain::VulkanSwapchain(const VulkanDevice* device, const vk::SurfaceKHR& surface)
         : m_Device(device), m_Surface(surface)
     {
-        Init();
+        FetchCapabilities();
+        CreateCommandPools();
     }
 
     void VulkanSwapchain::Create()
@@ -123,9 +124,51 @@ namespace Engine
         m_Device->GetHandle().destroySwapchainKHR(m_Swapchain);
     }
 
+    vk::CommandBuffer VulkanSwapchain::CreateTransferCommandBuffer()
+    {
+        // Allocate command buffer
+        vk::CommandBufferAllocateInfo allocateInfo
+        {
+            .commandPool = m_TransferCommandPool,
+            .level = vk::CommandBufferLevel::ePrimary,
+            .commandBufferCount = 1
+        };
+        auto [res, commandBuffer] = m_Device->GetHandle().allocateCommandBuffers(allocateInfo);
+        VK_VERIFY(res);
+        ASSERT(!commandBuffer.empty(), "Allocated command buffer vector was empty!");
+
+        // Begin command buffer recording
+        vk::CommandBufferBeginInfo beginInfo
+        {
+            .flags = vk::CommandBufferUsageFlagBits::eOneTimeSubmit
+        };
+        VK_VERIFY(commandBuffer.at(0).begin(&beginInfo));
+
+        return commandBuffer.at(0);
+    }
+
+    void VulkanSwapchain::SubmitTransferCommandBuffer(vk::CommandBuffer commandBuffer)
+    {
+        // End command buffer recording
+        VK_VERIFY(commandBuffer.end());
+
+        // Immediately submit recorded commands
+        vk::SubmitInfo submitInfo
+        {
+            .commandBufferCount = 1,
+            .pCommandBuffers    = &commandBuffer
+        };
+        vk::Queue transferQueue = m_Device->GetTransferQueue();
+        VK_VERIFY(transferQueue.submit(1, &submitInfo, nullptr));
+        VK_VERIFY(transferQueue.waitIdle());
+
+        // Clean up command buffer
+        m_Device->GetHandle().freeCommandBuffers(m_TransferCommandPool, 1, &commandBuffer);
+    }
+
     // ----- Private -----
 
-    void VulkanSwapchain::Init()
+    void VulkanSwapchain::FetchCapabilities()
     {
         // Query swapchain capabilites from the physical device
         const SwapchainSupport swapchainSupport = m_Device->GetPhysicalDevice()->GetSwapchainSupport();
@@ -183,5 +226,34 @@ namespace Engine
         }
 
         LOG_INFO("Created {} image view(s) ...", images.size());
+    }
+
+    void VulkanSwapchain::CreateCommandPools()
+    {
+        // Create graphics pool
+        {
+            vk::CommandPoolCreateInfo graphicsPoolInfo
+            {
+                .flags = vk::CommandPoolCreateFlagBits::eResetCommandBuffer,
+                .queueFamilyIndex = m_Device->GetGraphicsQueueFamily()
+            };
+            auto [res, pool] = m_Device->GetHandle().createCommandPool(graphicsPoolInfo);
+            VK_VERIFY(res);
+            m_GraphicsCommandPool = pool;
+        }
+
+        // Create transfer pool
+        {
+            vk::CommandPoolCreateInfo transferPoolInfo
+            {
+                .flags = vk::CommandPoolCreateFlagBits::eTransient | vk::CommandPoolCreateFlagBits::eResetCommandBuffer,
+                .queueFamilyIndex = m_Device->GetTransferQueueFamily()
+            };
+            auto [res, pool] = m_Device->GetHandle().createCommandPool(transferPoolInfo);
+            VK_VERIFY(res);
+            m_TransferCommandPool = pool;
+        }
+
+        LOG_INFO("Created command pools for graphics and transfer ...");
     }
 }

@@ -22,20 +22,33 @@ namespace Engine
             [[nodiscard]] const vk::SwapchainKHR&            GetHandle() const { return m_Swapchain; };
             [[nodiscard]] const std::vector<SwapchainImage>& GetImages() const { return m_Images;    };
 
-       private:
-            void Init();
+            [[nodiscard]] vk::CommandBuffer CreateTransferCommandBuffer();
+            void                            SubmitTransferCommandBuffer(vk::CommandBuffer commandBuffer);
+
+        private:
+            void FetchCapabilities();
             void CreateImages();
+            void CreateCommandPools();
 
             const VulkanDevice*   m_Device  = nullptr;
             const vk::SurfaceKHR& m_Surface = nullptr;
 
-            vk::SwapchainKHR                m_Swapchain     = nullptr;
+            // Internal handle
+            vk::SwapchainKHR m_Swapchain = nullptr;
+
+            // Properties
             vk::Extent2D                    m_Extent        = { .width = 0, .height = 0 };
             vk::SurfaceFormatKHR            m_SurfaceFormat = { .format = vk::Format::eUndefined,
                                                                 .colorSpace = vk::ColorSpaceKHR::eSrgbNonlinear };
             vk::PresentModeKHR              m_PresentMode   = vk::PresentModeKHR::eFifo;
             u32                             m_ImageCount    = 0;
             vk::SurfaceTransformFlagBitsKHR m_Transform     = vk::SurfaceTransformFlagBitsKHR::eIdentity;
-            std::vector<SwapchainImage>     m_Images;
+
+            // Command pools
+            vk::CommandPool m_GraphicsCommandPool;
+            vk::CommandPool m_TransferCommandPool;
+
+            // Swapchain images
+            std::vector<SwapchainImage> m_Images;
     };
 }
