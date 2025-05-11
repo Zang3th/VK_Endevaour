@@ -29,10 +29,10 @@ namespace Engine
         m_PhysicalDevice = MakeScope<VulkanPhysicalDevice>(m_Instance, m_Surface);
         m_Device         = MakeScope<VulkanDevice>(m_PhysicalDevice.get());
 
-        VulkanAllocator::Init(m_PhysicalDevice->GetHandle(), m_Device->GetHandle(), m_Instance);
+        VulkanAllocator::Init(m_Device.get(), m_Instance);
 
         // Initialize and create swapchain
-        m_Swapchain = MakeScope<VulkanSwapchain>(m_Device.get(), &m_Surface);
+        m_Swapchain = MakeScope<VulkanSwapchain>(m_Device.get(), m_Surface);
         m_Swapchain->Create();
     }
 

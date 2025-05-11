@@ -2,6 +2,8 @@
 
 #include "Core/Types.hpp"
 
+#include "VulkanDevice.hpp"
+
 #include "vulkan/vulkan.hpp"
 
 // Forward-Declaration
@@ -29,7 +31,7 @@ namespace Engine
         public:
             VulkanAllocator() = delete;
 
-            static void Init(vk::PhysicalDevice physicalDevice, vk::Device device, vk::Instance instance);
+            static void Init(const VulkanDevice* device, vk::Instance instance);
             static void Shutdown();
 
             static std::pair<vk::Buffer, VmaAllocation> AllocateBuffer(vk::DeviceSize size, vk::BufferUsageFlags usage, MemoryUsage memoryUsage);

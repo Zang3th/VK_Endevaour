@@ -47,11 +47,11 @@ namespace Engine
 {
     // ----- Public -----
 
-    void VulkanAllocator::Init(vk::PhysicalDevice physicalDevice, vk::Device device, vk::Instance instance)
+    void VulkanAllocator::Init(const VulkanDevice* device, vk::Instance instance)
     {
         VmaAllocatorCreateInfo allocatorInfo{};
-        allocatorInfo.physicalDevice   = physicalDevice;
-        allocatorInfo.device           = device;
+        allocatorInfo.physicalDevice   = device->GetPhysicalDevice()->GetHandle();
+        allocatorInfo.device           = device->GetHandle();
         allocatorInfo.instance         = instance;
         allocatorInfo.vulkanApiVersion = VK_API_VERSION_1_4;
 

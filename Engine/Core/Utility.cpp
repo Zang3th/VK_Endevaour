@@ -24,27 +24,27 @@ namespace Engine
 
     std::string Utility::BytesToString(u64 bytes)
     {
-        constexpr uint64_t GB = 1024 * 1024 * 1024;
-        constexpr uint64_t MB = 1024 * 1024;
-        constexpr uint64_t KB = 1024;
+        constexpr u64 GB = 1024 * 1024 * 1024;
+        constexpr u64 MB = 1024 * 1024;
+        constexpr u64 KB = 1024;
 
         char buffer[32 + 1] {};
 
         if (bytes >= GB)
         {
-            snprintf(buffer, 32, "%.2f GB", (float)bytes / (float)GB);
+            snprintf(buffer, 32, "%.2f GB", (f32)bytes / (f32)GB);
         }
         else if (bytes >= MB)
         {
-            snprintf(buffer, 32, "%.2f MB", (float)bytes / (float)MB);
+            snprintf(buffer, 32, "%.2f MB", (f32)bytes / (f32)MB);
         }
         else if (bytes >= KB)
         {
-            snprintf(buffer, 32, "%.2f KB", (float)bytes / (float)KB);
+            snprintf(buffer, 32, "%.2f KB", (f32)bytes / (f32)KB);
         }
         else
         {
-            snprintf(buffer, 32, "%.2f bytes", (float)bytes);
+            snprintf(buffer, 32, "%.2f bytes", (f32)bytes);
         }
 
         return buffer;

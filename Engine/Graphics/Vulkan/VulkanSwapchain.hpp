@@ -13,7 +13,7 @@ namespace Engine
     class VulkanSwapchain
     {
         public:
-            VulkanSwapchain(const VulkanDevice* device, const vk::SurfaceKHR* surface);
+            VulkanSwapchain(const VulkanDevice* device, const vk::SurfaceKHR& surface);
 
             void Create();
             void Recreate();
@@ -27,7 +27,7 @@ namespace Engine
             void CreateImages();
 
             const VulkanDevice*   m_Device  = nullptr;
-            const vk::SurfaceKHR* m_Surface = nullptr;
+            const vk::SurfaceKHR& m_Surface = nullptr;
 
             vk::SwapchainKHR                m_Swapchain     = nullptr;
             vk::Extent2D                    m_Extent        = { .width = 0, .height = 0 };

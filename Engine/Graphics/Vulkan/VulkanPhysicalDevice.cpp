@@ -18,13 +18,13 @@ namespace
     {
         if(properties.vendorID != 0x10DE) // Nvidia
         {
-            LOG_WARN("GPU vendor isn't Nvidia. Driver version may be false ...");
+            LOG_WARN("GPU vendor isn't Nvidia. Driver version string may be false ...");
         }
 
-        uint32_t major     = (properties.driverVersion >> 22) & 0x3ff;
-        uint32_t minor     = (properties.driverVersion >> 14) & 0x0ff;
-        uint32_t secondary = (properties.driverVersion >> 6)  & 0x0ff;
-        uint32_t tertiary  = properties.driverVersion & 0x3f;
+        u32 major     = (properties.driverVersion >> 22) & 0x3ff;
+        u32 minor     = (properties.driverVersion >> 14) & 0x0ff;
+        u32 secondary = (properties.driverVersion >> 6)  & 0x0ff;
+        u32 tertiary  = properties.driverVersion & 0x3f;
 
         return fmt::format("{}.{}.{}.{}", major, minor, secondary, tertiary);
     }

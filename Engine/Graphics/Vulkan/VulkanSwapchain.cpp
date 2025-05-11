@@ -10,7 +10,7 @@ namespace
     vk::Extent2D ChooseExtent(vk::SurfaceCapabilitiesKHR capabilities)
     {
         // Swapchain dimensions are fixed by the surface. Don't change anything
-        if(capabilities.currentExtent.width != std::numeric_limits<uint32_t>::max())
+        if(capabilities.currentExtent.width != std::numeric_limits<u32>::max())
         {
             Engine::Window::SetFramebufferWidth(capabilities.currentExtent.width);
             Engine::Window::SetFramebufferHeight(capabilities.currentExtent.height);
@@ -67,7 +67,7 @@ namespace Engine
 {
     // ----- Public -----
 
-    VulkanSwapchain::VulkanSwapchain(const VulkanDevice* device, const vk::SurfaceKHR* surface)
+    VulkanSwapchain::VulkanSwapchain(const VulkanDevice* device, const vk::SurfaceKHR& surface)
         : m_Device(device), m_Surface(surface)
     {
         Init();
@@ -77,7 +77,7 @@ namespace Engine
     {
         vk::SwapchainCreateInfoKHR swapchainCreate
         {
-            .surface          = *m_Surface,
+            .surface          = m_Surface,
             .minImageCount    = m_ImageCount,
             .imageFormat      = m_SurfaceFormat.format,
             .imageColorSpace  = m_SurfaceFormat.colorSpace,

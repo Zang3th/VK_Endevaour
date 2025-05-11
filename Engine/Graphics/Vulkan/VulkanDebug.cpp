@@ -39,7 +39,7 @@ namespace Engine
 
     bool VulkanDebug::CheckValidationLayerSupport(const std::vector<const char*>& validationLayers)
     {
-        uint32_t layerCount;
+        u32 layerCount;
         vkEnumerateInstanceLayerProperties(&layerCount, nullptr);
 
         std::vector<VkLayerProperties> availableLayers(layerCount);
@@ -71,7 +71,7 @@ namespace Engine
 
     std::vector<const char*> VulkanDebug::GetExtensions()
     {
-        uint32_t glfwExtensionCount = 0;
+        u32 glfwExtensionCount = 0;
         const char** glfwExtensions = glfwGetRequiredInstanceExtensions(&glfwExtensionCount);
 
         std::vector<const char*> extensions(glfwExtensions, glfwExtensions + glfwExtensionCount);

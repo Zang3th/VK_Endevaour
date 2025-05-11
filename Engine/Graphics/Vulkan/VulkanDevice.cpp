@@ -23,7 +23,7 @@ namespace Engine
     {
         // Add graphics queue
         const auto& queueFamilyIndices = m_PhysicalDevice->GetQueueFamilys();
-        static const float queuePriority = 1.0f;
+        static const f32 queuePriority = 1.0f;
 
         vk::DeviceQueueCreateInfo queueCreateInfo
         {
