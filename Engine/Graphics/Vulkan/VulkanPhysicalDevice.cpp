@@ -147,7 +147,7 @@ namespace Engine
         const auto [result, availableExtensions] = device.enumerateDeviceExtensionProperties();
         VK_VERIFY(result);
 
-        // Package globally definied device extensions
+        // Package globally defined device extensions
         std::set<std::string> requiredExtensions(g_DeviceExtensions.begin(), g_DeviceExtensions.end());
 
         // Delete if available

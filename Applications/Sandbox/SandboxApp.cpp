@@ -20,21 +20,21 @@ void Sandbox::Run()
     Engine::VulkanRenderer vkRenderer;
 
     // Load shader
-    vkRenderer.LoadShader("DefaultVert", vk::ShaderStageFlagBits::eVertex, "Shaders/Vert.spv");
-    vkRenderer.LoadShader("DefaultFrag", vk::ShaderStageFlagBits::eFragment, "Shaders/Frag.spv");
+    u32 vertexID   = vkRenderer.LoadShader(vk::ShaderStageFlagBits::eVertex,   "Shaders/Vert.spv");
+    u32 fragmentID = vkRenderer.LoadShader(vk::ShaderStageFlagBits::eFragment, "Shaders/Frag.spv");
 
-    // TODO: Create pipeline
-    // vkRenderer.CreatePipeline("ForwardRenderingPipeline", "DefaultVert", "DefaultFrag");
+    // Create pipeline
+    u32 pipelineID = vkRenderer.CreatePipeline(vertexID, fragmentID);
 
     // Load model
-    vkRenderer.LoadModel("VikingRoom", "Models/viking_room.obj");
-    // vkRenderer.AssignPipeline("VikingRoom", "ForwardRenderingPipeline");
+    u32 modelID = vkRenderer.LoadModel("Models/viking_room.obj");
+    vkRenderer.AssignPipeline(modelID, pipelineID);
 
     while(!Engine::Window::ShouldClose())
     {
         Engine::Window::PollEvents();
 
-        // TODO: Draw frame
-        // vkRenderer.DrawFrame();
+        // Draw frame
+        vkRenderer.DrawFrame(pipelineID);
     }
 }

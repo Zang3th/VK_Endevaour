@@ -3,8 +3,8 @@
 #include "VulkanContext.hpp"
 #include "VulkanShader.hpp"
 #include "VulkanModel.hpp"
-
-#include <unordered_map>
+#include "VulkanPipeline.hpp"
+#include "VulkanGlobals.hpp"
 
 namespace Engine
 {
@@ -13,16 +13,22 @@ namespace Engine
         public:
             VulkanRenderer();
 
-            void LoadShader(const std::string& name, vk::ShaderStageFlagBits stage, const std::filesystem::path& path);
-            void LoadModel(const std::string& name, const std::filesystem::path& path);
+            [[nodiscard]] u32 LoadShader(vk::ShaderStageFlagBits stage, const std::filesystem::path& path);
+            [[nodiscard]] u32 LoadModel(const std::filesystem::path& path);
+            [[nodiscard]] u32 CreatePipeline(u32 vertexID, u32 fragmentID);
 
-            [[nodiscard]] const VulkanShader* GetShader(const std::string& name) const;
+            void AssignPipeline(u32 modelID, u32 pipelineID);
+            void DrawFrame(u32 pipelineID);
 
         private:
             Scope<VulkanContext> m_Context;
-            const VulkanDevice*  m_Device;
 
-            std::unordered_map<std::string, Scope<VulkanShader>> m_Shaders;
-            std::unordered_map<std::string, Scope<VulkanModel>>  m_Models;
+            std::array<Scope<VulkanShader>,   MAX_SHADER_COUNT>   m_Shaders;
+            std::array<Scope<VulkanModel>,    MAX_MODEL_COUNT>    m_Models;
+            std::array<Scope<VulkanPipeline>, MAX_PIPELINE_COUNT> m_Pipelines;
+
+            u32 m_ShaderIndex;
+            u32 m_ModelIndex;
+            u32 m_PipelineIndex;
     };
 }

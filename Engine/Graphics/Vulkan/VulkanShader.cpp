@@ -18,7 +18,17 @@ namespace Engine
 
     VulkanShader::~VulkanShader()
     {
-        m_Device.destroyShaderModule(m_ShaderModule);
+        m_Device.destroyShaderModule(m_Module);
+    }
+
+    [[nodiscard]] vk::PipelineShaderStageCreateInfo VulkanShader::GetPipelineShaderStageCreateInfo()
+    {
+        return
+        {
+            .stage = m_Stage,
+            .module = m_Module,
+            .pName = "main"
+        };
     }
 
     // ----- Private -----
@@ -31,7 +41,7 @@ namespace Engine
             .pCode    = (u32*)code.data()
         };
 
-        VK_VERIFY(m_Device.createShaderModule(&shaderCreateInfo, nullptr, &m_ShaderModule));
+        VK_VERIFY(m_Device.createShaderModule(&shaderCreateInfo, nullptr, &m_Module));
         LOG_INFO("Created shader module ...");
     }
 }

@@ -17,9 +17,13 @@ namespace Engine
             VulkanModel(VulkanContext* context, const std::filesystem::path& path);
             ~VulkanModel();
 
+            void Bind(vk::CommandBuffer commandBuffer);
+
             [[nodiscard]] vk::Buffer GetVertexBuffer() const { return m_VertexBuffer;        };
             [[nodiscard]] vk::Buffer GetIndexBuffer()  const { return m_IndexBuffer;         };
             [[nodiscard]] u32        GetIndexCount()   const { return m_Mesh.Indices.size(); };
+
+            void AssignPipeline(u32 id) { m_PipelineID = id; };
 
         private:
             void CreateVertexBuffer();
@@ -31,5 +35,6 @@ namespace Engine
             vk::Buffer           m_IndexBuffer      = nullptr;
             VmaAllocation        m_IndexAllocation  = nullptr;
             Mesh                 m_Mesh;
+            u32                  m_PipelineID       = UINT32_MAX;
     };
 }

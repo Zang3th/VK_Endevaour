@@ -7,27 +7,71 @@ namespace Engine
     // ----- Public -----
 
     VulkanRenderer::VulkanRenderer()
+        : m_ShaderIndex(0), m_ModelIndex(0), m_PipelineIndex(0)
     {
         m_Context = MakeScope<VulkanContext>();
-        m_Device  = m_Context->GetDevice();
     }
 
-    void VulkanRenderer::LoadShader(const std::string& name, vk::ShaderStageFlagBits stage, const std::filesystem::path& path)
+    [[nodiscard]] u32 VulkanRenderer::LoadShader(vk::ShaderStageFlagBits stage, const std::filesystem::path& path)
     {
-        ASSERT(!m_Shaders.contains(name), "Duplicate shader name '{}'. Did not load anything ...", name);
-        m_Shaders[name] = MakeScope<VulkanShader>(m_Device->GetHandle(), stage, path);
+        ASSERT(m_ShaderIndex != MAX_SHADER_COUNT, "Reached capacity ... Can't load any more shaders!");
+
+        u32 currentIndex = m_ShaderIndex;
+        m_Shaders.at(currentIndex) = MakeScope<VulkanShader>(m_Context->GetDevice()->GetHandle(), stage, path);
+        m_ShaderIndex++;
+
+        return currentIndex;
     }
 
-    void VulkanRenderer::LoadModel(const std::string& name, const std::filesystem::path& path)
+    [[nodiscard]] u32 VulkanRenderer::LoadModel(const std::filesystem::path& path)
     {
-        ASSERT(!m_Models.contains(name), "Duplicate model name '{}'. Did not load anything ...", name);
-        m_Models[name] = MakeScope<VulkanModel>(m_Context.get(), path);
+        ASSERT(m_ModelIndex != MAX_MODEL_COUNT, "Reached capacity ... Can't load any more models!");
+
+        u32 currentIndex = m_ModelIndex;
+        m_Models.at(currentIndex) = MakeScope<VulkanModel>(m_Context.get(), path);
+        m_ModelIndex++;
+
+        return currentIndex;
     }
 
-    [[nodiscard]] const VulkanShader* VulkanRenderer::GetShader(const std::string& name) const
+    [[nodiscard]] u32 VulkanRenderer::CreatePipeline(u32 vertexID, u32 fragmentID)
     {
-        const auto it = m_Shaders.find(name);
-        ASSERT(it != m_Shaders.end(), "Shader '{}' was not found!", name);
-        return it->second.get();
+        ASSERT(m_PipelineIndex != MAX_PIPELINE_COUNT, "Reached capacity ... Can't create any more pipelines!");
+
+        u32 currentIndex = m_PipelineIndex;
+        PipelineSpecification spec
+        {
+            .VertexShader   = m_Shaders.at(vertexID).get(),
+            .FragmentShader = m_Shaders.at(fragmentID).get()
+        };
+        m_Pipelines[currentIndex] = MakeScope<VulkanPipeline>(m_Context->GetDevice()->GetHandle(), spec);
+        m_PipelineIndex++;
+
+        return currentIndex;
+    }
+
+    void VulkanRenderer::AssignPipeline(u32 modelID, u32 pipelineID)
+    {
+        m_Models.at(modelID)->AssignPipeline(pipelineID);
+        LOG_INFO("Bound model '{}' to pipeline '{}' ...", modelID, pipelineID);
+    }
+
+    void VulkanRenderer::DrawFrame(u32 pipelineID)
+    {
+        // Get graphics command buffer from the swapchain and begin recording
+        // commandBuffer = BeginFrame();
+
+        // For every model
+
+            // Bind pipeline (if not already bound)
+
+            // Bind model
+
+            // Issue draw commands
+
+            // Increment drawcall counter
+
+        // Submit command buffer and present image
+        // EndFrame();
     }
 }

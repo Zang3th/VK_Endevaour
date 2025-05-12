@@ -48,14 +48,18 @@ namespace Engine
         // Define features you want to use (e.g. geometry shaders)
         vk::PhysicalDeviceFeatures deviceFeatures{};
 
+        // Activate dynamic rendering
+        vk::PhysicalDeviceDynamicRenderingFeaturesKHR dynamicRenderingFeatures{ .dynamicRendering = vk::True };
+
         // Configure logical device
         vk::DeviceCreateInfo deviceCreateInfo
         {
+            .pNext                   = &dynamicRenderingFeatures,
             .queueCreateInfoCount    = (u32)(queueCreateInfos.size()),
             .pQueueCreateInfos       = queueCreateInfos.data(),
             .enabledExtensionCount   = (u32)(g_DeviceExtensions.size()),
             .ppEnabledExtensionNames = g_DeviceExtensions.data(),
-            .pEnabledFeatures        = &deviceFeatures,
+            .pEnabledFeatures        = &deviceFeatures
         };
 
         // Create logical device

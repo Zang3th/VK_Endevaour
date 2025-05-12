@@ -22,6 +22,11 @@ namespace Engine
         VulkanAllocator::DestroyBuffer(m_IndexBuffer, m_IndexAllocation);
     }
 
+    void VulkanModel::Bind(vk::CommandBuffer commandBuffer)
+    {
+        // TODO: Implement
+    }
+
     // ----- Private -----
 
     void VulkanModel::CreateVertexBuffer()
