@@ -34,7 +34,12 @@ void Sandbox::Run()
     {
         Engine::Window::PollEvents();
 
-        // Draw frame
+        // Draw
+        vkRenderer.BeginFrame();
         vkRenderer.DrawFrame(pipelineID);
+        vkRenderer.EndFrame();
     }
+
+    // Wait for device idle
+    vkRenderer.WaitForDevice();
 }

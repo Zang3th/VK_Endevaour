@@ -7,8 +7,8 @@
 // Define two function pointers in anonymous namespace. They will later point to Vulkan extension functions
 namespace
 {
-    PFN_vkCreateDebugUtilsMessengerEXT  pfnVkCreateDebugUtilsMessengerEXT;
-    PFN_vkDestroyDebugUtilsMessengerEXT pfnVkDestroyDebugUtilsMessengerEXT;
+    PFN_vkCreateDebugUtilsMessengerEXT  pfnVkCreateDebugUtilsMessengerEXT  = nullptr;
+    PFN_vkDestroyDebugUtilsMessengerEXT pfnVkDestroyDebugUtilsMessengerEXT = nullptr;
 }
 
 // Forward global Vulkan function calls to dynamically loaded extension functions

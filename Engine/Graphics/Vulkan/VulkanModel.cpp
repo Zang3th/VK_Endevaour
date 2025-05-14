@@ -22,7 +22,7 @@ namespace Engine
         VulkanAllocator::DestroyBuffer(m_IndexBuffer, m_IndexAllocation);
     }
 
-    void VulkanModel::Bind(vk::CommandBuffer commandBuffer)
+    void VulkanModel::Bind(vk::CommandBuffer commandBuffer) const
     {
         vk::DeviceSize offset = 0;
         commandBuffer.bindVertexBuffers(0, 1, &m_VertexBuffer, &offset);

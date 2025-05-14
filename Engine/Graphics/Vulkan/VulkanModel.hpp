@@ -17,11 +17,12 @@ namespace Engine
             VulkanModel(VulkanContext* context, const std::filesystem::path& path);
             ~VulkanModel();
 
-            void Bind(vk::CommandBuffer commandBuffer);
+            void Bind(vk::CommandBuffer commandBuffer) const;
 
             [[nodiscard]] vk::Buffer GetVertexBuffer() const { return m_VertexBuffer;        };
             [[nodiscard]] vk::Buffer GetIndexBuffer()  const { return m_IndexBuffer;         };
             [[nodiscard]] u32        GetIndexCount()   const { return m_Mesh.Indices.size(); };
+            [[nodiscard]] u32        GetPipelineID()   const { return m_PipelineID;          };
 
             void AssignPipeline(u32 id) { m_PipelineID = id; };
 

@@ -21,13 +21,15 @@ namespace Engine
             [[nodiscard]] const VulkanDevice*    GetDevice()    const { return m_Device.get();    }
             [[nodiscard]] const VulkanSwapchain* GetSwapchain() const { return m_Swapchain.get(); }
 
+            [[nodiscard]] const vk::detail::DispatchLoaderDynamic& GetLoader() const { return m_DispatchLoader; }
+
             void CopyBuffer(vk::Buffer srcBuffer, vk::Buffer dstBuffer, vk::DeviceSize size);
 
         private:
             void CreateInstance();
-            void CreateSurface();
             void CreateDebugMessenger();
-            void CreatePhysicalDevice();
+            void CreateSurface();
+            void CreateDispatchLoader();
 
             vk::Instance                m_Instance;
             vk::SurfaceKHR              m_Surface;
@@ -35,5 +37,7 @@ namespace Engine
             Scope<VulkanPhysicalDevice> m_PhysicalDevice;
             Scope<VulkanDevice>         m_Device;
             Scope<VulkanSwapchain>      m_Swapchain;
+
+            vk::detail::DispatchLoaderDynamic m_DispatchLoader;
     };
 }

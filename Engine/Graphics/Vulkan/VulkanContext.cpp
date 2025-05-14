@@ -34,6 +34,9 @@ namespace Engine
         // Initialize and create swapchain
         m_Swapchain = MakeScope<VulkanSwapchain>(m_Device.get(), m_Surface);
         m_Swapchain->Create();
+
+        // Create Vulkan-Hpp dispatch loader for later use in extension functions
+        CreateDispatchLoader();
     }
 
     VulkanContext::~VulkanContext()
@@ -46,7 +49,7 @@ namespace Engine
 
         if(ENABLE_VALIDATION_LAYERS)
         {
-            m_Instance.destroyDebugUtilsMessengerEXT(m_DebugMessenger);
+            m_Instance.destroyDebugUtilsMessengerEXT(m_DebugMessenger, nullptr, m_DispatchLoader);
         }
 
         m_Instance.destroy();
@@ -101,6 +104,14 @@ namespace Engine
         LOG_INFO("Created Vulkan instance ...");
     }
 
+    void VulkanContext::CreateDebugMessenger()
+    {
+        VulkanDebug::LoadDebugExtensionFunctions(m_Instance);
+        const auto [result, m_DebugMessenger] = m_Instance.createDebugUtilsMessengerEXT(VulkanDebug::GetDebugCreateInfo(), nullptr);
+        ASSERT(m_DebugMessenger , "Failed to create debug messenger!");
+        LOG_INFO("Created debug messenger ...");
+    }
+
     void VulkanContext::CreateSurface()
     {
         VK_VERIFY((vk::Result)(glfwCreateWindowSurface(m_Instance, Window::GetHandle(), nullptr,
@@ -108,11 +119,30 @@ namespace Engine
         LOG_INFO("Created window surface ...");
     }
 
-    void VulkanContext::CreateDebugMessenger()
+    void VulkanContext::CreateDispatchLoader()
     {
-        VulkanDebug::LoadDebugExtensionFunctions(m_Instance);
-        const auto [result, m_DebugMessenger] = m_Instance.createDebugUtilsMessengerEXT(VulkanDebug::GetDebugCreateInfo());
-        ASSERT(m_DebugMessenger , "Failed to create debug messenger!");
-        LOG_INFO("Created debug messenger ...");
+        // vkGetInstanceProcAddr
+        auto pfnVkGetInstanceProcAddr = reinterpret_cast<PFN_vkGetInstanceProcAddr>
+        (
+            m_Instance.getProcAddr("vkGetInstanceProcAddr")
+        );
+        ASSERT(pfnVkGetInstanceProcAddr , "Unable to load pfnVkGetInstanceProcAddr ");
+
+        // vkGetDeviceProcAddr
+        auto pfnVkGetDeviceProcAddr = reinterpret_cast<PFN_vkGetDeviceProcAddr>
+        (
+            m_Instance.getProcAddr("vkGetDeviceProcAddr")
+        );
+        ASSERT(pfnVkGetDeviceProcAddr , "Unable to load vkGetDeviceProcAddr");
+
+        // Init loader
+        m_DispatchLoader = vk::detail::DispatchLoaderDynamic
+        (
+            m_Instance,
+            pfnVkGetInstanceProcAddr,
+            m_Device->GetHandle(),
+            pfnVkGetDeviceProcAddr
+        );
+        LOG_INFO("Created dynamic dispatch loader ...");
     }
 }

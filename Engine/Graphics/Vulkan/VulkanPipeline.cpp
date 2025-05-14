@@ -19,7 +19,7 @@ namespace Engine
         m_Context->GetDevice()->GetHandle().destroyPipelineLayout(m_Layout);
     }
 
-    void VulkanPipeline::Bind(vk::CommandBuffer commandBuffer)
+    void VulkanPipeline::Bind(vk::CommandBuffer commandBuffer) const
     {
         commandBuffer.bindPipeline(vk::PipelineBindPoint::eGraphics, m_Pipeline);
     }

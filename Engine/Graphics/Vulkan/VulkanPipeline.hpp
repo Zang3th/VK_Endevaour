@@ -20,7 +20,7 @@ namespace Engine
             explicit VulkanPipeline(VulkanContext* context, const PipelineSpecification& spec);
             ~VulkanPipeline();
 
-            void Bind(vk::CommandBuffer commandBuffer);
+            void Bind(vk::CommandBuffer commandBuffer) const;
 
         private:
             void CreatePipelineLayout();

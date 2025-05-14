@@ -1,4 +1,5 @@
 #include "VulkanRenderer.hpp"
+#include "VulkanAssert.hpp"
 
 #include "Debug/Log.hpp"
 
@@ -7,7 +8,7 @@ namespace Engine
     // ----- Public -----
 
     VulkanRenderer::VulkanRenderer()
-        : m_ShaderIndex(0), m_ModelIndex(0), m_PipelineIndex(0)
+        : m_ShaderIndex(0), m_ModelIndex(0), m_PipelineIndex(0), m_DrawcallCount(0)
     {
         m_Context = MakeScope<VulkanContext>();
     }
@@ -58,22 +59,62 @@ namespace Engine
         LOG_INFO("Bound model '{}' to pipeline '{}' ...", modelID, pipelineID);
     }
 
+    void VulkanRenderer::BeginFrame()
+    {
+        // Reset drawcall counter for this frame
+        m_DrawcallCount = 0;
+
+        // Get graphics command buffer from the swapchain and begin recording
+        // m_CommandBuffer = m_Context->GetSwapchain()->BeginFrame();
+
+        // Set dynamic states
+        const vk::Viewport viewport = m_Context->GetSwapchain()->GetViewport();
+        const vk::Rect2D   scissor  = m_Context->GetSwapchain()->GetScissor();
+        m_CommandBuffer.setViewport(0, 1, &viewport);
+        m_CommandBuffer.setScissor(0, 1, &scissor);
+        m_CommandBuffer.setPolygonModeEXT(vk::PolygonMode::eFill, m_Context->GetLoader());
+        m_CommandBuffer.setPrimitiveTopology(vk::PrimitiveTopology::eTriangleList);
+        m_CommandBuffer.setCullMode(vk::CullModeFlagBits::eBack);
+        m_CommandBuffer.setFrontFace(vk::FrontFace::eClockwise);
+    }
+
     void VulkanRenderer::DrawFrame(u32 pipelineID)
     {
-        // Get graphics command buffer from the swapchain and begin recording
-        // commandBuffer = BeginFrame();
+        // Bind pipeline
+        // m_Pipelines.at(pipelineID)->Bind(m_CommandBuffer);
 
-        // For every model
+        // Draw all models assigned to this pipeline
+        for(u32 i = 0; i < m_ModelIndex; i++)
+        {
+            // Get model
+            const VulkanModel* model = m_Models.at(i).get();
 
-            // Bind pipeline (if not already bound)
+            // Check for pipeline
+            if(model->GetPipelineID() == pipelineID)
+            {
+                // Bind model
+                // model->Bind(m_CommandBuffer);
 
-            // Bind model
+                // Issue draw call
+                // m_CommandBuffer.drawIndexed(model->GetIndexCount(), 1, 0, 0, 0);
 
-            // Issue draw commands
+                // Increment drawcall counter
+                m_DrawcallCount++;
+            }
+        }
+    }
 
-            // Increment drawcall counter
+    void VulkanRenderer::EndFrame()
+    {
+        // Submit command buffer
+        // m_Context->GetSwapchain()->EndFrame(m_CommandBuffer);
 
-        // Submit command buffer and present image
-        // EndFrame();
+        // Present image
+        // m_Context->GetSwapchain()->PresentImage();
+    }
+
+    void VulkanRenderer::WaitForDevice()
+    {
+        VK_VERIFY(m_Context->GetDevice()->GetHandle().waitIdle());
     }
 }

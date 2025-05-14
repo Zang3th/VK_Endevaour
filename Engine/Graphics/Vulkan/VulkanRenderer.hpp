@@ -18,7 +18,10 @@ namespace Engine
             [[nodiscard]] u32 CreatePipeline(u32 vertexID, u32 fragmentID);
 
             void AssignPipeline(u32 modelID, u32 pipelineID);
+            void BeginFrame();
             void DrawFrame(u32 pipelineID);
+            void EndFrame();
+            void WaitForDevice();
 
         private:
             Scope<VulkanContext> m_Context;
@@ -26,9 +29,11 @@ namespace Engine
             std::array<Scope<VulkanShader>,   MAX_SHADER_COUNT>   m_Shaders;
             std::array<Scope<VulkanModel>,    MAX_MODEL_COUNT>    m_Models;
             std::array<Scope<VulkanPipeline>, MAX_PIPELINE_COUNT> m_Pipelines;
-
             u32 m_ShaderIndex;
             u32 m_ModelIndex;
             u32 m_PipelineIndex;
+
+            u32               m_DrawcallCount;
+            vk::CommandBuffer m_CommandBuffer;
     };
 }

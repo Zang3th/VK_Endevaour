@@ -23,6 +23,12 @@ namespace Engine
             [[nodiscard]] const std::vector<SwapchainImage>& GetImages()        const { return m_Images;        };
             [[nodiscard]] const vk::SurfaceFormatKHR&        GetSurfaceFormat() const { return m_SurfaceFormat; };
 
+            [[nodiscard]] vk::Viewport GetViewport() const { return {
+                .width  = (float)m_Extent.width, .height = (float)m_Extent.height,
+                .minDepth = 0.0f, .maxDepth = 1.0f };
+            };
+            [[nodiscard]] vk::Rect2D GetScissor() const { return { .extent = m_Extent }; };
+
             [[nodiscard]] vk::CommandBuffer CreateTransferCommandBuffer();
             void                            SubmitTransferCommandBuffer(vk::CommandBuffer commandBuffer);
 
