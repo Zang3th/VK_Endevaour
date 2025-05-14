@@ -69,7 +69,7 @@ namespace Engine
         return true;
     }
 
-    std::vector<const char*> VulkanDebug::GetExtensions()
+    std::vector<const char*> VulkanDebug::GetInstanceExtensions()
     {
         u32 glfwExtensionCount = 0;
         const char** glfwExtensions = glfwGetRequiredInstanceExtensions(&glfwExtensionCount);
@@ -81,17 +81,11 @@ namespace Engine
             // Add the debug messenger extension conditionally
             extensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
 
-            // Log extension names
-            std::string extNames;
-            for(u32 i = 0; i < extensions.size(); i++)
+            // Log extensions
+            for(const auto& ext : extensions)
             {
-                extNames += extensions.at(i);
-                if(i != extensions.size() - 1)
-                {
-                    extNames += ", ";
-                }
+                LOG_INFO("Application requires instance extension: {} ...", ext);
             }
-            LOG_INFO("Application requires extensions ... ({})", extNames);
         }
 
         return extensions;

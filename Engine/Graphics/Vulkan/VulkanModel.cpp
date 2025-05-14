@@ -24,7 +24,9 @@ namespace Engine
 
     void VulkanModel::Bind(vk::CommandBuffer commandBuffer)
     {
-        // TODO: Implement
+        vk::DeviceSize offset = 0;
+        commandBuffer.bindVertexBuffers(0, 1, &m_VertexBuffer, &offset);
+        commandBuffer.bindIndexBuffer(m_IndexBuffer, 0, vk::IndexType::eUint32);
     }
 
     // ----- Private -----

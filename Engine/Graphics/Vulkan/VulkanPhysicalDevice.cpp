@@ -153,7 +153,11 @@ namespace Engine
         // Delete if available
         for(const auto& extension : availableExtensions)
         {
-            requiredExtensions.erase(extension.extensionName);
+            if(requiredExtensions.contains(extension.extensionName))
+            {
+                LOG_INFO("Found support for required device extension: {} ...", extension.extensionName.data());
+                requiredExtensions.erase(extension.extensionName);
+            }
         }
 
         if(!requiredExtensions.empty())

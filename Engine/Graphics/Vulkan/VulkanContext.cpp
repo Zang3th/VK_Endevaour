@@ -81,7 +81,8 @@ namespace Engine
             .apiVersion         = VK_API_VERSION_1_4
         };
 
-        auto extensions = VulkanDebug::GetExtensions();
+        // Query for all required instance extensions
+        auto extensions = VulkanDebug::GetInstanceExtensions();
 
         // Create temporary debug messenger to trace instantiating
         auto debugCreateInfo = VulkanDebug::GetDebugCreateInfo();

@@ -48,8 +48,18 @@ namespace Engine
         // Define features you want to use (e.g. geometry shaders)
         vk::PhysicalDeviceFeatures deviceFeatures{};
 
+        // Activate dynamic state 3 extension
+        vk::PhysicalDeviceExtendedDynamicState3FeaturesEXT extDyn3Features
+        {
+            .extendedDynamicState3PolygonMode = vk::True
+        };
+
         // Activate dynamic rendering
-        vk::PhysicalDeviceDynamicRenderingFeaturesKHR dynamicRenderingFeatures{ .dynamicRendering = vk::True };
+        vk::PhysicalDeviceDynamicRenderingFeaturesKHR dynamicRenderingFeatures
+        {
+            .pNext = &extDyn3Features, // Build up pNext chain
+            .dynamicRendering = vk::True
+        };
 
         // Configure logical device
         vk::DeviceCreateInfo deviceCreateInfo

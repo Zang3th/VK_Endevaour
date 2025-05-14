@@ -10,7 +10,7 @@ namespace Engine
             ~VulkanDebug() = delete;
 
             static bool CheckValidationLayerSupport(const std::vector<const char*>& validationLayers);
-            static std::vector<const char*> GetExtensions();
+            static std::vector<const char*> GetInstanceExtensions();
             static VKAPI_ATTR VkBool32 VKAPI_CALL Callback
             (
                 vk::DebugUtilsMessageSeverityFlagBitsEXT      messageSeverity,

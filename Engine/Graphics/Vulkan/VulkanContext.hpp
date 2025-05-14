@@ -16,9 +16,10 @@ namespace Engine
             VulkanContext();
             ~VulkanContext();
 
-            [[nodiscard]] const vk::Instance&   GetInstance() const { return m_Instance;     }
-            [[nodiscard]] const vk::SurfaceKHR& GetSurface()  const { return m_Surface;      }
-            [[nodiscard]] const VulkanDevice*   GetDevice()   const { return m_Device.get(); }
+            [[nodiscard]] const vk::Instance&    GetInstance()  const { return m_Instance;        }
+            [[nodiscard]] const vk::SurfaceKHR&  GetSurface()   const { return m_Surface;         }
+            [[nodiscard]] const VulkanDevice*    GetDevice()    const { return m_Device.get();    }
+            [[nodiscard]] const VulkanSwapchain* GetSwapchain() const { return m_Swapchain.get(); }
 
             void CopyBuffer(vk::Buffer srcBuffer, vk::Buffer dstBuffer, vk::DeviceSize size);
 

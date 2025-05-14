@@ -7,8 +7,8 @@ namespace Engine
 {
     // ----- Public -----
 
-    VulkanPipeline::VulkanPipeline(const vk::Device& device, const PipelineSpecification& spec)
-        : m_Device(device), m_Spec(spec)
+    VulkanPipeline::VulkanPipeline(VulkanContext* context, const PipelineSpecification& spec)
+        : m_Context(context), m_Spec(spec)
     {
         CreatePipelineLayout();
         CreatePipeline();
@@ -16,12 +16,12 @@ namespace Engine
 
     VulkanPipeline::~VulkanPipeline()
     {
-        m_Device.destroyPipelineLayout(m_Layout);
+        m_Context->GetDevice()->GetHandle().destroyPipelineLayout(m_Layout);
     }
 
     void VulkanPipeline::Bind(vk::CommandBuffer commandBuffer)
     {
-        // TODO: Implement
+        commandBuffer.bindPipeline(vk::PipelineBindPoint::eGraphics, m_Pipeline);
     }
 
     // ----- Private -----
@@ -37,13 +37,21 @@ namespace Engine
             .pPushConstantRanges    = nullptr
         };
 
-        VK_VERIFY(m_Device.createPipelineLayout(&pipelineLayoutInfo, nullptr, &m_Layout));
+        VK_VERIFY(m_Context->GetDevice()->GetHandle().createPipelineLayout(&pipelineLayoutInfo, nullptr, &m_Layout));
         LOG_INFO("Created pipeline layout ...");
     }
 
     void VulkanPipeline::CreatePipeline()
     {
-        // ----- Construct the different states making up the pipeline -----
+        // ----- Construct the different states making up the pipeline (using dynamic rendering) -----
+
+        // Pipeline rendering info (for dynamic rendering)
+        vk::Format format = m_Context->GetSwapchain()->GetSurfaceFormat().format;
+        vk::PipelineRenderingCreateInfo renderingInfo
+        {
+            .colorAttachmentCount    = 1,
+            .pColorAttachmentFormats = &format
+        };
 
         // Shader stages
         vk::PipelineShaderStageCreateInfo shaderStages[] =
@@ -66,7 +74,6 @@ namespace Engine
         // Input assembly state
         vk::PipelineInputAssemblyStateCreateInfo inputAssemblyState
         {
-            .topology               = m_Spec.Topology,
             .primitiveRestartEnable = vk::False
         };
 
@@ -82,9 +89,6 @@ namespace Engine
         {
             .depthClampEnable        = vk::False,
             .rasterizerDiscardEnable = vk::False,
-            .polygonMode             = vk::PolygonMode::eFill,
-            .cullMode                = vk::CullModeFlagBits::eBack,
-            .frontFace               = vk::FrontFace::eClockwise,
             .depthBiasEnable         = vk::False,
             .lineWidth               = 1.0f
         };
@@ -96,10 +100,39 @@ namespace Engine
             .sampleShadingEnable = vk::False
         };
 
-        // TODO: Add depth stencil state
+        // Depth stencil state
+        vk::PipelineDepthStencilStateCreateInfo depthStencilState
+        {
+            .depthTestEnable       = m_Spec.DepthTest,
+            .depthWriteEnable      = m_Spec.DepthWrite,
+            .depthCompareOp        = m_Spec.DepthOperator,
+            .depthBoundsTestEnable = vk::False,
+            .stencilTestEnable     = vk::False
+        };
+
+        // Disable blending (new fragment colors will just get passed through to the framebuffer)
+        vk::PipelineColorBlendAttachmentState blendAttachment
+        {
+            .colorWriteMask = vk::ColorComponentFlagBits::eR | vk::ColorComponentFlagBits::eG | vk::ColorComponentFlagBits::eB | vk::ColorComponentFlagBits::eA
+        };
+
+        // Color blend state
+        vk::PipelineColorBlendStateCreateInfo colorBlendState
+        {
+            .attachmentCount = 1,
+            .pAttachments    = &blendAttachment
+        };
 
         // Specify dynamic states (can be changed without recreating the whole pipeline)
-        std::vector<vk::DynamicState> dynamicStates = { vk::DynamicState::eViewport, vk::DynamicState::eScissor };
+        std::vector<vk::DynamicState> dynamicStates =
+        {
+            vk::DynamicState::eViewport,
+            vk::DynamicState::eScissor,
+            vk::DynamicState::ePolygonModeEXT,
+            vk::DynamicState::ePrimitiveTopology,
+            vk::DynamicState::eCullMode,
+            vk::DynamicState::eFrontFace
+        };
         vk::PipelineDynamicStateCreateInfo dynamicState
         {
             .dynamicStateCount = (u32)(dynamicStates.size()),
@@ -109,6 +142,7 @@ namespace Engine
         // ----- Finally: Create the pipeline -----
         vk::GraphicsPipelineCreateInfo pipelineInfo
         {
+            .pNext               = &renderingInfo,
             .stageCount          = 2,
             .pStages             = shaderStages,
             .pVertexInputState   = &vertexState,
@@ -116,12 +150,13 @@ namespace Engine
             .pViewportState      = &viewportState,
             .pRasterizationState = &rasterizerState,
             .pMultisampleState   = &multisampleState,
-            // .pDepthStencilState = nullptr,
+            .pDepthStencilState  = &depthStencilState,
+            .pColorBlendState    = &colorBlendState,
             .pDynamicState       = &dynamicState,
             .layout              = m_Layout
         };
 
-        auto [res, pipeline] = m_Device.createGraphicsPipeline(nullptr, pipelineInfo);
+        auto [res, pipeline] = m_Context->GetDevice()->GetHandle().createGraphicsPipeline(nullptr, pipelineInfo);
         VK_VERIFY(res);
         m_Pipeline = pipeline;
         LOG_INFO("Created graphics pipeline ...");

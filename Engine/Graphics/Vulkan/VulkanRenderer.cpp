@@ -42,9 +42,11 @@ namespace Engine
         PipelineSpecification spec
         {
             .VertexShader   = m_Shaders.at(vertexID).get(),
-            .FragmentShader = m_Shaders.at(fragmentID).get()
+            .FragmentShader = m_Shaders.at(fragmentID).get(),
+            .DepthTest      = vk::False,
+            .DepthWrite     = vk::False
         };
-        m_Pipelines[currentIndex] = MakeScope<VulkanPipeline>(m_Context->GetDevice()->GetHandle(), spec);
+        m_Pipelines[currentIndex] = MakeScope<VulkanPipeline>(m_Context.get(), spec);
         m_PipelineIndex++;
 
         return currentIndex;

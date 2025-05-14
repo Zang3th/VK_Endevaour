@@ -19,8 +19,9 @@ namespace Engine
             void Recreate();
             void Destroy();
 
-            [[nodiscard]] const vk::SwapchainKHR&            GetHandle() const { return m_Swapchain; };
-            [[nodiscard]] const std::vector<SwapchainImage>& GetImages() const { return m_Images;    };
+            [[nodiscard]] const vk::SwapchainKHR&            GetHandle()        const { return m_Swapchain;     };
+            [[nodiscard]] const std::vector<SwapchainImage>& GetImages()        const { return m_Images;        };
+            [[nodiscard]] const vk::SurfaceFormatKHR&        GetSurfaceFormat() const { return m_SurfaceFormat; };
 
             [[nodiscard]] vk::CommandBuffer CreateTransferCommandBuffer();
             void                            SubmitTransferCommandBuffer(vk::CommandBuffer commandBuffer);
