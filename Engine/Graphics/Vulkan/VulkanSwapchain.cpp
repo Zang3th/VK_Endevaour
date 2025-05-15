@@ -169,6 +169,9 @@ namespace Engine
         // Get current frame
         VulkanFrame& currentFrame = m_Frames.at(m_CurrentFrame);
 
+        //  Wait for this frame-slot's previous submission to finish
+        VK_VERIFY(m_Device->GetHandle().waitForFences(1, &currentFrame.InFlight, vk::True, UINT64_MAX));
+
         // Get next image
         vk::Result res = m_Device->GetHandle().acquireNextImageKHR(m_Swapchain, UINT64_MAX, currentFrame.ImageAvailable, nullptr, &currentFrame.ImageIndex);
 
@@ -181,7 +184,7 @@ namespace Engine
         }
         ASSERT(res == vk::Result::eSuccess, "Failed to acquire swapchain image!");
 
-        // Reset fence (only if we are submitting work)
+        // Reset fence
         VK_VERIFY(m_Device->GetHandle().resetFences(1, &currentFrame.InFlight));
 
         // Reset command buffer
@@ -193,9 +196,50 @@ namespace Engine
 
     void VulkanSwapchain::SubmitFrame(const VulkanFrame& frame)
     {
-        // TODO: Submit frame to queue
+        vk::PipelineStageFlags waitStage { vk::PipelineStageFlagBits::eColorAttachmentOutput };
 
-        // Advance frame counter
+        // Create submit info
+        vk::SubmitInfo submitInfo
+        {
+            .waitSemaphoreCount   = 1,
+            .pWaitSemaphores      = &frame.ImageAvailable,  // On which semaphore to wait
+            .pWaitDstStageMask    = &waitStage,
+            .commandBufferCount   = 1,
+            .pCommandBuffers      = &frame.CommandBuffer,
+            .signalSemaphoreCount = 1,
+            .pSignalSemaphores    = &frame.RenderFinished  // Which semaphore to signal after
+        };
+
+        // Submit frame to queue
+        VK_VERIFY(m_Device->GetGraphicsQueue().submit(1, &submitInfo, frame.InFlight));
+    }
+
+    void VulkanSwapchain::PresentFrame(const VulkanFrame& frame)
+    {
+        // Create present info
+        vk::PresentInfoKHR presentInfo
+        {
+            .waitSemaphoreCount = 1,
+            .pWaitSemaphores    = &frame.RenderFinished,
+            .swapchainCount     = 1,
+            .pSwapchains        = &m_Swapchain,
+            .pImageIndices      = &frame.ImageIndex
+        };
+
+        // Present
+        vk::Result res = m_Device->GetGraphicsQueue().presentKHR(&presentInfo);
+
+        // Check for resize
+        if(res == vk::Result::eErrorOutOfDateKHR || res == vk::Result::eSuboptimalKHR)
+        {
+            Recreate();
+            LOG_WARN("vkQueuePresentKHR recreated swap chain ...");
+        }
+        ASSERT(res == vk::Result::eSuccess, "Failed to present swapchain image!");
+    }
+
+    void VulkanSwapchain::AdvanceFrame()
+    {
         m_CurrentFrame = (m_CurrentFrame + 1) % FRAMES_IN_FLIGHT;
     }
 

@@ -3,6 +3,64 @@
 
 #include "Debug/Log.hpp"
 
+namespace
+{
+    // Copied from Khronos 'hello_triangle_1_3.cpp' example
+    void TransitionImageLayout
+    (
+        vk::CommandBuffer       cmd,
+        vk::Image               image,
+        vk::ImageLayout         oldLayout,
+        vk::ImageLayout         newLayout,
+        vk::AccessFlags2        srcAccessMask,
+        vk::AccessFlags2        dstAccessMask,
+        vk::PipelineStageFlags2 srcStage,
+        vk::PipelineStageFlags2 dstStage
+    )
+    {
+        // Initialize the VkImageMemoryBarrier2 structure
+        vk::ImageMemoryBarrier2 imageMemoryBarrier
+        {
+            // Specify the pipeline stages and access masks for the barrier
+            .srcStageMask  = srcStage,             // Source pipeline stage mask
+            .srcAccessMask = srcAccessMask,        // Source access mask
+            .dstStageMask  = dstStage,             // Destination pipeline stage mask
+            .dstAccessMask = dstAccessMask,        // Destination access mask
+
+            // Specify the old and new layouts of the image
+            .oldLayout = oldLayout,        // Current layout of the image
+            .newLayout = newLayout,        // Target layout of the image
+
+            // We are not changing the ownership between queues
+            .srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
+            .dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
+
+            // Specify the image to be affected by this barrier
+            .image = image,
+
+            // Define the subresource range (which parts of the image are affected)
+            .subresourceRange =
+            {
+                .aspectMask     = vk::ImageAspectFlagBits::eColor,  // Affects the color aspect of the image
+                .baseMipLevel   = 0,                                // Start at mip level 0
+                .levelCount     = 1,                                // Number of mip levels affected
+                .baseArrayLayer = 0,                                // Start at array layer 0
+                .layerCount     = 1                                 // Number of array layers affected
+            }
+        };
+
+        // Initialize the VkDependencyInfo structure
+        vk::DependencyInfo dependencyInfo
+        {
+            .imageMemoryBarrierCount = 1,                    // Number of image memory barriers
+            .pImageMemoryBarriers    = &imageMemoryBarrier   // Pointer to the image memory barrier(s)
+        };
+
+        // Record the pipeline barrier into the command buffer
+        cmd.pipelineBarrier2(&dependencyInfo);
+    }
+}
+
 namespace Engine
 {
     // ----- Public -----
@@ -108,14 +166,30 @@ namespace Engine
             }
         }
 
+        // Transition image layout (needs synchronisation2 extension enabled)
+        TransitionImageLayout
+        (
+            frame.CommandBuffer,
+            m_Context->GetSwapchain()->GetCurrentImage().Image,
+            vk::ImageLayout::eColorAttachmentOptimal,
+            vk::ImageLayout::ePresentSrcKHR,
+            vk::AccessFlagBits2::eColorAttachmentWrite,
+            vk::AccessFlagBits2::eNone,
+            vk::PipelineStageFlagBits2::eColorAttachmentOutput,
+            vk::PipelineStageFlagBits2::eBottomOfPipe
+        );
+
         // End command buffer recording
         VK_VERIFY(frame.CommandBuffer.end());
 
-        // Submit frame (internally increments frame counter)
+        // Submit frame
         m_Context->GetSwapchain()->SubmitFrame(frame);
 
         // Present image
-        // m_Context->GetSwapchain()->PresentNextImage();
+        m_Context->GetSwapchain()->PresentFrame(frame);
+
+        // Increment frame
+        m_Context->GetSwapchain()->AdvanceFrame();
     }
 
     void VulkanRenderer::WaitForDevice()

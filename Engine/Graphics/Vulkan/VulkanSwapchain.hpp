@@ -41,6 +41,10 @@ namespace Engine
 
             std::pair<b8, VulkanFrame&> GetCurrentFrame();
             void                        SubmitFrame(const VulkanFrame& frame);
+            void                        PresentFrame(const VulkanFrame& frame);
+            void                        AdvanceFrame();
+
+            [[nodiscard]] const SwapchainImage& GetCurrentImage() const { return m_Images.at(m_CurrentFrame); };
 
         private:
             void Recreate();
