@@ -1,6 +1,7 @@
 #pragma once
 
 #include "VulkanDevice.hpp"
+#include "VulkanGlobals.hpp"
 
 namespace Engine
 {
@@ -10,32 +11,44 @@ namespace Engine
         vk::ImageView View  = nullptr;
     };
 
+    struct VulkanFrame
+    {
+        vk::CommandBuffer CommandBuffer;
+        vk::Semaphore     ImageAvailable;
+        vk::Semaphore     RenderFinished;
+        vk::Fence         InFlight;
+        u32               ImageIndex = UINT32_MAX;
+    };
+
     class VulkanSwapchain
     {
         public:
             VulkanSwapchain(const VulkanDevice* device, const vk::SurfaceKHR& surface);
+            ~VulkanSwapchain();
 
             void Create();
-            void Recreate();
-            void Destroy();
 
             [[nodiscard]] const vk::SwapchainKHR&            GetHandle()        const { return m_Swapchain;     };
             [[nodiscard]] const std::vector<SwapchainImage>& GetImages()        const { return m_Images;        };
             [[nodiscard]] const vk::SurfaceFormatKHR&        GetSurfaceFormat() const { return m_SurfaceFormat; };
 
-            [[nodiscard]] vk::Viewport GetViewport() const { return {
-                .width  = (float)m_Extent.width, .height = (float)m_Extent.height,
-                .minDepth = 0.0f, .maxDepth = 1.0f };
-            };
-            [[nodiscard]] vk::Rect2D GetScissor() const { return { .extent = m_Extent }; };
-
             [[nodiscard]] vk::CommandBuffer CreateTransferCommandBuffer();
             void                            SubmitTransferCommandBuffer(vk::CommandBuffer commandBuffer);
 
+            [[nodiscard]] vk::Viewport GetViewport() const {
+                return { .width  = (float)m_Extent.width, .height = (float)m_Extent.height, .minDepth = 0.0f, .maxDepth = 1.0f }; };
+            [[nodiscard]] vk::Rect2D GetScissor() const { return { .extent = m_Extent };      };
+
+            std::pair<b8, VulkanFrame&> GetCurrentFrame();
+            void                        SubmitFrame(const VulkanFrame& frame);
+
         private:
+            void Recreate();
+            void Destroy();
             void FetchCapabilities();
             void CreateImages();
             void CreateCommandPools();
+            void InitializeFrames();
 
             const VulkanDevice*   m_Device  = nullptr;
             const vk::SurfaceKHR& m_Surface = nullptr;
@@ -57,5 +70,9 @@ namespace Engine
 
             // Swapchain images
             std::vector<SwapchainImage> m_Images;
+
+            // Frames
+            std::array<VulkanFrame, FRAMES_IN_FLIGHT> m_Frames;
+            u32 m_CurrentFrame = 0;
     };
 }

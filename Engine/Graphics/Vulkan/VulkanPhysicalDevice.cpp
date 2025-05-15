@@ -34,15 +34,16 @@ namespace Engine
 {
     // ----- Public -----
 
-    VulkanPhysicalDevice::VulkanPhysicalDevice(vk::Instance instance, vk::SurfaceKHR surface)
+    VulkanPhysicalDevice::VulkanPhysicalDevice(const vk::Instance& instance, const vk::SurfaceKHR& surface)
+        : m_Instance(instance), m_Surface(surface)
     {
-        PickDevice(instance, surface);
+        PickDevice();
     }
 
-    void VulkanPhysicalDevice::PickDevice(vk::Instance instance, vk::SurfaceKHR surface)
+    void VulkanPhysicalDevice::PickDevice()
     {
         // Query for devices
-        const auto [result, devices] = instance.enumeratePhysicalDevices();
+        const auto [result, devices] = m_Instance.enumeratePhysicalDevices();
         VK_VERIFY(result);
         ASSERT(!devices.empty(), "Failed to find GPUs with Vulkan support!");
 
@@ -52,7 +53,7 @@ namespace Engine
         for(const auto& device : devices)
         {
             // Break at first suitable device
-            if(IsDeviceSuitable(device, surface))
+            if(IsDeviceSuitable(device))
             {
                 m_PhysicalDevice = device;
                 m_Properties = device.getProperties();
@@ -67,17 +68,16 @@ namespace Engine
 
     // ----- Private -----
 
-    bool VulkanPhysicalDevice::IsDeviceSuitable(vk::PhysicalDevice device, vk::SurfaceKHR surface)
+    bool VulkanPhysicalDevice::IsDeviceSuitable(vk::PhysicalDevice device)
     {
-        m_QueueFamilyIndices = FindQueueFamilyIndices(device, surface);
-        m_SwapchainSupport   = QuerySwapchainSupport(device, surface);
+        m_QueueFamilyIndices = FindQueueFamilyIndices(device);
 
-        return m_QueueFamilyIndices.isComplete() &&
-               m_SwapchainSupport.isComplete()   &&
+        return m_QueueFamilyIndices.isComplete()          &&
+               QuerySwapchainSupport(device).isComplete() &&
                CheckDeviceExtensionSupport(device);
     }
 
-    QueueFamilyIndices VulkanPhysicalDevice::FindQueueFamilyIndices(vk::PhysicalDevice device, vk::SurfaceKHR surface)
+    QueueFamilyIndices VulkanPhysicalDevice::FindQueueFamilyIndices(vk::PhysicalDevice device)
     {
         QueueFamilyIndices queueFamilyIndices;
         VkBool32 presentSupport = false;
@@ -93,7 +93,7 @@ namespace Engine
             if(queueFamily.queueFlags & vk::QueueFlagBits::eGraphics)
             {
                 // Query for capability of presenting to a window surface
-                VK_VERIFY((vk::Result)device.getSurfaceSupportKHR(index, surface, &presentSupport));
+                VK_VERIFY((vk::Result)device.getSurfaceSupportKHR(index, m_Surface, &presentSupport));
 
                 if(presentSupport)
                 {
@@ -116,29 +116,6 @@ namespace Engine
         }
 
         return queueFamilyIndices;
-    }
-
-    SwapchainSupport VulkanPhysicalDevice::QuerySwapchainSupport(vk::PhysicalDevice physicalDevice, vk::SurfaceKHR surface)
-    {
-        SwapchainSupport swapchainSupport;
-
-        {
-            auto [result, capabilities] = physicalDevice.getSurfaceCapabilitiesKHR(surface);
-            VK_VERIFY(result);
-            swapchainSupport.Capabilities = capabilities;
-        }
-        {
-            auto [result, surfaceFormats] = physicalDevice.getSurfaceFormatsKHR(surface);
-            VK_VERIFY(result);
-            swapchainSupport.Formats = std::move(surfaceFormats);
-        }
-        {
-            auto [result, presentModes] = physicalDevice.getSurfacePresentModesKHR(surface);
-            VK_VERIFY(result);
-            swapchainSupport.PresentModes = std::move(presentModes);
-        }
-
-        return swapchainSupport;
     }
 
     bool VulkanPhysicalDevice::CheckDeviceExtensionSupport(vk::PhysicalDevice device)
@@ -169,5 +146,28 @@ namespace Engine
         }
 
         return requiredExtensions.empty();
+    }
+
+    [[nodiscard]] SwapchainSupport VulkanPhysicalDevice::QuerySwapchainSupport(vk::PhysicalDevice physicalDevice) const
+    {
+        SwapchainSupport swapchainSupport;
+
+        {
+            auto [result, capabilities] = physicalDevice.getSurfaceCapabilitiesKHR(m_Surface);
+            VK_VERIFY(result);
+            swapchainSupport.Capabilities = capabilities;
+        }
+        {
+            auto [result, surfaceFormats] = physicalDevice.getSurfaceFormatsKHR(m_Surface);
+            VK_VERIFY(result);
+            swapchainSupport.Formats = std::move(surfaceFormats);
+        }
+        {
+            auto [result, presentModes] = physicalDevice.getSurfacePresentModesKHR(m_Surface);
+            VK_VERIFY(result);
+            swapchainSupport.PresentModes = std::move(presentModes);
+        }
+
+        return swapchainSupport;
     }
 }

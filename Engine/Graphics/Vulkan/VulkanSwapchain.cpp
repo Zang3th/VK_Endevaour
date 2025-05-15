@@ -72,6 +72,24 @@ namespace Engine
     {
         FetchCapabilities();
         CreateCommandPools();
+        InitializeFrames();
+    }
+
+    VulkanSwapchain::~VulkanSwapchain()
+    {
+        Destroy();
+
+        // Destroy sync objects
+        for(size_t i = 0; i <FRAMES_IN_FLIGHT; i++)
+        {
+            m_Device->GetHandle().destroySemaphore(m_Frames.at(i).ImageAvailable);
+            m_Device->GetHandle().destroySemaphore(m_Frames.at(i).RenderFinished);
+            m_Device->GetHandle().destroyFence(m_Frames.at(i).InFlight);
+        }
+
+        // Destroy command pools
+        m_Device->GetHandle().destroyCommandPool(m_GraphicsCommandPool);
+        m_Device->GetHandle().destroyCommandPool(m_TransferCommandPool);
     }
 
     void VulkanSwapchain::Create()
@@ -100,28 +118,6 @@ namespace Engine
                  vk::to_string(m_SurfaceFormat.colorSpace), vk::to_string(m_PresentMode));
 
         CreateImages();
-    }
-
-    void VulkanSwapchain::Recreate()
-    {
-        Destroy();
-
-        // Query new dimensions
-        const SwapchainSupport swapchainSupport = m_Device->GetPhysicalDevice()->GetSwapchainSupport();
-        m_Extent = ChooseExtent(swapchainSupport.Capabilities);
-
-        Create();
-    }
-
-    void VulkanSwapchain::Destroy()
-    {
-        for(auto& image : m_Images)
-        {
-            m_Device->GetHandle().destroyImageView(image.View);
-        }
-
-        m_Images.clear();
-        m_Device->GetHandle().destroySwapchainKHR(m_Swapchain);
     }
 
     vk::CommandBuffer VulkanSwapchain::CreateTransferCommandBuffer()
@@ -166,11 +162,72 @@ namespace Engine
         m_Device->GetHandle().freeCommandBuffers(m_TransferCommandPool, 1, &commandBuffer);
     }
 
+    [[nodiscard]] std::pair<b8, VulkanFrame&> VulkanSwapchain::GetCurrentFrame()
+    {
+        b8 renderNextFrame = true;
+
+        // Get current frame
+        VulkanFrame& currentFrame = m_Frames.at(m_CurrentFrame);
+
+        // Get next image
+        vk::Result res = m_Device->GetHandle().acquireNextImageKHR(m_Swapchain, UINT64_MAX, currentFrame.ImageAvailable, nullptr, &currentFrame.ImageIndex);
+
+        // Check for resize
+        if(res == vk::Result::eErrorOutOfDateKHR || res == vk::Result::eSuboptimalKHR)
+        {
+            Recreate();
+            LOG_WARN("vkAcquireNextImageKHR recreated swap chain ...");
+            renderNextFrame = false;
+        }
+        ASSERT(res == vk::Result::eSuccess, "Failed to acquire swapchain image!");
+
+        // Reset fence (only if we are submitting work)
+        VK_VERIFY(m_Device->GetHandle().resetFences(1, &currentFrame.InFlight));
+
+        // Reset command buffer
+        currentFrame.CommandBuffer.reset();
+
+        // Return frame
+        return { renderNextFrame, currentFrame };
+    }
+
+    void VulkanSwapchain::SubmitFrame(const VulkanFrame& frame)
+    {
+        // TODO: Submit frame to queue
+
+        // Advance frame counter
+        m_CurrentFrame = (m_CurrentFrame + 1) % FRAMES_IN_FLIGHT;
+    }
+
     // ----- Private -----
+
+    void VulkanSwapchain::Recreate()
+    {
+        // Wait for GPU
+        m_Device->WaitForIdle();
+
+        Destroy();
+        FetchCapabilities();
+        Create();
+    }
+
+    void VulkanSwapchain::Destroy()
+    {
+        // Destroy images and image views
+        for(auto& image : m_Images)
+        {
+            m_Device->GetHandle().destroyImage(image.Image);
+            m_Device->GetHandle().destroyImageView(image.View);
+        }
+        m_Images.clear();
+
+        // Destroy swap chain
+        m_Device->GetHandle().destroySwapchainKHR(m_Swapchain);
+    }
 
     void VulkanSwapchain::FetchCapabilities()
     {
-        // Query swapchain capabilites from the physical device
+        // Get swapchain capabilites from the physical device
         const SwapchainSupport swapchainSupport = m_Device->GetPhysicalDevice()->GetSwapchainSupport();
 
         // Choose most optimal swapchain properties
@@ -255,5 +312,41 @@ namespace Engine
         }
 
         LOG_INFO("Created command pools for graphics and transfer ...");
+    }
+
+    void VulkanSwapchain::InitializeFrames()
+    {
+        // Define semaphores
+        vk::SemaphoreCreateInfo semaphoreInfo{};
+
+        // Define fence (in signaled state to avoid endless waiting for the first frame)
+        vk::FenceCreateInfo fenceInfo{ .flags = vk::FenceCreateFlagBits::eSignaled };
+
+        // Create sync objects
+        for(u32 i = 0; i < FRAMES_IN_FLIGHT; i++)
+        {
+            VK_VERIFY(m_Device->GetHandle().createSemaphore(&semaphoreInfo, nullptr, &m_Frames[i].ImageAvailable));
+            VK_VERIFY(m_Device->GetHandle().createSemaphore(&semaphoreInfo, nullptr, &m_Frames[i].RenderFinished));
+            VK_VERIFY(m_Device->GetHandle().createFence(&fenceInfo, nullptr, &m_Frames[i].InFlight));
+        }
+
+        // Allocate command buffers
+        vk::CommandBufferAllocateInfo allocateInfo
+        {
+            .commandPool        = m_GraphicsCommandPool,
+            .level              = vk::CommandBufferLevel::ePrimary,
+            .commandBufferCount = FRAMES_IN_FLIGHT
+        };
+        auto [res, commandBuffers] = m_Device->GetHandle().allocateCommandBuffers(allocateInfo);
+        VK_VERIFY(res);
+        ASSERT(!commandBuffers.empty(), "Allocated command buffer vector was empty!");
+
+        // Copy command buffers in frame struct
+        for(u32 i = 0; i < FRAMES_IN_FLIGHT; i++)
+        {
+            m_Frames[i].CommandBuffer = commandBuffers.at(i);
+        }
+
+        LOG_INFO("Initialized sync objects and command buffers for {} frames ...", FRAMES_IN_FLIGHT);
     }
 }

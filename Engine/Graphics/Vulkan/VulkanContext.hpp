@@ -20,6 +20,7 @@ namespace Engine
             [[nodiscard]] const vk::SurfaceKHR&  GetSurface()   const { return m_Surface;         }
             [[nodiscard]] const VulkanDevice*    GetDevice()    const { return m_Device.get();    }
             [[nodiscard]] const VulkanSwapchain* GetSwapchain() const { return m_Swapchain.get(); }
+            [[nodiscard]]       VulkanSwapchain* GetSwapchain()       { return m_Swapchain.get(); }
 
             [[nodiscard]] const vk::detail::DispatchLoaderDynamic& GetLoader() const { return m_DispatchLoader; }
 

@@ -18,6 +18,8 @@ namespace Engine
             [[nodiscard]] u32 GetGraphicsQueueFamily() const { return m_PhysicalDevice->GetQueueFamilys().GraphicsFamily; }
             [[nodiscard]] u32 GetTransferQueueFamily() const { return m_PhysicalDevice->GetQueueFamilys().TransferFamily; }
 
+            void WaitForIdle() const;
+
         private:
             void CreateLogicalDevice();
 

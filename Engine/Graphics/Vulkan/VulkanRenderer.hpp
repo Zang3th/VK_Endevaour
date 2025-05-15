@@ -18,9 +18,7 @@ namespace Engine
             [[nodiscard]] u32 CreatePipeline(u32 vertexID, u32 fragmentID);
 
             void AssignPipeline(u32 modelID, u32 pipelineID);
-            void BeginFrame();
             void DrawFrame(u32 pipelineID);
-            void EndFrame();
             void WaitForDevice();
 
         private:
@@ -33,7 +31,6 @@ namespace Engine
             u32 m_ModelIndex;
             u32 m_PipelineIndex;
 
-            u32               m_DrawcallCount;
-            vk::CommandBuffer m_CommandBuffer;
+            u32 m_DrawcallCount;
     };
 }

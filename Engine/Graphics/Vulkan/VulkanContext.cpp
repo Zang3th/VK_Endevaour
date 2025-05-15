@@ -41,8 +41,6 @@ namespace Engine
 
     VulkanContext::~VulkanContext()
     {
-        m_Swapchain->Destroy();
-
         VulkanAllocator::Shutdown();
 
         m_Instance.destroySurfaceKHR(m_Surface);

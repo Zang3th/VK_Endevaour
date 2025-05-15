@@ -32,23 +32,29 @@ namespace Engine
     class VulkanPhysicalDevice
     {
         public:
-            VulkanPhysicalDevice(vk::Instance instance, vk::SurfaceKHR surface);
+            VulkanPhysicalDevice(const vk::Instance& instance, const vk::SurfaceKHR& surface);
 
             [[nodiscard]] const vk::PhysicalDevice& GetHandle()           const { return m_PhysicalDevice;     };
             [[nodiscard]] const QueueFamilyIndices& GetQueueFamilys()     const { return m_QueueFamilyIndices; };
-            [[nodiscard]] const SwapchainSupport&   GetSwapchainSupport() const { return m_SwapchainSupport;   };
             [[nodiscard]] const vk::PhysicalDeviceProperties& GetProperties() const { return m_Properties;     };
 
+            [[nodiscard]] SwapchainSupport GetSwapchainSupport() const
+            {
+                return QuerySwapchainSupport(m_PhysicalDevice);
+            };
+
         private:
-            void               PickDevice(vk::Instance instance, vk::SurfaceKHR surface);
-            bool               IsDeviceSuitable(vk::PhysicalDevice device, vk::SurfaceKHR surface);
-            QueueFamilyIndices FindQueueFamilyIndices(vk::PhysicalDevice device, vk::SurfaceKHR surface);
-            SwapchainSupport   QuerySwapchainSupport(vk::PhysicalDevice physicalDevice, vk::SurfaceKHR surface);
+            void               PickDevice();
+            bool               IsDeviceSuitable(vk::PhysicalDevice device);
+            QueueFamilyIndices FindQueueFamilyIndices(vk::PhysicalDevice device);
             bool               CheckDeviceExtensionSupport(vk::PhysicalDevice device);
 
+            [[nodiscard]] SwapchainSupport QuerySwapchainSupport(vk::PhysicalDevice physicalDevice) const;
+
+            const vk::Instance&          m_Instance;
+            const vk::SurfaceKHR&        m_Surface;
             vk::PhysicalDevice           m_PhysicalDevice;
             QueueFamilyIndices           m_QueueFamilyIndices;
-            SwapchainSupport             m_SwapchainSupport;
             vk::PhysicalDeviceProperties m_Properties;
     };
 }

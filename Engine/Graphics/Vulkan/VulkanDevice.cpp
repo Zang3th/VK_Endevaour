@@ -19,6 +19,13 @@ namespace Engine
         m_Device.destroy();
     }
 
+    void VulkanDevice::WaitForIdle() const
+    {
+        VK_VERIFY(m_Device.waitIdle());
+    }
+
+    // ----- Private -----
+
     void VulkanDevice::CreateLogicalDevice()
     {
         // Fetch queue familys
