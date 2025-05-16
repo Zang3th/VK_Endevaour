@@ -19,37 +19,38 @@ namespace Engine
     VulkanContext::VulkanContext()
     {
         CreateInstance();
+        CreateSurface();
 
         if(ENABLE_VALIDATION_LAYERS)
         {
             CreateDebugMessenger();
         }
 
-        CreateSurface();
         m_PhysicalDevice = MakeScope<VulkanPhysicalDevice>(m_Instance, m_Surface);
         m_Device         = MakeScope<VulkanDevice>(m_PhysicalDevice.get());
+        m_Swapchain      = MakeScope<VulkanSwapchain>(m_Device.get(), m_Surface);
 
         VulkanAllocator::Init(m_Device.get(), m_Instance);
 
-        // Initialize and create swapchain
-        m_Swapchain = MakeScope<VulkanSwapchain>(m_Device.get(), m_Surface);
-        m_Swapchain->Create();
-
-        // Create Vulkan-Hpp dispatch loader for later use in extension functions
-        CreateDispatchLoader();
+        CreateDispatchLoader(); // For later use in extension functions
     }
 
     VulkanContext::~VulkanContext()
     {
+        LOG_INFO("VulkanContext::Destructor() ...");
+
         VulkanAllocator::Shutdown();
 
-        m_Instance.destroySurfaceKHR(m_Surface);
+        m_Swapchain.reset();
+        m_Device.reset();
+        m_PhysicalDevice.reset();
 
         if(ENABLE_VALIDATION_LAYERS)
         {
-            m_Instance.destroyDebugUtilsMessengerEXT(m_DebugMessenger, nullptr, m_DispatchLoader);
+            m_Instance.destroyDebugUtilsMessengerEXT(m_DebugMessenger, nullptr);
         }
 
+        m_Instance.destroySurfaceKHR(m_Surface);
         m_Instance.destroy();
     }
 
@@ -105,8 +106,9 @@ namespace Engine
     void VulkanContext::CreateDebugMessenger()
     {
         VulkanDebug::LoadDebugExtensionFunctions(m_Instance);
-        const auto [result, m_DebugMessenger] = m_Instance.createDebugUtilsMessengerEXT(VulkanDebug::GetDebugCreateInfo(), nullptr);
-        ASSERT(m_DebugMessenger , "Failed to create debug messenger!");
+        const auto [result, debugMessenger] = m_Instance.createDebugUtilsMessengerEXT(VulkanDebug::GetDebugCreateInfo(), nullptr);
+        ASSERT(debugMessenger , "Failed to create debug messenger!");
+        m_DebugMessenger = debugMessenger;
         LOG_INFO("Created debug messenger ...");
     }
 
@@ -124,7 +126,7 @@ namespace Engine
         (
             m_Instance.getProcAddr("vkGetInstanceProcAddr")
         );
-        ASSERT(pfnVkGetInstanceProcAddr , "Unable to load pfnVkGetInstanceProcAddr ");
+        ASSERT(pfnVkGetInstanceProcAddr , "Unable to load vkGetInstanceProcAddr");
 
         // vkGetDeviceProcAddr
         auto pfnVkGetDeviceProcAddr = reinterpret_cast<PFN_vkGetDeviceProcAddr>

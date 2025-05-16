@@ -12,6 +12,7 @@ namespace Engine
     {
         public:
             VulkanRenderer();
+            ~VulkanRenderer();
 
             [[nodiscard]] u32 LoadShader(vk::ShaderStageFlagBits stage, const std::filesystem::path& path);
             [[nodiscard]] u32 CreateModel(const Mesh* mesh);

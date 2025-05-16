@@ -72,6 +72,11 @@ namespace Engine
         m_Context = MakeScope<VulkanContext>();
     }
 
+    VulkanRenderer::~VulkanRenderer()
+    {
+        LOG_INFO("VulkanRenderer::Destructor() ...");
+    }
+
     [[nodiscard]] u32 VulkanRenderer::LoadShader(vk::ShaderStageFlagBits stage, const std::filesystem::path& path)
     {
         ASSERT(m_ShaderIndex != MAX_SHADER_COUNT, "Reached capacity ... Can't load any more shaders!");

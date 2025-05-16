@@ -16,7 +16,9 @@ namespace Engine
 
     VulkanPipeline::~VulkanPipeline()
     {
+        LOG_INFO("VulkanPipeline::Destructor() ...");
         m_Context->GetDevice()->GetHandle().destroyPipelineLayout(m_Layout);
+        m_Context->GetDevice()->GetHandle().destroyPipeline(m_Pipeline);
     }
 
     void VulkanPipeline::Bind(vk::CommandBuffer commandBuffer) const

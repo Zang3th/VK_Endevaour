@@ -18,6 +18,7 @@ namespace Engine
 
     VulkanShader::~VulkanShader()
     {
+        LOG_INFO("VulkanShader::Destructor() ...");
         m_Device.destroyShaderModule(m_Module);
     }
 

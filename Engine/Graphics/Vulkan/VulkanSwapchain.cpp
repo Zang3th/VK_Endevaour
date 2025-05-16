@@ -73,10 +73,13 @@ namespace Engine
         FetchCapabilities();
         CreateCommandPools();
         InitializeFrames();
+        Create();
     }
 
     VulkanSwapchain::~VulkanSwapchain()
     {
+        LOG_INFO("VulkanSwapchain::Destructor() ...");
+
         Destroy();
 
         // Destroy sync objects
@@ -90,34 +93,6 @@ namespace Engine
         // Destroy command pools
         m_Device->GetHandle().destroyCommandPool(m_GraphicsCommandPool);
         m_Device->GetHandle().destroyCommandPool(m_TransferCommandPool);
-    }
-
-    void VulkanSwapchain::Create()
-    {
-        vk::SwapchainCreateInfoKHR swapchainCreate
-        {
-            .surface          = m_Surface,
-            .minImageCount    = m_ImageCount,
-            .imageFormat      = m_SurfaceFormat.format,
-            .imageColorSpace  = m_SurfaceFormat.colorSpace,
-            .imageExtent      = m_Extent,
-            .imageArrayLayers = 1,
-            .imageUsage       = vk::ImageUsageFlagBits::eColorAttachment,
-            .imageSharingMode = vk::SharingMode::eExclusive,
-            .preTransform     = m_Transform,
-            .compositeAlpha   = vk::CompositeAlphaFlagBitsKHR::eOpaque,
-            .presentMode      = m_PresentMode,
-            .clipped          = vk::True,
-            .oldSwapchain     = nullptr
-        };
-
-        VK_VERIFY(m_Device->GetHandle().createSwapchainKHR(&swapchainCreate, nullptr, &m_Swapchain));
-
-        LOG_INFO("Created swapchain ... (Size: {}x{}, Format: {}, Color: {}, Mode: {})",
-                 m_Extent.width, m_Extent.height, vk::to_string(m_SurfaceFormat.format),
-                 vk::to_string(m_SurfaceFormat.colorSpace), vk::to_string(m_PresentMode));
-
-        CreateImages();
     }
 
     vk::CommandBuffer VulkanSwapchain::CreateTransferCommandBuffer()
@@ -245,6 +220,34 @@ namespace Engine
 
     // ----- Private -----
 
+    void VulkanSwapchain::Create()
+    {
+        vk::SwapchainCreateInfoKHR swapchainCreate
+        {
+            .surface          = m_Surface,
+            .minImageCount    = m_ImageCount,
+            .imageFormat      = m_SurfaceFormat.format,
+            .imageColorSpace  = m_SurfaceFormat.colorSpace,
+            .imageExtent      = m_Extent,
+            .imageArrayLayers = 1,
+            .imageUsage       = vk::ImageUsageFlagBits::eColorAttachment,
+            .imageSharingMode = vk::SharingMode::eExclusive,
+            .preTransform     = m_Transform,
+            .compositeAlpha   = vk::CompositeAlphaFlagBitsKHR::eOpaque,
+            .presentMode      = m_PresentMode,
+            .clipped          = vk::True,
+            .oldSwapchain     = nullptr
+        };
+
+        VK_VERIFY(m_Device->GetHandle().createSwapchainKHR(&swapchainCreate, nullptr, &m_Swapchain));
+
+        LOG_INFO("Created swapchain ... (Size: {}x{}, Format: {}, Color: {}, Mode: {})",
+                 m_Extent.width, m_Extent.height, vk::to_string(m_SurfaceFormat.format),
+                 vk::to_string(m_SurfaceFormat.colorSpace), vk::to_string(m_PresentMode));
+
+        CreateImages();
+    }
+
     void VulkanSwapchain::Recreate()
     {
         // Wait for GPU
@@ -257,10 +260,9 @@ namespace Engine
 
     void VulkanSwapchain::Destroy()
     {
-        // Destroy images and image views
+        // Destroy image views
         for(auto& image : m_Images)
         {
-            m_Device->GetHandle().destroyImage(image.Image);
             m_Device->GetHandle().destroyImageView(image.View);
         }
         m_Images.clear();

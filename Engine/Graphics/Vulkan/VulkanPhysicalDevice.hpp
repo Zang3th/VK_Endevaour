@@ -33,6 +33,7 @@ namespace Engine
     {
         public:
             VulkanPhysicalDevice(const vk::Instance& instance, const vk::SurfaceKHR& surface);
+            ~VulkanPhysicalDevice();
 
             [[nodiscard]] const vk::PhysicalDevice& GetHandle()           const { return m_PhysicalDevice;     };
             [[nodiscard]] const QueueFamilyIndices& GetQueueFamilys()     const { return m_QueueFamilyIndices; };

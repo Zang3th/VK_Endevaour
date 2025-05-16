@@ -15,6 +15,7 @@ namespace Engine
 
     VulkanModel::~VulkanModel()
     {
+        LOG_INFO("VulkanModel::Destructor() ...");
         VulkanAllocator::DestroyBuffer(m_VertexBuffer, m_VertexAllocation);
         VulkanAllocator::DestroyBuffer(m_IndexBuffer, m_IndexAllocation);
     }

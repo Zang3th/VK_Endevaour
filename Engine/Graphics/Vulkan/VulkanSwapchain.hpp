@@ -26,8 +26,6 @@ namespace Engine
             VulkanSwapchain(const VulkanDevice* device, const vk::SurfaceKHR& surface);
             ~VulkanSwapchain();
 
-            void Create();
-
             [[nodiscard]] const vk::SwapchainKHR&            GetHandle()        const { return m_Swapchain;     };
             [[nodiscard]] const std::vector<SwapchainImage>& GetImages()        const { return m_Images;        };
             [[nodiscard]] const vk::SurfaceFormatKHR&        GetSurfaceFormat() const { return m_SurfaceFormat; };
@@ -48,6 +46,7 @@ namespace Engine
             [[nodiscard]] const SwapchainImage& GetCurrentImage() const { return m_Images.at(m_CurrentFrame); };
 
         private:
+            void Create();
             void Recreate();
             void Destroy();
             void FetchCapabilities();

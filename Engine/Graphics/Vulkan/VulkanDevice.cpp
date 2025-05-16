@@ -16,6 +16,7 @@ namespace Engine
 
     VulkanDevice::~VulkanDevice()
     {
+        LOG_INFO("VulkanDevice::Destructor() ...");
         m_Device.destroy();
     }
 
