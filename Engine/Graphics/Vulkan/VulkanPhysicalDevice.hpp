@@ -1,5 +1,7 @@
 #pragma once
 
+#include "VulkanSwapchainUtils.hpp"
+
 #include "Core/Types.hpp"
 
 #include <vulkan/vulkan.hpp>
@@ -14,18 +16,6 @@ namespace Engine
         [[nodiscard]] b8 isComplete() const
         {
             return ((GraphicsFamily != UINT32_MAX) && (TransferFamily != UINT32_MAX));
-        };
-    };
-
-    struct SwapchainSupport
-    {
-        vk::SurfaceCapabilitiesKHR        Capabilities;
-        std::vector<vk::SurfaceFormatKHR> Formats;
-        std::vector<vk::PresentModeKHR>   PresentModes;
-
-        [[nodiscard]] b8 isComplete() const
-        {
-            return (!Formats.empty() && !PresentModes.empty());
         };
     };
 

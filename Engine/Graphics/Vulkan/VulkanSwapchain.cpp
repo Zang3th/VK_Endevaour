@@ -1,65 +1,36 @@
 #include "VulkanSwapchain.hpp"
 #include "VulkanAssert.hpp"
 
-#include "Core/Window.hpp"
-
 namespace
 {
     // ----- Internal -----
 
-    vk::Extent2D ChooseExtent(vk::SurfaceCapabilitiesKHR capabilities)
+    Engine::SwapchainProperties GetSwapchainProperties(const Engine::VulkanPhysicalDevice* physicalDevice)
     {
-        // Swapchain dimensions are fixed by the surface. Don't change anything
-        if(capabilities.currentExtent.width != std::numeric_limits<u32>::max())
+        Engine::SwapchainProperties properties{};
+
+        // Get swapchain capabilites from the physical device
+        const Engine::SwapchainSupport swapchainSupport = physicalDevice->GetSwapchainSupport();
+
+        // Choose most optimal swapchain properties
+        properties.Extent        = Engine::VulkanSwapchainUtils::ChooseExtent(swapchainSupport.Capabilities);
+        properties.SurfaceFormat = Engine::VulkanSwapchainUtils::ChooseSurfaceFormat(swapchainSupport.Formats);
+        properties.PresentMode   = Engine::VulkanSwapchainUtils::ChoosePresentMode(swapchainSupport.PresentModes);
+
+        // Specify amount of images in swapchain
+        properties.ImageCount = swapchainSupport.Capabilities.minImageCount + 1;
+
+        // Make sure to not exceed bounds (0 := means no limit)
+        if(swapchainSupport.Capabilities.maxImageCount > 0 &&
+           properties.ImageCount > swapchainSupport.Capabilities.maxImageCount)
         {
-            Engine::Window::SetFramebufferWidth(capabilities.currentExtent.width);
-            Engine::Window::SetFramebufferHeight(capabilities.currentExtent.height);
-            return capabilities.currentExtent;
+            properties.ImageCount = swapchainSupport.Capabilities.maxImageCount;
         }
 
-        Engine::Window::UpdateFramebufferSize();
-        vk::Extent2D extent =
-        {
-            .width  = Engine::Window::GetFramebufferWidth(),
-            .height = Engine::Window::GetFramebufferHeight()
-        };
+        // Save current transform
+        properties.Transform = swapchainSupport.Capabilities.currentTransform;
 
-        // Clamp width and height between allowed min and max values of the display manager implementation
-        extent.width  = std::clamp(extent.width, capabilities.minImageExtent.width, capabilities.maxImageExtent.width);
-        extent.height = std::clamp(extent.height, capabilities.minImageExtent.height, capabilities.maxImageExtent.height);
-
-        return extent;
-    }
-
-    vk::SurfaceFormatKHR ChooseSurfaceFormat(const std::vector<vk::SurfaceFormatKHR>& surfaceFormats)
-    {
-        // Check if prefered format is available
-        for(const auto& surfaceFormat : surfaceFormats)
-        {
-            if(surfaceFormat.format == vk::Format::eB8G8R8A8Srgb &&
-               surfaceFormat.colorSpace == vk::ColorSpaceKHR::eSrgbNonlinear)
-            {
-                return surfaceFormat;
-            }
-        }
-
-        // If that's not available return the first specified format
-        return surfaceFormats[0];
-    }
-
-    vk::PresentModeKHR ChoosePresentMode(const std::vector<vk::PresentModeKHR>& presentModes)
-    {
-        // Check if mailbox mode aka triple buffering is available
-        for(const auto& presentMode : presentModes)
-        {
-            if(presentMode == vk::PresentModeKHR::eMailbox)
-            {
-                return presentMode;
-            }
-        }
-
-        // Queue mode is guaranteed to be available
-        return vk::PresentModeKHR::eFifo;
+        return properties;
     }
 }
 
@@ -70,7 +41,7 @@ namespace Engine
     VulkanSwapchain::VulkanSwapchain(const VulkanDevice* device, const vk::SurfaceKHR& surface)
         : m_Device(device), m_Surface(surface)
     {
-        FetchCapabilities();
+        m_Properties = GetSwapchainProperties(device->GetPhysicalDevice());
         CreateCommandPools();
         InitializeFrames();
         Create();
@@ -100,8 +71,8 @@ namespace Engine
         // Allocate command buffer
         vk::CommandBufferAllocateInfo allocateInfo
         {
-            .commandPool = m_TransferCommandPool,
-            .level = vk::CommandBufferLevel::ePrimary,
+            .commandPool        = m_TransferCommandPool,
+            .level              = vk::CommandBufferLevel::ePrimary,
             .commandBufferCount = 1
         };
         auto [res, commandBuffer] = m_Device->GetHandle().allocateCommandBuffers(allocateInfo);
@@ -137,7 +108,7 @@ namespace Engine
         m_Device->GetHandle().freeCommandBuffers(m_TransferCommandPool, 1, &commandBuffer);
     }
 
-    [[nodiscard]] std::pair<b8, VulkanFrame&> VulkanSwapchain::GetCurrentFrame()
+    [[nodiscard]] std::pair<b8, VulkanFrame&> VulkanSwapchain::GetNextFrame()
     {
         b8 renderNextFrame = true;
 
@@ -213,7 +184,7 @@ namespace Engine
         ASSERT(res == vk::Result::eSuccess, "Failed to present swapchain image!");
     }
 
-    void VulkanSwapchain::AdvanceFrame()
+    void VulkanSwapchain::AdvanceFrameCount()
     {
         m_CurrentFrame = (m_CurrentFrame + 1) % FRAMES_IN_FLIGHT;
     }
@@ -225,37 +196,33 @@ namespace Engine
         vk::SwapchainCreateInfoKHR swapchainCreate
         {
             .surface          = m_Surface,
-            .minImageCount    = m_ImageCount,
-            .imageFormat      = m_SurfaceFormat.format,
-            .imageColorSpace  = m_SurfaceFormat.colorSpace,
-            .imageExtent      = m_Extent,
+            .minImageCount    = m_Properties.ImageCount,
+            .imageFormat      = m_Properties.SurfaceFormat.format,
+            .imageColorSpace  = m_Properties.SurfaceFormat.colorSpace,
+            .imageExtent      = m_Properties.Extent,
             .imageArrayLayers = 1,
             .imageUsage       = vk::ImageUsageFlagBits::eColorAttachment,
             .imageSharingMode = vk::SharingMode::eExclusive,
-            .preTransform     = m_Transform,
+            .preTransform     = m_Properties.Transform,
             .compositeAlpha   = vk::CompositeAlphaFlagBitsKHR::eOpaque,
-            .presentMode      = m_PresentMode,
+            .presentMode      = m_Properties.PresentMode,
             .clipped          = vk::True,
             .oldSwapchain     = nullptr
         };
 
         VK_VERIFY(m_Device->GetHandle().createSwapchainKHR(&swapchainCreate, nullptr, &m_Swapchain));
 
-        LOG_INFO("Created swapchain ... (Size: {}x{}, Format: {}, Color: {}, Mode: {})",
-                 m_Extent.width, m_Extent.height, vk::to_string(m_SurfaceFormat.format),
-                 vk::to_string(m_SurfaceFormat.colorSpace), vk::to_string(m_PresentMode));
+        LOG_INFO
+        (
+            "Created swapchain ... (Size: {}x{}, Format: {}, Color: {}, Mode: {})",
+            m_Properties.Extent.width,
+            m_Properties.Extent.height,
+            vk::to_string(m_Properties.SurfaceFormat.format),
+            vk::to_string(m_Properties.SurfaceFormat.colorSpace),
+            vk::to_string(m_Properties.PresentMode)
+        );
 
         CreateImages();
-    }
-
-    void VulkanSwapchain::Recreate()
-    {
-        // Wait for GPU
-        m_Device->WaitForIdle();
-
-        Destroy();
-        FetchCapabilities();
-        Create();
     }
 
     void VulkanSwapchain::Destroy()
@@ -271,28 +238,14 @@ namespace Engine
         m_Device->GetHandle().destroySwapchainKHR(m_Swapchain);
     }
 
-    void VulkanSwapchain::FetchCapabilities()
+    void VulkanSwapchain::Recreate()
     {
-        // Get swapchain capabilites from the physical device
-        const SwapchainSupport swapchainSupport = m_Device->GetPhysicalDevice()->GetSwapchainSupport();
+        // Wait for GPU
+        m_Device->WaitForIdle();
 
-        // Choose most optimal swapchain properties
-        m_Extent        = ChooseExtent(swapchainSupport.Capabilities);
-        m_SurfaceFormat = ChooseSurfaceFormat(swapchainSupport.Formats);
-        m_PresentMode   = ChoosePresentMode(swapchainSupport.PresentModes);
-
-        // Specify amount of images in swapchain
-        m_ImageCount = swapchainSupport.Capabilities.minImageCount + 1;
-
-        // Make sure to not exceed bounds (0 := means no limit)
-        if(swapchainSupport.Capabilities.maxImageCount > 0 &&
-           m_ImageCount > swapchainSupport.Capabilities.maxImageCount)
-        {
-            m_ImageCount = swapchainSupport.Capabilities.maxImageCount;
-        }
-
-        // Save current transform
-        m_Transform = swapchainSupport.Capabilities.currentTransform;
+        Destroy();
+        m_Properties = GetSwapchainProperties(m_Device->GetPhysicalDevice());
+        Create();
     }
 
     void VulkanSwapchain::CreateImages()
@@ -311,7 +264,7 @@ namespace Engine
             {
                 .image    = image,
                 .viewType = vk::ImageViewType::e2D,
-                .format   = m_SurfaceFormat.format,
+                .format   = m_Properties.SurfaceFormat.format,
                 .subresourceRange =
                 {
                     .aspectMask     = vk::ImageAspectFlagBits::eColor,

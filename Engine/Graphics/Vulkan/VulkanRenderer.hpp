@@ -24,6 +24,7 @@ namespace Engine
 
         private:
             Scope<VulkanContext> m_Context;
+            VulkanSwapchain*     m_Swapchain = nullptr;
 
             std::array<Scope<VulkanShader>,   MAX_SHADER_COUNT>   m_Shaders;
             std::array<Scope<VulkanModel>,    MAX_MODEL_COUNT>    m_Models;

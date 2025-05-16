@@ -48,7 +48,7 @@ namespace Engine
         // ----- Construct the different states making up the pipeline (using dynamic rendering) -----
 
         // Pipeline rendering info (for dynamic rendering)
-        vk::Format format = m_Context->GetSwapchain()->GetSurfaceFormat().format;
+        vk::Format format = m_Context->GetSwapchain()->GetProperties().SurfaceFormat.format;
         vk::PipelineRenderingCreateInfo renderingInfo
         {
             .colorAttachmentCount    = 1,
