@@ -44,6 +44,6 @@ namespace Engine
 
     void Window::UpdateFramebufferSize()
     {
-        glfwGetFramebufferSize(m_Window, (int*)&m_FramebufferWidth, (int*)&m_FramebufferHeight);
+        glfwGetFramebufferSize(m_Window, (int*)&m_Spec.Width, (int*)&m_Spec.Height);
     }
 }

@@ -29,16 +29,12 @@ namespace Engine
             [[nodiscard]] static const std::string& GetTitle()  { return m_Spec.Title;  }
             [[nodiscard]] static u32                GetWidth()  { return m_Spec.Width;  }
             [[nodiscard]] static u32                GetHeight() { return m_Spec.Height; }
-            [[nodiscard]] static u32                GetFramebufferWidth()  { return m_FramebufferWidth;  }
-            [[nodiscard]] static u32                GetFramebufferHeight() { return m_FramebufferHeight; }
 
-            static void SetFramebufferWidth(u32 width)   { m_FramebufferWidth = width;   };
-            static void SetFramebufferHeight(u32 height) { m_FramebufferHeight = height; };
+            static void SetWidth(u32 width){ m_Spec.Width = width; };
+            static void SetHeight(u32 height){ m_Spec.Height = height; };
 
         private:
-            inline static GLFWwindow*         m_Window            = nullptr;
-            inline static WindowSpecification m_Spec              = WindowSpecification();
-            inline static u32                 m_FramebufferWidth  = 0;
-            inline static u32                 m_FramebufferHeight = 0;
+            inline static GLFWwindow*         m_Window             = nullptr;
+            inline static WindowSpecification m_Spec               = WindowSpecification();
     };
 }

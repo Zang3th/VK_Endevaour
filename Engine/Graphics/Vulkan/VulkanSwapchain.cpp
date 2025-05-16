@@ -1,6 +1,8 @@
 #include "VulkanSwapchain.hpp"
 #include "VulkanAssert.hpp"
 
+#include "Core/Window.hpp"
+
 namespace
 {
     // ----- Internal -----
@@ -32,6 +34,19 @@ namespace
 
         return properties;
     }
+
+    void FramebufferResizeCallback(GLFWwindow* window, int width, int height)
+    {
+        auto* swapchain = (Engine::VulkanSwapchain*)glfwGetWindowUserPointer(Engine::Window::GetHandle());
+        if(swapchain->GetProperties().Extent.width  != (u32)width ||
+           swapchain->GetProperties().Extent.height != (u32)height)
+        {
+            LOG_WARN("GLFW: FramebufferResizeCallback ... (Size: {}x{})", width, height);
+            Engine::Window::SetWidth((u32)width);
+            Engine::Window::SetHeight((u32)height);
+            swapchain->SetResizeFlag();
+        }
+    }
 }
 
 namespace Engine
@@ -39,22 +54,27 @@ namespace Engine
     // ----- Public -----
 
     VulkanSwapchain::VulkanSwapchain(const VulkanDevice* device, const vk::SurfaceKHR& surface)
-        : m_Device(device), m_Surface(surface)
+        : m_Device(device), m_Surface(surface), m_Resized(false)
     {
         m_Properties = GetSwapchainProperties(device->GetPhysicalDevice());
         CreateCommandPools();
         InitializeFrames();
-        Create();
+        CreateSwapchain();
+        CreateImages();
+
+        // Set framebuffer resize callback
+        glfwSetWindowUserPointer(Window::GetHandle(), this);
+        glfwSetFramebufferSizeCallback(Window::GetHandle(), FramebufferResizeCallback);
     }
 
     VulkanSwapchain::~VulkanSwapchain()
     {
         LOG_INFO("VulkanSwapchain::Destructor() ...");
 
-        Destroy();
+        DestroyImages();
 
         // Destroy sync objects
-        for(size_t i = 0; i <FRAMES_IN_FLIGHT; i++)
+        for(size_t i = 0; i < FRAMES_IN_FLIGHT; i++)
         {
             m_Device->GetHandle().destroySemaphore(m_Frames.at(i).ImageAvailable);
             m_Device->GetHandle().destroySemaphore(m_Frames.at(i).RenderFinished);
@@ -64,6 +84,9 @@ namespace Engine
         // Destroy command pools
         m_Device->GetHandle().destroyCommandPool(m_GraphicsCommandPool);
         m_Device->GetHandle().destroyCommandPool(m_TransferCommandPool);
+
+        // Destroy swapchain
+        m_Device->GetHandle().destroySwapchainKHR(m_Swapchain);
     }
 
     vk::CommandBuffer VulkanSwapchain::CreateTransferCommandBuffer()
@@ -118,14 +141,13 @@ namespace Engine
         //  Wait for this frame-slot's previous submission to finish
         VK_VERIFY(m_Device->GetHandle().waitForFences(1, &currentFrame.InFlight, vk::True, UINT64_MAX));
 
-        // Get next image
+        // Aquire
         vk::Result res = m_Device->GetHandle().acquireNextImageKHR(m_Swapchain, UINT64_MAX, currentFrame.ImageAvailable, nullptr, &currentFrame.ImageIndex);
-
-        // Check for resize
-        if(res == vk::Result::eErrorOutOfDateKHR || res == vk::Result::eSuboptimalKHR)
+        if(res == vk::Result::eErrorOutOfDateKHR || res == vk::Result::eSuboptimalKHR || m_Resized)
         {
-            Recreate();
-            LOG_WARN("vkAcquireNextImageKHR recreated swap chain ...");
+            LOG_WARN("vkAcquireNextImageKHR initialized swapchain recreation ...");
+            m_Resized = false;
+            RecreateSwapchain();
             renderNextFrame = false;
         }
         ASSERT(res == vk::Result::eSuccess, "Failed to acquire swapchain image!");
@@ -174,12 +196,11 @@ namespace Engine
 
         // Present
         vk::Result res = m_Device->GetGraphicsQueue().presentKHR(&presentInfo);
-
-        // Check for resize
-        if(res == vk::Result::eErrorOutOfDateKHR || res == vk::Result::eSuboptimalKHR)
+        if(res == vk::Result::eErrorOutOfDateKHR || res == vk::Result::eSuboptimalKHR || m_Resized)
         {
-            Recreate();
-            LOG_WARN("vkQueuePresentKHR recreated swap chain ...");
+            LOG_WARN("vkQueuePresentKHR initialized swapchain recreation ...");
+            m_Resized = false;
+            RecreateSwapchain();
         }
         ASSERT(res == vk::Result::eSuccess, "Failed to present swapchain image!");
     }
@@ -191,7 +212,7 @@ namespace Engine
 
     // ----- Private -----
 
-    void VulkanSwapchain::Create()
+    void VulkanSwapchain::CreateSwapchain()
     {
         vk::SwapchainCreateInfoKHR swapchainCreate
         {
@@ -207,7 +228,7 @@ namespace Engine
             .compositeAlpha   = vk::CompositeAlphaFlagBitsKHR::eOpaque,
             .presentMode      = m_Properties.PresentMode,
             .clipped          = vk::True,
-            .oldSwapchain     = nullptr
+            .oldSwapchain     = m_Swapchain
         };
 
         VK_VERIFY(m_Device->GetHandle().createSwapchainKHR(&swapchainCreate, nullptr, &m_Swapchain));
@@ -221,11 +242,9 @@ namespace Engine
             vk::to_string(m_Properties.SurfaceFormat.colorSpace),
             vk::to_string(m_Properties.PresentMode)
         );
-
-        CreateImages();
     }
 
-    void VulkanSwapchain::Destroy()
+    void VulkanSwapchain::DestroyImages()
     {
         // Destroy image views
         for(auto& image : m_Images)
@@ -233,19 +252,17 @@ namespace Engine
             m_Device->GetHandle().destroyImageView(image.View);
         }
         m_Images.clear();
-
-        // Destroy swap chain
-        m_Device->GetHandle().destroySwapchainKHR(m_Swapchain);
     }
 
-    void VulkanSwapchain::Recreate()
+    void VulkanSwapchain::RecreateSwapchain()
     {
         // Wait for GPU
         m_Device->WaitForIdle();
 
-        Destroy();
+        DestroyImages();
         m_Properties = GetSwapchainProperties(m_Device->GetPhysicalDevice());
-        Create();
+        CreateSwapchain();
+        CreateImages(); // Images look wrong. TODO: Check with debugger
     }
 
     void VulkanSwapchain::CreateImages()

@@ -24,11 +24,13 @@ namespace Engine
             void                        PresentFrame(const VulkanFrame& frame);
             void                        AdvanceFrameCount();
 
+            void SetResizeFlag() { m_Resized = true; };
+
         private:
-            void Create();
-            void Destroy();
-            void Recreate();
+            void CreateSwapchain();
+            void RecreateSwapchain();
             void CreateImages();
+            void DestroyImages();
             void CreateCommandPools();
             void InitializeFrames();
 
@@ -39,6 +41,7 @@ namespace Engine
 
             // Properties
             SwapchainProperties m_Properties;
+            b8 m_Resized;
 
             // Command pools
             vk::CommandPool m_GraphicsCommandPool;
