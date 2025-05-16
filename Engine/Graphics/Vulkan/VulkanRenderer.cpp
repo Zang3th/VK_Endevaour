@@ -5,6 +5,7 @@
 
 namespace
 {
+    // TODO: Move into swapchain
     // Copied from Khronos 'hello_triangle_1_3.cpp' example
     void TransitionImageLayout
     (
@@ -82,12 +83,12 @@ namespace Engine
         return currentIndex;
     }
 
-    [[nodiscard]] u32 VulkanRenderer::LoadModel(const std::filesystem::path& path)
+    [[nodiscard]] u32 VulkanRenderer::CreateModel(const Mesh* mesh)
     {
         ASSERT(m_ModelIndex != MAX_MODEL_COUNT, "Reached capacity ... Can't load any more models!");
 
         u32 currentIndex = m_ModelIndex;
-        m_Models.at(currentIndex) = MakeScope<VulkanModel>(m_Context.get(), path);
+        m_Models.at(currentIndex) = MakeScope<VulkanModel>(m_Context.get(), mesh);
         m_ModelIndex++;
 
         return currentIndex;
@@ -133,6 +134,44 @@ namespace Engine
         vk::CommandBufferBeginInfo cmdBeginInfo{};
         VK_VERIFY(frame.CommandBuffer.begin(&cmdBeginInfo));
 
+        // TODO: Move into swapchain
+        // Transition image layout from undefined to color
+        TransitionImageLayout
+        (
+            frame.CommandBuffer,
+            m_Context->GetSwapchain()->GetCurrentImage().Image,
+            vk::ImageLayout::eUndefined,
+            vk::ImageLayout::eColorAttachmentOptimal,
+            vk::AccessFlagBits2::eNone,
+            vk::AccessFlagBits2::eColorAttachmentWrite,
+            vk::PipelineStageFlagBits2::eTopOfPipe,
+            vk::PipelineStageFlagBits2::eColorAttachmentOutput
+        );
+
+        // Set up clear value
+        vk::ClearValue clearValue { .color = {{{ 1.0f, 1.0f, 1.0f, 1.0f }}}};
+
+        // Set up rendering attachment info
+        vk::RenderingAttachmentInfo colorAttachment
+        {
+            .imageView   = m_Context->GetSwapchain()->GetCurrentImage().View,
+            .imageLayout = vk::ImageLayout::eColorAttachmentOptimal,
+            .loadOp      = vk::AttachmentLoadOp::eClear,
+            .storeOp     = vk::AttachmentStoreOp::eStore,
+            .clearValue  = clearValue
+        };
+
+        // Begin rendering
+        vk::RenderingInfo renderingInfo
+        {
+            .renderArea = { .offset = {0, 0}, .extent = m_Context->GetSwapchain()->GetExtent() },
+            .layerCount = 1,
+            .colorAttachmentCount = 1,
+            .pColorAttachments = &colorAttachment
+        };
+        // TODO: Move into swapchain
+        frame.CommandBuffer.beginRendering(&renderingInfo);
+
         // Set dynamic states
         const vk::Viewport viewport = m_Context->GetSwapchain()->GetViewport();
         const vk::Rect2D   scissor  = m_Context->GetSwapchain()->GetScissor();
@@ -159,14 +198,19 @@ namespace Engine
                 model->Bind(frame.CommandBuffer);
 
                 // Issue draw call
-                // m_CommandBuffer.drawIndexed(model->GetIndexCount(), 1, 0, 0, 0);
+                frame.CommandBuffer.drawIndexed(model->GetIndexCount(), 1, 0, 0, 0);
 
                 // Increment drawcall counter
                 m_DrawcallCount++;
             }
         }
 
-        // Transition image layout (needs synchronisation2 extension enabled)
+        // TODO: Move into swapchain
+        // Complete rendering
+        frame.CommandBuffer.endRendering();
+
+        // TODO: Move into swapchain
+        // Transition image layout from color to present
         TransitionImageLayout
         (
             frame.CommandBuffer,

@@ -55,23 +55,25 @@ namespace Engine
         // Define features you want to use (e.g. geometry shaders)
         vk::PhysicalDeviceFeatures deviceFeatures{};
 
+        // Activate dynamic rendering and synchronization2
+        vk::PhysicalDeviceVulkan13Features vulkan13Features
+        {
+            .pNext            = nullptr,
+            .synchronization2 = vk::True,
+            .dynamicRendering = vk::True
+        };
+
         // Activate dynamic state 3 extension
         vk::PhysicalDeviceExtendedDynamicState3FeaturesEXT extDyn3Features
         {
+            .pNext                            = &vulkan13Features,
             .extendedDynamicState3PolygonMode = vk::True
-        };
-
-        // Activate dynamic rendering
-        vk::PhysicalDeviceDynamicRenderingFeaturesKHR dynamicRenderingFeatures
-        {
-            .pNext = &extDyn3Features, // Build up pNext chain
-            .dynamicRendering = vk::True
         };
 
         // Configure logical device
         vk::DeviceCreateInfo deviceCreateInfo
         {
-            .pNext                   = &dynamicRenderingFeatures,
+            .pNext                   = &extDyn3Features,
             .queueCreateInfoCount    = (u32)(queueCreateInfos.size()),
             .pQueueCreateInfos       = queueCreateInfos.data(),
             .enabledExtensionCount   = (u32)(g_DeviceExtensions.size()),

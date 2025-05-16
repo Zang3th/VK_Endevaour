@@ -7,22 +7,20 @@
 
 #include <vulkan/vulkan.hpp>
 
-#include <filesystem>
-
 namespace Engine
 {
     class VulkanModel
     {
         public:
-            VulkanModel(VulkanContext* context, const std::filesystem::path& path);
+            VulkanModel(VulkanContext* context, const Mesh* mesh);
             ~VulkanModel();
 
             void Bind(vk::CommandBuffer commandBuffer) const;
 
-            [[nodiscard]] vk::Buffer GetVertexBuffer() const { return m_VertexBuffer;        };
-            [[nodiscard]] vk::Buffer GetIndexBuffer()  const { return m_IndexBuffer;         };
-            [[nodiscard]] u32        GetIndexCount()   const { return m_Mesh.Indices.size(); };
-            [[nodiscard]] u32        GetPipelineID()   const { return m_PipelineID;          };
+            [[nodiscard]] vk::Buffer GetVertexBuffer() const { return m_VertexBuffer;         };
+            [[nodiscard]] vk::Buffer GetIndexBuffer()  const { return m_IndexBuffer;          };
+            [[nodiscard]] u32        GetIndexCount()   const { return m_Mesh->Indices.size(); };
+            [[nodiscard]] u32        GetPipelineID()   const { return m_PipelineID;           };
 
             void AssignPipeline(u32 id) { m_PipelineID = id; };
 
@@ -35,7 +33,7 @@ namespace Engine
             VmaAllocation        m_VertexAllocation = nullptr;
             vk::Buffer           m_IndexBuffer      = nullptr;
             VmaAllocation        m_IndexAllocation  = nullptr;
-            Mesh                 m_Mesh;
+            const Mesh*          m_Mesh             = nullptr;
             u32                  m_PipelineID       = UINT32_MAX;
     };
 }

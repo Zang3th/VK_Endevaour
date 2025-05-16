@@ -38,6 +38,7 @@ namespace Engine
             [[nodiscard]] vk::Viewport GetViewport() const {
                 return { .width  = (float)m_Extent.width, .height = (float)m_Extent.height, .minDepth = 0.0f, .maxDepth = 1.0f }; };
             [[nodiscard]] vk::Rect2D GetScissor() const { return { .extent = m_Extent };      };
+            [[nodiscard]] vk::Extent2D GetExtent() const { return m_Extent; };
 
             std::pair<b8, VulkanFrame&> GetCurrentFrame();
             void                        SubmitFrame(const VulkanFrame& frame);

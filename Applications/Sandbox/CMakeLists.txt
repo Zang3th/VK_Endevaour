@@ -5,7 +5,37 @@ project(
     LANGUAGES CXX
 )
 
-# Add source files
+# Get all GLSL files
+file(
+    GLOB_RECURSE
+    GLSL_SHADERS
+    CONFIGURE_DEPENDS
+    "${CMAKE_CURRENT_SOURCE_DIR}/Shaders/*.glsl"
+)
+
+# Compile them all to SPIR-V
+set(SPIRV_SHADERS "")
+foreach(GLSL ${GLSL_SHADERS})
+    get_filename_component(FILENAME ${GLSL} NAME_WE)
+    set(SPV "${CMAKE_CURRENT_SOURCE_DIR}/Shaders/${FILENAME}.spv")
+    list(APPEND SPIRV_SHADERS ${SPV})
+
+    add_custom_command(
+        OUTPUT ${SPV}
+        COMMAND glslc ${GLSL} -o ${SPV}
+        DEPENDS ${GLSL}
+        COMMENT "Compile Shader: ${FILENAME}.glsl"
+        VERBATIM
+    )
+endforeach()
+
+# Gather all SPIR-V files in one target
+add_custom_target(
+    Shaders
+    DEPENDS ${SPIRV_SHADERS}
+)
+
+# Get all source files
 file(
     GLOB_RECURSE
     APP_SOURCES
@@ -19,12 +49,5 @@ add_executable(Sandbox ${APP_SOURCES})
 # Link application against the engine
 target_link_libraries(Sandbox PRIVATE Engine)
 
-# Compile shaders
-add_custom_command(
-    TARGET Sandbox
-    POST_BUILD
-    COMMAND glslc "${CMAKE_CURRENT_SOURCE_DIR}/Shaders/Frag.glsl" -o "${CMAKE_CURRENT_SOURCE_DIR}/Shaders/Frag.spv"
-    COMMAND glslc "${CMAKE_CURRENT_SOURCE_DIR}/Shaders/Vert.glsl" -o "${CMAKE_CURRENT_SOURCE_DIR}/Shaders/Vert.spv"
-)
-
-message(STATUS "Compiled shaders: Sandbox")
+# Make application depend on the shaders
+add_dependencies(Sandbox Shaders)

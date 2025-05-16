@@ -14,7 +14,7 @@ namespace Engine
             VulkanRenderer();
 
             [[nodiscard]] u32 LoadShader(vk::ShaderStageFlagBits stage, const std::filesystem::path& path);
-            [[nodiscard]] u32 LoadModel(const std::filesystem::path& path);
+            [[nodiscard]] u32 CreateModel(const Mesh* mesh);
             [[nodiscard]] u32 CreatePipeline(u32 vertexID, u32 fragmentID);
 
             void AssignPipeline(u32 modelID, u32 pipelineID);
