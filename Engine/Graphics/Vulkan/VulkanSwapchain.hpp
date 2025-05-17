@@ -12,7 +12,7 @@ namespace Engine
             VulkanSwapchain(const VulkanDevice* device, const vk::SurfaceKHR& surface);
             ~VulkanSwapchain();
 
-            [[nodiscard]] const vk::SwapchainKHR&    GetHandle()       const { return m_Swapchain;                 };
+            [[nodiscard]] const vk::SwapchainKHR&    GetHandle()       const { return m_CurrentSwapchain;          };
             [[nodiscard]] const SwapchainProperties& GetProperties()   const { return m_Properties;                };
             [[nodiscard]] const SwapchainImage&      GetCurrentImage() const { return m_Images.at(m_CurrentFrame); };
 
@@ -37,7 +37,9 @@ namespace Engine
             // Handles
             const VulkanDevice*    m_Device    = nullptr;
             const vk::SurfaceKHR&  m_Surface   = nullptr;
-                  vk::SwapchainKHR m_Swapchain = nullptr;
+
+            vk::SwapchainKHR m_CurrentSwapchain = nullptr;
+            vk::SwapchainKHR m_OldSwapchain     = nullptr;
 
             // Properties
             SwapchainProperties m_Properties;

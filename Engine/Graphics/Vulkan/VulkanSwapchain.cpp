@@ -86,7 +86,7 @@ namespace Engine
         m_Device->GetHandle().destroyCommandPool(m_TransferCommandPool);
 
         // Destroy swapchain
-        m_Device->GetHandle().destroySwapchainKHR(m_Swapchain);
+        m_Device->GetHandle().destroySwapchainKHR(m_CurrentSwapchain);
     }
 
     vk::CommandBuffer VulkanSwapchain::CreateTransferCommandBuffer()
@@ -133,22 +133,20 @@ namespace Engine
 
     [[nodiscard]] std::pair<b8, VulkanFrame&> VulkanSwapchain::GetNextFrame()
     {
-        b8 renderNextFrame = true;
-
         // Get current frame
         VulkanFrame& currentFrame = m_Frames.at(m_CurrentFrame);
 
         //  Wait for this frame-slot's previous submission to finish
         VK_VERIFY(m_Device->GetHandle().waitForFences(1, &currentFrame.InFlight, vk::True, UINT64_MAX));
 
+        // TODO: This needs major rework. I should only work with the swapchain image index
         // Aquire
-        vk::Result res = m_Device->GetHandle().acquireNextImageKHR(m_Swapchain, UINT64_MAX, currentFrame.ImageAvailable, nullptr, &currentFrame.ImageIndex);
-        if(res == vk::Result::eErrorOutOfDateKHR || res == vk::Result::eSuboptimalKHR || m_Resized)
+        vk::Result res = m_Device->GetHandle().acquireNextImageKHR(m_CurrentSwapchain, UINT64_MAX, currentFrame.ImageAvailable, nullptr, &currentFrame.ImageIndex);
+        if(res == vk::Result::eErrorOutOfDateKHR)
         {
             LOG_WARN("vkAcquireNextImageKHR initialized swapchain recreation ...");
-            m_Resized = false;
             RecreateSwapchain();
-            renderNextFrame = false;
+            return { false, currentFrame };
         }
         ASSERT(res == vk::Result::eSuccess, "Failed to acquire swapchain image!");
 
@@ -159,7 +157,7 @@ namespace Engine
         currentFrame.CommandBuffer.reset();
 
         // Return frame
-        return { renderNextFrame, currentFrame };
+        return { true, currentFrame };
     }
 
     void VulkanSwapchain::SubmitFrame(const VulkanFrame& frame)
@@ -190,7 +188,7 @@ namespace Engine
             .waitSemaphoreCount = 1,
             .pWaitSemaphores    = &frame.RenderFinished,
             .swapchainCount     = 1,
-            .pSwapchains        = &m_Swapchain,
+            .pSwapchains        = &m_CurrentSwapchain,
             .pImageIndices      = &frame.ImageIndex
         };
 
@@ -214,6 +212,8 @@ namespace Engine
 
     void VulkanSwapchain::CreateSwapchain()
     {
+        m_OldSwapchain = m_CurrentSwapchain;
+
         vk::SwapchainCreateInfoKHR swapchainCreate
         {
             .surface          = m_Surface,
@@ -228,10 +228,10 @@ namespace Engine
             .compositeAlpha   = vk::CompositeAlphaFlagBitsKHR::eOpaque,
             .presentMode      = m_Properties.PresentMode,
             .clipped          = vk::True,
-            .oldSwapchain     = m_Swapchain
+            .oldSwapchain     = m_OldSwapchain
         };
 
-        VK_VERIFY(m_Device->GetHandle().createSwapchainKHR(&swapchainCreate, nullptr, &m_Swapchain));
+        VK_VERIFY(m_Device->GetHandle().createSwapchainKHR(&swapchainCreate, nullptr, &m_CurrentSwapchain));
 
         LOG_INFO
         (
@@ -242,6 +242,12 @@ namespace Engine
             vk::to_string(m_Properties.SurfaceFormat.colorSpace),
             vk::to_string(m_Properties.PresentMode)
         );
+
+        if(m_OldSwapchain != nullptr)
+        {
+            DestroyImages();
+            m_Device->GetHandle().destroySwapchainKHR(m_OldSwapchain);
+        }
     }
 
     void VulkanSwapchain::DestroyImages()
@@ -259,16 +265,15 @@ namespace Engine
         // Wait for GPU
         m_Device->WaitForIdle();
 
-        DestroyImages();
         m_Properties = GetSwapchainProperties(m_Device->GetPhysicalDevice());
         CreateSwapchain();
-        CreateImages(); // Images look wrong. TODO: Check with debugger
+        CreateImages();
     }
 
     void VulkanSwapchain::CreateImages()
     {
         // Retrieve image handles
-        auto [result, images] = m_Device->GetHandle().getSwapchainImagesKHR(m_Swapchain);
+        auto [result, images] = m_Device->GetHandle().getSwapchainImagesKHR(m_CurrentSwapchain);
         VK_VERIFY(result);
 
         // Reserve space

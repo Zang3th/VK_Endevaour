@@ -1,13 +1,16 @@
 #!/bin/bash
 
 # Get all relevant paths
-SCRIPT_DIR=$(dirname "$(realpath "$0")")
-PROJECT_ROOT=$(realpath "$SCRIPT_DIR/..")
+SCRIPT_PATH=$(dirname "$(realpath "$0")")
+PROJECT_ROOT=$(realpath "$SCRIPT_PATH/..")
 
 # Get constants
-APP_DIR="$PROJECT_ROOT/Applications"
+APP_SRC_PATH="$PROJECT_ROOT/Applications"
+BUILD_PATH="$PROJECT_ROOT/Build/Debug/Applications"
+
+# Applications
 APP_NAME="Sandbox"
-APP_PATH="$PROJECT_ROOT/Build/Debug/Applications/$APP_NAME/$APP_NAME"
+APP_EXE="$BUILD_PATH/$APP_NAME/$APP_NAME"
 
 # Create build directory
 mkdir -p "$PROJECT_ROOT/Build" && cd "$PROJECT_ROOT/Build" || exit
@@ -28,9 +31,13 @@ echo -n "Engine/Graphics: "; find "$PROJECT_ROOT/Engine/Graphics" -name '*.cpp' 
 echo -n "Engine/Vendor:   "; find "$PROJECT_ROOT/Engine/Vendor"   -name '*.cpp' -o -name '*.hpp' | xargs cat | wc -l
 echo -n "Applications:    "; find "$PROJECT_ROOT/Applications"    -name '*.cpp' -o -name '*.hpp' | xargs cat | wc -l
 
-# Launch app from within the directory
-cd "$APP_DIR/$APP_NAME"
+# Copy the applications' shaders
+mkdir -p "$BUILD_PATH/$APP_NAME/Shaders"
+cp "$APP_SRC_PATH/$APP_NAME/Shaders"/*.spv "$BUILD_PATH/$APP_NAME/Shaders/"
+
+# Launch app from within the buil directory
+cd "$BUILD_PATH/$APP_NAME"
 echo -e "\nApplication launched from:" $(pwd)
-$APP_PATH
+./$APP_NAME
 
 cd $PROJECT_ROOT
