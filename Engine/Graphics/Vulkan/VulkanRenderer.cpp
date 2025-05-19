@@ -80,7 +80,7 @@ namespace Engine
         SwapchainProperties properties = m_Swapchain->GetProperties();
 
         // Begin frame
-        frame.Begin(m_Swapchain->GetCurrentImage(), properties.Extent);
+        frame.Begin(m_Swapchain->GetImageAt(frame.ImageIndex), properties.Extent);
 
         // Set dynamic states
         vk::Viewport viewport =
@@ -120,7 +120,7 @@ namespace Engine
         }
 
         // End frame
-        frame.End(m_Context->GetSwapchain()->GetCurrentImage());
+        frame.End(m_Swapchain->GetImageAt(frame.ImageIndex));
 
         // Submit, present, advance
         m_Context->GetSwapchain()->SubmitFrame(frame);

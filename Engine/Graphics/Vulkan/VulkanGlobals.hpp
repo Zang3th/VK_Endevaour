@@ -31,5 +31,5 @@ namespace Engine
     inline static constexpr u32 MAX_MODEL_COUNT    = 1;
     inline static constexpr u32 MAX_PIPELINE_COUNT = 1;
 
-    inline static constexpr u32 FRAMES_IN_FLIGHT = 3;
+    inline static constexpr u32 FRAMES_IN_FLIGHT = 2;
 }

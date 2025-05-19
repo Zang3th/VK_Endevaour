@@ -14,7 +14,7 @@ namespace Engine
 
             [[nodiscard]] const vk::SwapchainKHR&    GetHandle()       const { return m_CurrentSwapchain;          };
             [[nodiscard]] const SwapchainProperties& GetProperties()   const { return m_Properties;                };
-            [[nodiscard]] const SwapchainImage&      GetCurrentImage() const { return m_Images.at(m_CurrentFrame); };
+            [[nodiscard]] const SwapchainImage& GetImageAt(u32 index) const { return m_Images.at(index); };
 
             [[nodiscard]] vk::CommandBuffer CreateTransferCommandBuffer();
             void                            SubmitTransferCommandBuffer(vk::CommandBuffer commandBuffer);
