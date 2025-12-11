@@ -138,7 +138,10 @@ def main():
     print("\n====== Building ======\n")
     check_existence("cmake")
     check_existence("clang++")
-    check_existence("lld-link")
+    if os.name == "nt":
+        check_existence("lld-link")
+    else:
+        check_existence("ld")
     check_existence("ninja")
 
     print("====== Vulkan ======\n")
