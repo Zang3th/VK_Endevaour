@@ -1,9 +1,6 @@
 cmake_minimum_required(VERSION 3.25)
 
-project(
-    Engine
-    LANGUAGES CXX
-)
+project(Engine LANGUAGES CXX)
 
 # Add source files
 file(
@@ -16,26 +13,34 @@ file(
 # Compile to a static library
 add_library(Engine STATIC ${ENGINE_SOURCES})
 
-# Add external libraries
-add_subdirectory("Vendor/fmt")
+# Configure fmt
+set(FMT_TEST OFF CACHE BOOL "" FORCE)
+set(FMT_DOC OFF CACHE BOOL "" FORCE)
+set(FMT_INSTALL OFF CACHE BOOL "" FORCE)
+set(FMT_FUZZ OFF CACHE BOOL "" FORCE)
+set(FMT_CUDA_TEST OFF CACHE BOOL "" FORCE)
+set(FMT_MODULE OFF CACHE BOOL "" FORCE)
 
-# Check for GLFW
-find_package(glfw3 REQUIRED)
-message(STATUS "{glfw} version: ${glfw3_VERSION}")
+# Add fmt
+add_subdirectory("Vendor/fmt" EXCLUDE_FROM_ALL)
+
+# Configure glfw
+set(BUILD_SHARED_LIBS OFF CACHE BOOL "" FORCE)
+set(GLFW_LIBRARY_TYPE STATIC CACHE STRING "" FORCE)
+set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
+set(GLFW_BUILD_TESTS OFF CACHE BOOL "" FORCE)
+set(GLFW_BUILD_DOCS OFF CACHE BOOL "" FORCE)
+set(GLFW_INSTALL OFF CACHE BOOL "" FORCE)
+
+# Add glfw
+add_subdirectory("Vendor/glfw" EXCLUDE_FROM_ALL)
 
 # Check for Vulkan
 find_package(Vulkan REQUIRED)
 message(STATUS "Vulkan SDK version: ${Vulkan_VERSION}")
 
 # Link against everything
-target_link_libraries( Engine
-    PRIVATE
-        fmt::fmt
-    PUBLIC
-        glfw
-        Vulkan::Vulkan
-)
+target_link_libraries(Engine PRIVATE fmt::fmt glfw Vulkan::Vulkan)
 
 # Add linker flags
-set(ENGINE_LINKER_FLAGS "-ldl -lpthread")
 target_link_libraries(Engine PRIVATE ${ENGINE_LINKER_FLAGS})

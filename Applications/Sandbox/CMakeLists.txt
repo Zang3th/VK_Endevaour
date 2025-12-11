@@ -1,9 +1,6 @@
 cmake_minimum_required(VERSION 3.25)
 
-project(
-    HelloTriangle
-    LANGUAGES CXX
-)
+project(HelloTriangle LANGUAGES CXX)
 
 # Get all GLSL files
 file(
@@ -30,10 +27,7 @@ foreach(GLSL ${GLSL_SHADERS})
 endforeach()
 
 # Gather all SPIR-V files in one target
-add_custom_target(
-    Shaders
-    DEPENDS ${SPIRV_SHADERS}
-)
+add_custom_target(Shaders DEPENDS ${SPIRV_SHADERS})
 
 # Get all source files
 file(

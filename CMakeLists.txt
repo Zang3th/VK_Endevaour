@@ -4,11 +4,7 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
-project(
-    VK_Endevaour
-    VERSION 0.0.1
-    LANGUAGES CXX
-)
+project(VK_Endevaour VERSION 0.1 LANGUAGES CXX)
 
 # Add compile options and definitions
 include("CMake/CompileOptions.cmake")
