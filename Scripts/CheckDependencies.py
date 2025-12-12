@@ -8,17 +8,16 @@ import re
 from pathlib import Path
 from dataclasses import dataclass
 
+# ---------------------------------------------------------------------------
 
 @dataclass
 class ExecutableInfo:
     path: str
     version: str
 
-
 # ---------------------------------------------------------------------------
 # Vulkan SDK
 # ---------------------------------------------------------------------------
-
 
 def check_vk_loader():
     print(f"[VK_LOADER] ", end="")
@@ -48,9 +47,7 @@ def check_vk_loader():
 
     print("❌\n")
 
-
 # ---------------------------------------------------------------------------
-
 
 def check_vk_info():
     print("[VK_INFO] ", end="")
@@ -105,11 +102,9 @@ def check_vk_info():
     print(f"  Device Type: {gpu.get('deviceType')}")
     print(f"  Driver Version: {gpu.get('driverVersion')}\n")
 
-
 # ---------------------------------------------------------------------------
 # Utility functions
 # ---------------------------------------------------------------------------
-
 
 def find_executable(name) -> ExecutableInfo | None:
     exe = shutil.which(name)
@@ -123,9 +118,7 @@ def find_executable(name) -> ExecutableInfo | None:
 
     return None
 
-
 # ---------------------------------------------------------------------------
-
 
 def check_existence(name: str):
     print(f"[{name.upper()}] ", end="")
@@ -139,9 +132,7 @@ def check_existence(name: str):
     print(f"  Path: {exe.path}")
     print(f"  Version: {exe.version}\n")
 
-
 # ---------------------------------------------------------------------------
-
 
 def main():
     print("\n====== Building ======\n")
@@ -154,6 +145,7 @@ def main():
     check_vk_info()
     check_existence("glslc")
 
+# ---------------------------------------------------------------------------
 
 if __name__ == "__main__":
     main()

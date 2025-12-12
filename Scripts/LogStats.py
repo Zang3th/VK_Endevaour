@@ -2,6 +2,8 @@
 
 from pathlib import Path
 
+# ---------------------------------------------------------------------------
+
 TARGET_DIRS = [
     "Engine/Core",
     "Engine/Debug",
@@ -12,9 +14,7 @@ TARGET_DIRS = [
 
 EXTENSIONS = [".cpp", ".hpp"]
 
-
 # ---------------------------------------------------------------------------
-
 
 def count_lines_in_dir(directory: Path) -> int:
     total = 0
@@ -30,9 +30,7 @@ def count_lines_in_dir(directory: Path) -> int:
                 pass
     return total
 
-
 # ---------------------------------------------------------------------------
-
 
 def main():
     project_root = Path(__file__).resolve().parent.parent
@@ -46,6 +44,7 @@ def main():
 
     print("")
 
+# ---------------------------------------------------------------------------
 
 if __name__ == "__main__":
     main()

@@ -4,6 +4,7 @@ import subprocess
 from pathlib import Path
 import sys
 
+# ---------------------------------------------------------------------------
 
 class Paths:
     SCRIPTS = Path(__file__).resolve().parent
@@ -14,6 +15,7 @@ class Paths:
     APP_BUILD = DEBUG / "Applications" / "Sandbox"
     APP_EXE = APP_BUILD / "Sandbox"
 
+# ---------------------------------------------------------------------------
 
 def run(cmd, cwd=None):
     print("> " + " ".join(cmd))
@@ -23,6 +25,7 @@ def run(cmd, cwd=None):
         print("Command failed, aborting.")
         sys.exit(1)
 
+# ---------------------------------------------------------------------------
 
 def main():
     # Create build directory
@@ -58,6 +61,7 @@ def main():
 
     # Launch application
 
+# ---------------------------------------------------------------------------
 
 if __name__ == "__main__":
     main()

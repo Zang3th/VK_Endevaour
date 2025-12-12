@@ -3,7 +3,8 @@
 #include "Core/Types.hpp"
 
 #include <vulkan/vulkan.hpp> // This needs to be included before GLFW
-#include <GLFW/glfw3.h>
+
+#include "Vendor/glfw/include/GLFW/glfw3.h"
 
 namespace Engine
 {
