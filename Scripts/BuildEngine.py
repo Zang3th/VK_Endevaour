@@ -47,6 +47,12 @@ def main():
     )
 
     # Build everything via Ninja
+    run(
+        [
+            "ninja",
+        ],
+        cwd=Paths.DEBUG,
+    )
 
     # Copy shaders
 

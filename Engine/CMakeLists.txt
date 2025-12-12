@@ -35,12 +35,22 @@ set(GLFW_INSTALL OFF CACHE BOOL "" FORCE)
 # Add glfw
 add_subdirectory("Vendor/glfw" EXCLUDE_FROM_ALL)
 
+# Remove specific C warnings for glfw
+if (TARGET glfw)
+    target_compile_options(glfw PRIVATE
+        $<$<COMPILE_LANGUAGE:C>:-Wno-missing-field-initializers>
+        $<$<COMPILE_LANGUAGE:C>:-Wno-sign-compare>
+        $<$<COMPILE_LANGUAGE:C>:-Wno-format-nonliteral>
+        $<$<COMPILE_LANGUAGE:C>:-Wno-incompatible-pointer-types-discards-qualifiers>
+    )
+endif()
+
 # Check for Vulkan
 find_package(Vulkan REQUIRED)
 message(STATUS "Vulkan SDK version: ${Vulkan_VERSION}")
 
 # Link against everything
-target_link_libraries(Engine PRIVATE fmt::fmt glfw Vulkan::Vulkan)
+target_link_libraries(Engine PRIVATE fmt::fmt glfw PUBLIC Vulkan::Vulkan)
 
 # Add linker flags
 target_link_libraries(Engine PRIVATE ${ENGINE_LINKER_FLAGS})
