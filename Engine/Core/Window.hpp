@@ -4,6 +4,7 @@
 
 #include <vulkan/vulkan.hpp> // This needs to be included before GLFW
 
+#define GLFW_INCLUDE_NONE
 #include "Vendor/glfw/include/GLFW/glfw3.h"
 
 namespace Engine

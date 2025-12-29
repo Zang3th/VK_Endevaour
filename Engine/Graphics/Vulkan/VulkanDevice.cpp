@@ -71,6 +71,8 @@ namespace Engine
             .extendedDynamicState3PolygonMode = vk::True
         };
 
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wmissing-designated-field-initializers"
         // Configure logical device
         vk::DeviceCreateInfo deviceCreateInfo
         {
@@ -81,6 +83,7 @@ namespace Engine
             .ppEnabledExtensionNames = g_DeviceExtensions.data(),
             .pEnabledFeatures        = &deviceFeatures
         };
+#pragma clang diagnostic pop
 
         // Create logical device
         VK_VERIFY(m_PhysicalDevice->GetHandle().createDevice(&deviceCreateInfo, nullptr, &m_Device));

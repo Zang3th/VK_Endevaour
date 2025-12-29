@@ -113,6 +113,7 @@
 #else
 #define GLFW_HAS_X11_OR_WAYLAND     0
 #endif
+#define GLFW_INCLUDE_NONE
 #include <GLFW/glfw3.h>
 #ifdef _WIN32
 #undef APIENTRY

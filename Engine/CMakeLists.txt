@@ -47,6 +47,8 @@ add_subdirectory("Vendor/glfw" EXCLUDE_FROM_ALL)
 if(TARGET glfw)
     target_compile_options(
         glfw PRIVATE
+        $<$<COMPILE_LANGUAGE:C>:-Wno-pedantic>
+        $<$<COMPILE_LANGUAGE:C>:-Wno-format-nonliteral>
         $<$<COMPILE_LANGUAGE:C>:-Wno-missing-field-initializers>
         $<$<COMPILE_LANGUAGE:C>:-Wno-sign-compare>
         $<$<COMPILE_LANGUAGE:C>:-Wno-format-nonliteral>
