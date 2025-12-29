@@ -154,7 +154,7 @@ namespace Engine
         VK_VERIFY(m_Device->GetHandle().resetFences(1, &currentFrame.InFlight));
 
         // Reset command buffer
-        currentFrame.CommandBuffer.reset();
+        VK_VERIFY(currentFrame.CommandBuffer.reset());
 
         // Return frame
         return { true, currentFrame };

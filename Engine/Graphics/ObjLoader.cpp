@@ -13,14 +13,15 @@ namespace Engine
         std::vector<tinyobj::material_t> materials;
         std::string warn;
         std::string error;
+        std::ifstream iStream(path, std::ios::binary);
 
         // Load obj file
-        bool success = LoadObj(&attrib, &shapes, &materials, &warn, &error, path.c_str());
+        bool success = LoadObj(&attrib, &shapes, &materials, &warn, &error, &iStream);
         if(!success)
         {
             if(!warn.empty())  { LOG_WARN("tinyobjloader: {}", warn);   };
             if(!error.empty()) { LOG_ERROR("tinyobjloader: {}", error); };
-            ASSERT(success, "Failed to load model '{}'", path.c_str());
+            ASSERT(success, "Failed to load model '{}'", path.string());
         }
         LOG_INFO("Loaded model '{}' ... (Shapes: {}, Vertices: {}, Indices: {})", path.string(), shapes.size(), attrib.vertices.size(), shapes.at(0).mesh.indices.size());
 

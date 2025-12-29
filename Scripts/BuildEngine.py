@@ -3,6 +3,7 @@
 import subprocess
 from pathlib import Path
 import sys
+import shutil
 
 # ---------------------------------------------------------------------------
 
@@ -11,9 +12,10 @@ class Paths:
     PROJECT_ROOT = SCRIPTS.parent
     BUILD = PROJECT_ROOT / "Build"
     DEBUG = BUILD / "Debug"
-    APP_SRC = PROJECT_ROOT / "Applications"
+    APP_SRC = PROJECT_ROOT / "Applications" / "Sandbox"
+    APP_SRC_SHADERS = APP_SRC / "Shaders"
     APP_BUILD = DEBUG / "Applications" / "Sandbox"
-    APP_EXE = APP_BUILD / "Sandbox"
+    APP_BUILD_SHADERS = APP_BUILD / "Shaders"
 
 # ---------------------------------------------------------------------------
 
@@ -28,12 +30,14 @@ def run(cmd, cwd=None):
 # ---------------------------------------------------------------------------
 
 def main():
+    # Clean build directory (Debug only)
+    if Paths.DEBUG.exists():
+        shutil.rmtree(Paths.DEBUG)
+        print(f"> Deleted '{Paths.DEBUG}'")
+
     # Create build directory
     Paths.DEBUG.mkdir(parents=True, exist_ok=True)
-
-    # Remove old executable
-    if Paths.APP_EXE.exists():
-        Paths.APP_EXE.unlink()
+    print(f"> Created '{Paths.DEBUG}'")
 
     # Configure CMake
     run(
@@ -58,8 +62,10 @@ def main():
     )
 
     # Copy shaders
-
-    # Launch application
+    Paths.APP_BUILD_SHADERS.mkdir(parents=True, exist_ok=True)
+    for spv in Paths.APP_SRC_SHADERS.rglob("*.spv"):
+        shutil.copy2(spv, Paths.APP_BUILD_SHADERS / spv.name)
+        print(f"> Copied shader '{spv.name}' to '{Paths.APP_BUILD_SHADERS}'")
 
 # ---------------------------------------------------------------------------
 

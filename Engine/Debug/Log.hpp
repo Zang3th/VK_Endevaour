@@ -4,48 +4,16 @@
 #include "Vendor/fmt/include/fmt/chrono.h"
 #include "Vendor/fmt/include/fmt/color.h"
 
-#define GET_CURRENT_TIME_WITH_MILLIS() \
-    auto now = std::chrono::system_clock::now(); \
-    auto millis = std::chrono::duration_cast<std::chrono::milliseconds>(now.time_since_epoch()) % 1000; \
-    std::time_t tt = std::chrono::system_clock::to_time_t(now); \
-    std::tm localTime{}; \
-    localtime_r(&tt, &localTime);
-
 // Not ideal to route everything through stderr, but this unifies colored output from validation layers for every tested terminal.
 
-#define LOG_VERBOSE(msg, ...) do { \
-    GET_CURRENT_TIME_WITH_MILLIS(); \
-    fmt::print(stderr, fg(fmt::color::white) | fmt::emphasis::bold, \
-               "{:%H:%M:%S}.{:03d} [VERBOSE] " msg "\n", localTime, static_cast<int>(millis.count()) \
-               __VA_OPT__(,) __VA_ARGS__); \
-} while(0)
+#define LOG_VERBOSE(msg, ...) fmt::print(stderr, "[VERBOSE] " msg "\n" __VA_OPT__(,) __VA_ARGS__)
 
-#define LOG_INFO(msg, ...) do { \
-    GET_CURRENT_TIME_WITH_MILLIS(); \
-    fmt::print(stderr, fg(fmt::color::green) | fmt::emphasis::bold, \
-               "{:%H:%M:%S}.{:03d} [INFO] " msg "\n", localTime, static_cast<int>(millis.count()) \
-               __VA_OPT__(,) __VA_ARGS__); \
-} while(0)
+#define LOG_INFO(msg, ...) fmt::print(stderr, "[INFO] " msg "\n" __VA_OPT__(,) __VA_ARGS__)
 
-#define LOG_WARN(msg, ...) do { \
-    GET_CURRENT_TIME_WITH_MILLIS(); \
-    fmt::print(stderr, fg(fmt::color::yellow) | fmt::emphasis::bold, \
-               "{:%H:%M:%S}.{:03d} [WARN] " msg "\n", localTime, static_cast<int>(millis.count()) \
-               __VA_OPT__(,) __VA_ARGS__); \
-} while(0)
+#define LOG_WARN(msg, ...) fmt::print(stderr, "[WARN] " msg "\n" __VA_OPT__(,) __VA_ARGS__)
 
-#define LOG_ERROR(msg, ...) do { \
-    GET_CURRENT_TIME_WITH_MILLIS(); \
-    fmt::print(stderr, fg(fmt::color::crimson) | fmt::emphasis::bold, \
-               "{:%H:%M:%S}.{:03d} [ERROR] " msg "\n", localTime, static_cast<int>(millis.count()) \
-               __VA_OPT__(,) __VA_ARGS__); \
-} while(0)
+#define LOG_ERROR(msg, ...) fmt::print(stderr, "[ERROR] " msg "\n" __VA_OPT__(,) __VA_ARGS__)
 
-#define LOG_ASSERT(msg, ...) do { \
-    GET_CURRENT_TIME_WITH_MILLIS(); \
-    fmt::print(stderr, fg(fmt::color::crimson) | fmt::emphasis::bold, \
-               "{:%H:%M:%S}.{:03d} [ASSERT] " msg "\n", localTime, static_cast<int>(millis.count()) \
-               __VA_OPT__(,) __VA_ARGS__); \
-} while(0)
+#define LOG_ASSERT(msg, ...) fmt::print(stderr, "[ASSERT] " msg "\n" __VA_OPT__(,) __VA_ARGS__)
 
 #define ASSERT(condition, ...) { if(!(condition)) { LOG_ASSERT(__VA_ARGS__); __builtin_trap(); }}
