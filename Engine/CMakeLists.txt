@@ -24,6 +24,14 @@ set(FMT_MODULE OFF CACHE BOOL "" FORCE)
 # Add fmt
 add_subdirectory("Vendor/fmt" EXCLUDE_FROM_ALL)
 
+# Remove specific warnings for fmt
+if(TARGET fmt)
+    target_compile_options(
+        fmt PRIVATE
+        $<$<COMPILE_LANGUAGE:CXX>:-Wno-unused-result>
+    )
+endif()
+
 # Configure glfw
 set(BUILD_SHARED_LIBS OFF CACHE BOOL "" FORCE)
 set(GLFW_LIBRARY_TYPE STATIC CACHE STRING "" FORCE)
@@ -35,7 +43,7 @@ set(GLFW_INSTALL OFF CACHE BOOL "" FORCE)
 # Add glfw
 add_subdirectory("Vendor/glfw" EXCLUDE_FROM_ALL)
 
-# Remove specific C warnings for glfw
+# Remove specific warnings for glfw
 if(TARGET glfw)
     target_compile_options(
         glfw PRIVATE

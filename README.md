@@ -21,11 +21,6 @@ Accommodating repository while learning Vulkan. This includes:
 - This project is currently only tested on Linux (Wayland) with Clang 20.x
 - Please note the path from which you start up the application, because resource loading is relative for now
 
-### External dependencies
-
-- [glfw](https://github.com/glfw/glfw)
-- [glslc](https://github.com/google/shaderc?tab=readme-ov-file#downloads)
-
 ### Packages (only used for development)
 
     sudo dnf install vulkan-tools
@@ -36,11 +31,12 @@ Accommodating repository while learning Vulkan. This includes:
 
 **Thanks to all the creators and contributors of these projects!**
 
-| **Library**                                                                                | **Version** | **Updated in Engine** | **Functionality**           | **Type**       |
-|:------------------------------------------------------------------------------------------:|:-----------:|:---------------------:|:---------------------------:|:--------------:|
-| [VulkanMemoryAllocator](https://github.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator) | 3.2.1       | 09.05.2025            | Memory allocation           | Source include |
-| [imgui](https://github.com/ocornut/imgui)                                                  | 1.91.9b     | 07.05.2025            | GUI                         | Source include |
-| [fmt](https://github.com/fmtlib/fmt)                                                       | 11.1.4      | 23.04.2025            | Formatting and logging      | Static library |
-| [tinyobjloader](https://github.com/tinyobjloader/tinyobjloader)                            | 2.0.0       | 24.10.2024            | OBJ file loading            | Source include |
-| [stb_image](https://github.com/nothings/stb/blob/master/stb_image.h)                       | 2.30        | 21.10.2024            | Image loading               | Source include |
-| [glm](https://github.com/g-truc/glm)                                                       | 1.0.1       | 29.08.2024            | Mathematics                 | Source include |
+| **Library**                                                              | **Version** | **Updated in Engine** | **Functionality**           | **Type**       |
+|:------------------------------------------------------------------------:|:-----------:|:---------------------:|:---------------------------:|:--------------:|
+| [glm](https://github.com/g-truc/glm)                                     | 1.0.2       | 29.12.2025            | Mathematics                 | Source include |
+| [imgui](https://github.com/ocornut/imgui)                                | 1.92.5      | 29.12.2025            | GUI                         | Source include |
+| [vma](https://github.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator) | 3.3.0       | 29.12.2025            | Memory allocation           | Source include |
+| [fmt](https://github.com/fmtlib/fmt)                                     | 12.1.0      | 29.12.2025            | Formatting and logging      | Static library |
+| [glfw](https://github.com/glfw/glfw)                                     | 3.4.0       | 11.12.2025            | Window and input            | Static library |
+| [tinyobjloader](https://github.com/tinyobjloader/tinyobjloader)          | 2.0.0       | 24.10.2024            | OBJ file loading            | Source include |
+| [stb_image](https://github.com/nothings/stb/blob/master/stb_image.h)     | 2.30        | 21.10.2024            | Image loading               | Source include |
