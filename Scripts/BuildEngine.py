@@ -24,20 +24,20 @@ def run(cmd, cwd=None):
     try:
         subprocess.check_call(cmd, cwd=cwd)
     except subprocess.CalledProcessError:
-        print("Command failed, aborting.")
+        print("> Command failed, aborting!")
         sys.exit(1)
 
 # ---------------------------------------------------------------------------
 
 def main():
-    # Clean build directory (Debug only)
+    print("> Building engine ...")
+
+    # Create clean build directory
     if Paths.DEBUG.exists():
         shutil.rmtree(Paths.DEBUG)
-        print(f"> Deleted '{Paths.DEBUG}'")
 
-    # Create build directory
     Paths.DEBUG.mkdir(parents=True, exist_ok=True)
-    print(f"> Created '{Paths.DEBUG}'")
+    print(f"> (Re)created '{Paths.DEBUG}' ...")
 
     # Configure CMake
     run(
@@ -49,6 +49,7 @@ def main():
             "-DCMAKE_CXX_COMPILER=clang++",
             "-DCMAKE_C_COMPILER=clang",
             "-DCMAKE_BUILD_TYPE=Debug",
+             "-DCMAKE_MESSAGE_LOG_LEVEL=WARNING",
         ],
         cwd=Paths.DEBUG,
     )
@@ -65,7 +66,7 @@ def main():
     Paths.APP_BUILD_SHADERS.mkdir(parents=True, exist_ok=True)
     for spv in Paths.APP_SRC_SHADERS.rglob("*.spv"):
         shutil.copy2(spv, Paths.APP_BUILD_SHADERS / spv.name)
-        print(f"> Copied shader '{spv.name}' to '{Paths.APP_BUILD_SHADERS}'")
+        print(f"> Copied shader '{spv.name}' to '{Paths.APP_BUILD_SHADERS}' ...")
 
 # ---------------------------------------------------------------------------
 
