@@ -28,11 +28,13 @@ VK_Endevaour/
 │   └── Sandbox/                # Test application
 ├── CMake/                      # Global CMake configuration
 ├── Engine/
-│   ├── Core/                   # Core utilities and engine base
-│   ├── Debug/                  # Logging, validation, diagnostics
+│   ├── Core/                   # Fundamental engine utilities (types, memory, helpers)
+│   ├── Debug/                  # Logging and diagnostics
 │   ├── Graphics/
+│   │   ├── Import/             # CPU-side asset import (e.g., OBJ)
+│   │   ├── Resources/          # Graphics resources (e.g., Mesh)
 │   │   └── Vulkan/             # Vulkan backend
-│   └── Vendor/                 # Vendored third-party libraries
+│   └── Platform/               # Platform abstraction (windowing, input)
 ├── Scripts/                    # Helper scripts (build, checks, stats)
 ```
 
@@ -47,7 +49,7 @@ VK_Endevaour/
 - Vulkan SDK installation (platform dependent)
   - Installation of the Vulkan SDK, validation layers, glslc, etc. is intentionally not automated, as this strongly depends on the platform and distribution.
 
-For one of my fedora machines these installs were sufficient:
+For one Fedora-based system, the following packages were sufficient:
 
 ```bash
 sudo dnf install vulkan-tools
