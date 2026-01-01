@@ -35,7 +35,7 @@ VK_Endevaour/
 │   │   ├── Resources/          # Graphics resources (e.g., Mesh)
 │   │   └── Vulkan/             # Vulkan backend
 │   └── Platform/               # Platform abstraction (windowing, input)
-├── Scripts/                    # Helper scripts (build, checks, stats)
+└── Scripts/                    # Helper scripts (build, checks, stats)
 ```
 
 ## Building and compiling
@@ -47,7 +47,7 @@ VK_Endevaour/
 - CMake 3.25 or newer
 - Vulkan 1.4 compatible graphics card and driver
 - Vulkan SDK installation (platform dependent)
-  - Installation of the Vulkan SDK, validation layers, glslc, etc. is intentionally not automated, as this strongly depends on the platform and distribution.
+  - Installation of the SDK, validation layers, glslc, etc. is intentionally not automated, as this strongly depends on the platform and distribution.
 
 For one Fedora-based system, the following packages were sufficient:
 
