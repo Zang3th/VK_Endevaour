@@ -25,7 +25,7 @@ namespace Engine
         }
         LOG_INFO("Loaded model '{}' ... (Shapes: {}, Vertices: {}, Indices: {})", path.string(), shapes.size(), attrib.vertices.size(), shapes.at(0).mesh.indices.size());
 
-        // Hash map to store and reuse vertices (needs a hashing function and overloaded comparison operator
+        // Hash map to store and reuse vertices (needs a hashing function and overloaded comparison operator)
         std::unordered_map<Vertex, u32> uniqueVertices{};
 
         Mesh mesh;
