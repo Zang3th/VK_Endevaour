@@ -33,7 +33,7 @@ Accommodating repository while learning Vulkan. This includes:
 
 | **Library**                                                              | **Version** | **Updated in Engine** | **Functionality**           | **Type**       |
 |:------------------------------------------------------------------------:|:-----------:|:---------------------:|:---------------------------:|:--------------:|
-| [glm](https://github.com/g-truc/glm)                                     | 1.0.2       | 29.12.2025            | Mathematics                 | Source include |
+| [glm](https://github.com/g-truc/glm)                                     | 1.0.3       | 01.01.2026            | Mathematics                 | Source include |
 | [imgui](https://github.com/ocornut/imgui)                                | 1.92.5      | 29.12.2025            | GUI                         | Source include |
 | [vma](https://github.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator) | 3.3.0       | 29.12.2025            | Memory allocation           | Source include |
 | [fmt](https://github.com/fmtlib/fmt)                                     | 12.1.0      | 29.12.2025            | Formatting and logging      | Static library |
