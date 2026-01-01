@@ -3,7 +3,7 @@
 #include "VulkanAllocator.hpp"
 #include "VulkanContext.hpp"
 
-#include "Graphics/Mesh.hpp"
+#include "Graphics/Resources/Mesh.hpp"
 
 #include <vulkan/vulkan.hpp>
 

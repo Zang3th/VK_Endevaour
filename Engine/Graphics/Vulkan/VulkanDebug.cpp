@@ -2,7 +2,7 @@
 #include "VulkanGlobals.hpp"
 
 #include "Debug/Log.hpp"
-#include "Core/Window.hpp"
+#include "Platform/Window.hpp"
 
 // Define two function pointers in anonymous namespace. They will later point to Vulkan extension functions
 namespace

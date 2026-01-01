@@ -1,7 +1,7 @@
 #include "VulkanPipeline.hpp"
 #include "VulkanAssert.hpp"
 
-#include "Graphics/Mesh.hpp"
+#include "Graphics/Resources/Mesh.hpp"
 
 namespace Engine
 {

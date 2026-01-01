@@ -5,11 +5,11 @@ from pathlib import Path
 # ---------------------------------------------------------------------------
 
 TARGET_DIRS = [
+    "Applications/Sandbox",
     "Engine/Core",
     "Engine/Debug",
     "Engine/Graphics",
-    "Engine/Vendor",
-    "Applications/Sandbox",
+    "Engine/Vendor"
 ]
 
 EXTENSIONS = [".cpp", ".hpp"]

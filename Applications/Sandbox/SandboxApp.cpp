@@ -1,9 +1,9 @@
 #include "SandboxApp.hpp"
 
-#include <Core/Window.hpp>
+#include <Platform/Window.hpp>
 
 #include <Graphics/Vulkan/VulkanRenderer.hpp>
-#include <Graphics/ObjLoader.hpp>
+#include <Graphics/Import/ObjLoader.hpp>
 
 Sandbox::Sandbox()
 {

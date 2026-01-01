@@ -5,7 +5,7 @@
 #include "VulkanAllocator.hpp"
 
 #include "Core/Memory.hpp"
-#include "Core/Window.hpp"
+#include "Platform/Window.hpp"
 
 #include <vulkan/vulkan.hpp>
 #include <vulkan/vulkan_structs.hpp>

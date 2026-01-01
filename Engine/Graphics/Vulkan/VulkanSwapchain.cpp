@@ -1,7 +1,7 @@
 #include "VulkanSwapchain.hpp"
 #include "VulkanAssert.hpp"
 
-#include "Core/Window.hpp"
+#include "Platform/Window.hpp"
 
 namespace
 {
