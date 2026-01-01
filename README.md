@@ -12,14 +12,13 @@ The primary goals are:
 
 ## Key technical goals
 
-- Vulkan 1.4 with promoted modern features:
+- Vulkan 1.4 with modern features
   - No legacy render passes (**Dynamic Rendering**)
   - Explicit synchronization (**Synchronization2**)
-  - Extensive use of **dynamic pipeline state**
-- Clean ownership and lifetime management
-- Modern C++20 (no exceptions, assert-based error handling)
-- Engine-driven command buffer recording
-- Minimal application-side Vulkan exposure
+  - Usage of **VULKAN_HPP_NO_CONSTRUCTORS** and **VULKAN_HPP_NO_EXCEPTIONS**
+    - Explicit create/destroy calls with modern return value types
+- C++20
+  - Assert-based error handling
 
 ## Project structure
 
@@ -66,7 +65,7 @@ sudo dnf install vulkan-validation-layers-devel
 
 All third-party libraries are fully vendored, either header-only or built as static libraries via sub-CMake.
 
-No system-wide installation of engine dependencies is required.
+- No system-wide installation of engine dependencies is required.
 
 A helper script exists to verify basic build requirements:
 
@@ -78,20 +77,14 @@ This script provides a best-effort assessment of whether the system is able to b
 
 ### Build process
 
-Recommended workflow via the provided build script:
+Manual CMake usage or via the provided build script:
 
 ```bash
 python Scripts/BuildEngine.py -d    # Debug
 python Scripts/BuildEngine.py -r    # Release
 python Scripts/BuildEngine.py -c    # Clean
 ```
-Manual CMake usage is also possible.
-
-### Notes
-
-- Resource paths are currently relative to the working directory
-- Validation layers are expected to be available during development
-- APIs may change frequently while the architecture is being refined
+**Launching:** Resource paths are relative to the current working directory
 
 ### Integrated libraries
 
