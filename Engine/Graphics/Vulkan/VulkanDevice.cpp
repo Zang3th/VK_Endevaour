@@ -54,7 +54,7 @@ namespace Engine
         }
 
         // Define features you want to use (e.g. geometry shaders)
-        vk::PhysicalDeviceFeatures deviceFeatures{};
+        const vk::PhysicalDeviceFeatures deviceFeatures{};
 
         // Activate dynamic rendering and synchronization2
         vk::PhysicalDeviceVulkan13Features vulkan13Features
@@ -74,7 +74,7 @@ namespace Engine
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wmissing-designated-field-initializers"
         // Configure logical device
-        vk::DeviceCreateInfo deviceCreateInfo
+        const vk::DeviceCreateInfo deviceCreateInfo
         {
             .pNext                   = &extDyn3Features,
             .queueCreateInfoCount    = (u32)(queueCreateInfos.size()),

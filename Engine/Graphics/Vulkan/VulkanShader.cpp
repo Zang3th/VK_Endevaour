@@ -36,7 +36,7 @@ namespace Engine
 
     void VulkanShader::CreateShaderModule(std::vector<char>&& code)
     {
-        vk::ShaderModuleCreateInfo shaderCreateInfo
+        const vk::ShaderModuleCreateInfo shaderCreateInfo
         {
             .codeSize = code.size(),
             .pCode    = (u32*)code.data()

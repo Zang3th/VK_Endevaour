@@ -21,7 +21,7 @@ namespace Engine
     {
         ASSERT(m_ShaderIndex != MAX_SHADER_COUNT, "Reached capacity ... Can't load any more shaders!");
 
-        u32 currentIndex = m_ShaderIndex;
+        const u32 currentIndex = m_ShaderIndex;
         m_Shaders.at(currentIndex) = MakeScope<VulkanShader>(m_Context->GetDevice()->GetHandle(), stage, path);
         m_ShaderIndex++;
 
@@ -32,7 +32,7 @@ namespace Engine
     {
         ASSERT(m_ModelIndex != MAX_MODEL_COUNT, "Reached capacity ... Can't load any more models!");
 
-        u32 currentIndex = m_ModelIndex;
+        const u32 currentIndex = m_ModelIndex;
         m_Models.at(currentIndex) = MakeScope<VulkanModel>(m_Context.get(), mesh);
         m_ModelIndex++;
 
@@ -43,8 +43,8 @@ namespace Engine
     {
         ASSERT(m_PipelineIndex != MAX_PIPELINE_COUNT, "Reached capacity ... Can't create any more pipelines!");
 
-        u32 currentIndex = m_PipelineIndex;
-        PipelineSpecification spec
+        const u32 currentIndex = m_PipelineIndex;
+        const PipelineSpecification spec
         {
             .VertexShader   = m_Shaders.at(vertexID).get(),
             .FragmentShader = m_Shaders.at(fragmentID).get(),
@@ -76,13 +76,13 @@ namespace Engine
         }
 
         // Get swapchain properties for this frame
-        SwapchainProperties properties = m_Swapchain->GetProperties();
+        const SwapchainProperties properties = m_Swapchain->GetProperties();
 
         // Begin frame
         frame.Begin(m_Swapchain->GetImageAt(frame.ImageIndex), properties.Extent);
 
         // Set dynamic states
-        vk::Viewport viewport =
+        const vk::Viewport viewport =
         {
             .width  = (float)properties.Extent.width,
             .height = (float)properties.Extent.height,
@@ -91,7 +91,7 @@ namespace Engine
         };
         frame.CommandBuffer.setViewport(0, 1, &viewport);
 
-        vk::Rect2D scissor = { .extent = properties.Extent };
+        const vk::Rect2D scissor = { .extent = properties.Extent };
         frame.CommandBuffer.setScissor(0, 1, &scissor);
 
         frame.CommandBuffer.setPolygonModeEXT(vk::PolygonMode::eFill, m_Context->GetLoader());

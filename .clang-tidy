@@ -10,4 +10,10 @@ Checks:
   modernize-*,
   -modernize-use-trailing-return-type,
   -modernize-use-integer-sign-comparison,
+
+  bugprone-*,
+
+  misc-*,
+  -misc-non-private-member-variables-in-classes,
+  -misc-include-cleaner,
   "

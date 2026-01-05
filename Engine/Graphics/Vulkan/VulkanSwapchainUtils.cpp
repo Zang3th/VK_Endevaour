@@ -73,7 +73,7 @@ namespace Engine
     )
     {
         // Initialize the VkImageMemoryBarrier2 structure
-        vk::ImageMemoryBarrier2 imageMemoryBarrier
+        const vk::ImageMemoryBarrier2 imageMemoryBarrier
         {
             // Specify the pipeline stages and access masks for the barrier
             .srcStageMask  = srcStage,             // Source pipeline stage mask
@@ -104,7 +104,7 @@ namespace Engine
         };
 
         // Initialize the VkDependencyInfo structure
-        vk::DependencyInfo dependencyInfo
+        const vk::DependencyInfo dependencyInfo
         {
             .imageMemoryBarrierCount = 1,                    // Number of image memory barriers
             .pImageMemoryBarriers    = &imageMemoryBarrier   // Pointer to the image memory barrier(s)

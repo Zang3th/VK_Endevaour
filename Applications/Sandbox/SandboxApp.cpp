@@ -21,11 +21,11 @@ void Sandbox::Run()
     Engine::VulkanRenderer vkRenderer;
 
     // Load shader
-    u32 vertexID   = vkRenderer.LoadShader(vk::ShaderStageFlagBits::eVertex,   "Shaders/Vert.spv");
-    u32 fragmentID = vkRenderer.LoadShader(vk::ShaderStageFlagBits::eFragment, "Shaders/Frag.spv");
+    const u32 vertexID   = vkRenderer.LoadShader(vk::ShaderStageFlagBits::eVertex,   "Shaders/Vert.spv");
+    const u32 fragmentID = vkRenderer.LoadShader(vk::ShaderStageFlagBits::eFragment, "Shaders/Frag.spv");
 
     // Create pipeline
-    u32 pipelineID = vkRenderer.CreatePipeline(vertexID, fragmentID);
+    const u32 pipelineID = vkRenderer.CreatePipeline(vertexID, fragmentID);
 
     // Load mesh
     // Engine::Mesh mesh = Engine::ObjLoader::LoadMeshFromFile("Models/viking_room.obj");
@@ -41,7 +41,7 @@ void Sandbox::Run()
     mesh.Indices  = { 0, 1, 2 };
 
     // Create model from mesh
-    u32 modelID = vkRenderer.CreateModel(&mesh);
+    const u32 modelID = vkRenderer.CreateModel(&mesh);
 
     // Assign model to pipeline
     vkRenderer.AssignPipeline(modelID, pipelineID);

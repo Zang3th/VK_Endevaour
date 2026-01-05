@@ -61,7 +61,7 @@ namespace Engine
 
     std::pair<vk::Buffer, VmaAllocation> VulkanAllocator::AllocateBuffer(vk::DeviceSize size, vk::BufferUsageFlags usage, MemoryUsage memoryUsage)
     {
-        vk::BufferCreateInfo bufferInfo
+        const vk::BufferCreateInfo bufferInfo
         {
             .size        = size,
             .usage       = usage,

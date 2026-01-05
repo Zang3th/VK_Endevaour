@@ -35,7 +35,7 @@ namespace
         return properties;
     }
 
-    void FramebufferResizeCallback(GLFWwindow* window, int width, int height)
+    void FramebufferResizeCallback([[maybe_unused]] GLFWwindow* window, int width, int height)
     {
         auto* swapchain = (Engine::VulkanSwapchain*)glfwGetWindowUserPointer(Engine::Window::GetHandle());
         if(swapchain->GetProperties().Extent.width  != (u32)width ||
@@ -92,7 +92,7 @@ namespace Engine
     vk::CommandBuffer VulkanSwapchain::CreateTransferCommandBuffer()
     {
         // Allocate command buffer
-        vk::CommandBufferAllocateInfo allocateInfo
+        const vk::CommandBufferAllocateInfo allocateInfo
         {
             .commandPool        = m_TransferCommandPool,
             .level              = vk::CommandBufferLevel::ePrimary,
@@ -103,7 +103,7 @@ namespace Engine
         ASSERT(!commandBuffer.empty(), "Allocated command buffer vector was empty!");
 
         // Begin command buffer recording
-        vk::CommandBufferBeginInfo beginInfo
+        const vk::CommandBufferBeginInfo beginInfo
         {
             .flags = vk::CommandBufferUsageFlagBits::eOneTimeSubmit
         };
@@ -118,12 +118,12 @@ namespace Engine
         VK_VERIFY(commandBuffer.end());
 
         // Immediately submit recorded commands
-        vk::SubmitInfo submitInfo
+        const vk::SubmitInfo submitInfo
         {
             .commandBufferCount = 1,
             .pCommandBuffers    = &commandBuffer
         };
-        vk::Queue transferQueue = m_Device->GetTransferQueue();
+        const vk::Queue transferQueue = m_Device->GetTransferQueue();
         VK_VERIFY(transferQueue.submit(1, &submitInfo, nullptr));
         VK_VERIFY(transferQueue.waitIdle());
 
@@ -141,7 +141,7 @@ namespace Engine
 
         // TODO: This needs major rework. I should only work with the swapchain image index
         // Aquire
-        vk::Result res = m_Device->GetHandle().acquireNextImageKHR(m_CurrentSwapchain, UINT64_MAX, currentFrame.ImageAvailable, nullptr, &currentFrame.ImageIndex);
+        const vk::Result res = m_Device->GetHandle().acquireNextImageKHR(m_CurrentSwapchain, UINT64_MAX, currentFrame.ImageAvailable, nullptr, &currentFrame.ImageIndex);
         if(res == vk::Result::eErrorOutOfDateKHR)
         {
             LOG_WARN("vkAcquireNextImageKHR initialized swapchain recreation ...");
@@ -162,10 +162,10 @@ namespace Engine
 
     void VulkanSwapchain::SubmitFrame(const VulkanFrame& frame)
     {
-        vk::PipelineStageFlags waitStage { vk::PipelineStageFlagBits::eColorAttachmentOutput };
+        const vk::PipelineStageFlags waitStage { vk::PipelineStageFlagBits::eColorAttachmentOutput };
 
         // Create submit info
-        vk::SubmitInfo submitInfo
+        const vk::SubmitInfo submitInfo
         {
             .waitSemaphoreCount   = 1,
             .pWaitSemaphores      = &frame.ImageAvailable,  // On which semaphore to wait
@@ -183,7 +183,7 @@ namespace Engine
     void VulkanSwapchain::PresentFrame(const VulkanFrame& frame)
     {
         // Create present info
-        vk::PresentInfoKHR presentInfo
+        const vk::PresentInfoKHR presentInfo
         {
             .waitSemaphoreCount = 1,
             .pWaitSemaphores    = &frame.RenderFinished,
@@ -193,7 +193,7 @@ namespace Engine
         };
 
         // Present
-        vk::Result res = m_Device->GetGraphicsQueue().presentKHR(&presentInfo);
+        const vk::Result res = m_Device->GetGraphicsQueue().presentKHR(&presentInfo);
         if(res == vk::Result::eErrorOutOfDateKHR || res == vk::Result::eSuboptimalKHR || m_Resized)
         {
             LOG_WARN("vkQueuePresentKHR initialized swapchain recreation ...");
@@ -214,7 +214,7 @@ namespace Engine
     {
         m_OldSwapchain = m_CurrentSwapchain;
 
-        vk::SwapchainCreateInfoKHR swapchainCreate
+        const vk::SwapchainCreateInfoKHR swapchainCreate
         {
             .surface          = m_Surface,
             .minImageCount    = m_Properties.ImageCount,
@@ -282,7 +282,7 @@ namespace Engine
         // Create an image view for every image in the swapchain
         for(const auto& image : images)
         {
-            vk::ImageViewCreateInfo viewCreateInfo =
+            const vk::ImageViewCreateInfo viewCreateInfo =
             {
                 .image    = image,
                 .viewType = vk::ImageViewType::e2D,
@@ -310,7 +310,7 @@ namespace Engine
     {
         // Create graphics pool
         {
-            vk::CommandPoolCreateInfo graphicsPoolInfo
+            const vk::CommandPoolCreateInfo graphicsPoolInfo
             {
                 .flags = vk::CommandPoolCreateFlagBits::eResetCommandBuffer,
                 .queueFamilyIndex = m_Device->GetGraphicsQueueFamily()
@@ -322,7 +322,7 @@ namespace Engine
 
         // Create transfer pool
         {
-            vk::CommandPoolCreateInfo transferPoolInfo
+            const vk::CommandPoolCreateInfo transferPoolInfo
             {
                 .flags = vk::CommandPoolCreateFlagBits::eTransient | vk::CommandPoolCreateFlagBits::eResetCommandBuffer,
                 .queueFamilyIndex = m_Device->GetTransferQueueFamily()
@@ -338,10 +338,10 @@ namespace Engine
     void VulkanSwapchain::InitializeFrames()
     {
         // Define semaphores
-        vk::SemaphoreCreateInfo semaphoreInfo{};
+        const vk::SemaphoreCreateInfo semaphoreInfo{};
 
         // Define fence (in signaled state to avoid endless waiting for the first frame)
-        vk::FenceCreateInfo fenceInfo{ .flags = vk::FenceCreateFlagBits::eSignaled };
+        const vk::FenceCreateInfo fenceInfo{ .flags = vk::FenceCreateFlagBits::eSignaled };
 
         // Create sync objects
         for(u32 i = 0; i < FRAMES_IN_FLIGHT; i++)
@@ -352,7 +352,7 @@ namespace Engine
         }
 
         // Allocate command buffers
-        vk::CommandBufferAllocateInfo allocateInfo
+        const vk::CommandBufferAllocateInfo allocateInfo
         {
             .commandPool        = m_GraphicsCommandPool,
             .level              = vk::CommandBufferLevel::ePrimary,

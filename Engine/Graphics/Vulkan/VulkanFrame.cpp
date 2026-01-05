@@ -7,7 +7,7 @@ namespace Engine
     void VulkanFrame::Begin(const SwapchainImage& image, vk::Extent2D extent) const
     {
         // Start command buffer recording
-        vk::CommandBufferBeginInfo cmdBeginInfo{};
+        const vk::CommandBufferBeginInfo cmdBeginInfo{};
         VK_VERIFY(CommandBuffer.begin(&cmdBeginInfo));
 
         // Transition image layout from undefined to color
@@ -24,10 +24,10 @@ namespace Engine
         );
 
         // Set up clear value
-        vk::ClearValue clearValue { .color = {{{ 1.0f, 1.0f, 1.0f, 1.0f }}}};
+        const vk::ClearValue clearValue { .color = {{{ 1.0f, 1.0f, 1.0f, 1.0f }}}};
 
         // Set up rendering attachment info
-        vk::RenderingAttachmentInfo colorAttachment
+        const vk::RenderingAttachmentInfo colorAttachment
         {
             .imageView   = image.View,
             .imageLayout = vk::ImageLayout::eColorAttachmentOptimal,
@@ -37,7 +37,7 @@ namespace Engine
         };
 
         // Begin rendering
-        vk::RenderingInfo renderingInfo
+        const vk::RenderingInfo renderingInfo
         {
             .renderArea = { .offset = { .x = 0, .y = 0 }, .extent = extent },
             .layerCount = 1,

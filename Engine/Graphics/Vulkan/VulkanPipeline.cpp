@@ -31,7 +31,7 @@ namespace Engine
     void VulkanPipeline::CreatePipelineLayout()
     {
         // TODO: Add descriptor sets for textures and uniform buffers (should come from shader)
-        vk::PipelineLayoutCreateInfo pipelineLayoutInfo
+        const vk::PipelineLayoutCreateInfo pipelineLayoutInfo
         {
             .setLayoutCount         = 0,
             .pSetLayouts            = nullptr,
@@ -48,8 +48,8 @@ namespace Engine
         // ----- Construct the different states making up the pipeline (using dynamic rendering) -----
 
         // Pipeline rendering info (for dynamic rendering)
-        vk::Format format = m_Context->GetSwapchain()->GetProperties().SurfaceFormat.format;
-        vk::PipelineRenderingCreateInfo renderingInfo
+        const vk::Format format = m_Context->GetSwapchain()->GetProperties().SurfaceFormat.format;
+        const vk::PipelineRenderingCreateInfo renderingInfo
         {
             .colorAttachmentCount    = 1,
             .pColorAttachmentFormats = &format
@@ -65,7 +65,7 @@ namespace Engine
         // Vertex input state
         auto bindingDescription    = Vertex::GetBindingDescription();
         auto attributeDescriptions = Vertex::GetAttributeDescriptions();
-        vk::PipelineVertexInputStateCreateInfo vertexState
+        const vk::PipelineVertexInputStateCreateInfo vertexState
         {
             .vertexBindingDescriptionCount   = 1,
             .pVertexBindingDescriptions      = &bindingDescription,
@@ -74,20 +74,20 @@ namespace Engine
         };
 
         // Input assembly state
-        vk::PipelineInputAssemblyStateCreateInfo inputAssemblyState
+        const vk::PipelineInputAssemblyStateCreateInfo inputAssemblyState
         {
             .primitiveRestartEnable = vk::False
         };
 
         // Viewport state
-        vk::PipelineViewportStateCreateInfo viewportState
+        const vk::PipelineViewportStateCreateInfo viewportState
         {
             .viewportCount = 1,
             .scissorCount  = 1
         };
 
         // Rasterization state
-        vk::PipelineRasterizationStateCreateInfo rasterizerState
+        const vk::PipelineRasterizationStateCreateInfo rasterizerState
         {
             .depthClampEnable        = vk::False,
             .rasterizerDiscardEnable = vk::False,
@@ -96,14 +96,14 @@ namespace Engine
         };
 
         // Multisampling state
-        vk::PipelineMultisampleStateCreateInfo multisampleState
+        const vk::PipelineMultisampleStateCreateInfo multisampleState
         {
             .rasterizationSamples = vk::SampleCountFlagBits::e1,
             .sampleShadingEnable = vk::False
         };
 
         // Depth stencil state
-        vk::PipelineDepthStencilStateCreateInfo depthStencilState
+        const vk::PipelineDepthStencilStateCreateInfo depthStencilState
         {
             .depthTestEnable       = m_Spec.DepthTest,
             .depthWriteEnable      = m_Spec.DepthWrite,
@@ -113,13 +113,13 @@ namespace Engine
         };
 
         // Disable blending (new fragment colors will just get passed through to the framebuffer)
-        vk::PipelineColorBlendAttachmentState blendAttachment
+        const vk::PipelineColorBlendAttachmentState blendAttachment
         {
             .colorWriteMask = vk::ColorComponentFlagBits::eR | vk::ColorComponentFlagBits::eG | vk::ColorComponentFlagBits::eB | vk::ColorComponentFlagBits::eA
         };
 
         // Color blend state
-        vk::PipelineColorBlendStateCreateInfo colorBlendState
+        const vk::PipelineColorBlendStateCreateInfo colorBlendState
         {
             .attachmentCount = 1,
             .pAttachments    = &blendAttachment
@@ -135,14 +135,14 @@ namespace Engine
             vk::DynamicState::eCullMode,
             vk::DynamicState::eFrontFace
         };
-        vk::PipelineDynamicStateCreateInfo dynamicState
+        const vk::PipelineDynamicStateCreateInfo dynamicState
         {
             .dynamicStateCount = (u32)(dynamicStates.size()),
             .pDynamicStates    = dynamicStates.data()
         };
 
         // ----- Finally: Create the pipeline -----
-        vk::GraphicsPipelineCreateInfo pipelineInfo
+        const vk::GraphicsPipelineCreateInfo pipelineInfo
         {
             .pNext               = &renderingInfo,
             .stageCount          = 2,

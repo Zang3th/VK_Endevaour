@@ -16,7 +16,7 @@ namespace Engine
         std::ifstream iStream(path, std::ios::binary);
 
         // Load obj file
-        bool success = LoadObj(&attrib, &shapes, &materials, &warn, &error, &iStream);
+        const bool success = LoadObj(&attrib, &shapes, &materials, &warn, &error, &iStream);
         if(!success)
         {
             if(!warn.empty())  { LOG_WARN("tinyobjloader: {}", warn);   };

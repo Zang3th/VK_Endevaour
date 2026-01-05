@@ -56,8 +56,8 @@ namespace Engine
 
     void VulkanContext::CopyBuffer(vk::Buffer srcBuffer, vk::Buffer dstBuffer, vk::DeviceSize size)
     {
-        vk::CommandBuffer commandBuffer = m_Swapchain->CreateTransferCommandBuffer();
-        vk::BufferCopy bufferCopy = { .size = size };
+        const vk::CommandBuffer commandBuffer = m_Swapchain->CreateTransferCommandBuffer();
+        const vk::BufferCopy bufferCopy = { .size = size };
         commandBuffer.copyBuffer(srcBuffer, dstBuffer, 1, &bufferCopy);
         m_Swapchain->SubmitTransferCommandBuffer(commandBuffer);
         LOG_INFO("Copied {} bytes from CPU => GPU ...", size);
@@ -74,7 +74,7 @@ namespace Engine
         }
         const std::string& title = Window::GetTitle();
 
-        vk::ApplicationInfo appInfo
+        const vk::ApplicationInfo appInfo
         {
             .pApplicationName   = title.c_str(),
             .applicationVersion = 1,
@@ -89,7 +89,7 @@ namespace Engine
         // Create temporary debug messenger to trace instantiating
         auto debugCreateInfo = VulkanDebug::GetDebugCreateInfo();
 
-        vk::InstanceCreateInfo createInfo
+        const vk::InstanceCreateInfo createInfo
         {
             .pNext                   = ENABLE_VALIDATION_LAYERS ? &debugCreateInfo : nullptr,
             .pApplicationInfo        = &appInfo,

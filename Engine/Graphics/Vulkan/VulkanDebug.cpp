@@ -96,7 +96,7 @@ namespace Engine
         vk::DebugUtilsMessageSeverityFlagBitsEXT      messageSeverity,
         vk::DebugUtilsMessageTypeFlagsEXT             messageType,
         const vk::DebugUtilsMessengerCallbackDataEXT* pCallbackData,
-        void*                                         pUserData
+        [[maybe_unused]] void*                        pUserData
     )
     {
         using Severity = vk::DebugUtilsMessageSeverityFlagBitsEXT;

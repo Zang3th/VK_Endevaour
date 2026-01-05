@@ -2,7 +2,7 @@
 
 int main()
 {
-    Sandbox sandbox;
+    const Sandbox sandbox;
     Sandbox::Run();
 
     return 0;
