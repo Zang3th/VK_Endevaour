@@ -2,7 +2,6 @@
 #include "Debug/Log.hpp"
 
 #include <fstream>
-#include <array>
 
 namespace Engine
 {
@@ -29,27 +28,19 @@ namespace Engine
         constexpr u64 MB = 1024ull * 1024;
         constexpr u64 KB = 1024ull;
 
-        std::array<char, 16> buffer;
-        int res = 0;
-
         if (bytes >= GB)
         {
-            res = std::snprintf(buffer.data(), buffer.size(), "%.2f GB", (f64)bytes / (f64)GB);
+            return fmt::format("{:.2f} GB", (f64)bytes / (f64)GB);
         }
-        else if (bytes >= MB)
+        if (bytes >= MB)
         {
-            res = snprintf(buffer.data(), buffer.size(), "%.2f MB", (f64)bytes / (f64)MB);
+            return fmt::format("{:.2f} MB", (f64)bytes / (f64)MB);
         }
-        else if (bytes >= KB)
+        if (bytes >= KB)
         {
-            res = snprintf(buffer.data(), buffer.size(), "%.2f KB", (f64)bytes / (f64)KB);
-        }
-        else
-        {
-            res = snprintf(buffer.data(), buffer.size(), "%lu bytes", bytes);
+            return fmt::format("{:.2f} KB", (f64)bytes / (f64)KB);
         }
 
-        ASSERT(res >= 0 && res < (int)buffer.size(), "BytesToString failed or truncated. Error: {}", res);
-        return buffer.data();
+        return fmt::format("{} bytes", bytes);
     }
 }
