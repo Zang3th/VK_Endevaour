@@ -3,7 +3,7 @@
 int main()
 {
     Sandbox sandbox;
-    sandbox.Run();
+    Sandbox::Run();
 
     return 0;
 }

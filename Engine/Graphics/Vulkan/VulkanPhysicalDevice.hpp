@@ -38,7 +38,7 @@ namespace Engine
             void               PickDevice();
             bool               IsDeviceSuitable(vk::PhysicalDevice device);
             QueueFamilyIndices FindQueueFamilyIndices(vk::PhysicalDevice device);
-            bool               CheckDeviceExtensionSupport(vk::PhysicalDevice device);
+            static bool        CheckDeviceExtensionSupport(vk::PhysicalDevice device);
 
             [[nodiscard]] SwapchainSupport QuerySwapchainSupport(vk::PhysicalDevice physicalDevice) const;
 

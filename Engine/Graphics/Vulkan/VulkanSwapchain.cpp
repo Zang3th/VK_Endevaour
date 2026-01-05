@@ -54,7 +54,7 @@ namespace Engine
     // ----- Public -----
 
     VulkanSwapchain::VulkanSwapchain(const VulkanDevice* device, const vk::SurfaceKHR& surface)
-        : m_Device(device), m_Surface(surface), m_Resized(false)
+        : m_Device(device), m_Surface(surface)
     {
         m_Properties = GetSwapchainProperties(device->GetPhysicalDevice());
         CreateCommandPools();

@@ -2,6 +2,7 @@
 #include "Debug/Log.hpp"
 
 #include <fstream>
+#include <array>
 
 namespace Engine
 {
@@ -28,25 +29,25 @@ namespace Engine
         constexpr u64 MB = 1024 * 1024;
         constexpr u64 KB = 1024;
 
-        char buffer[32 + 1] {};
+        std::array<char, 16> buffer;
 
         if (bytes >= GB)
         {
-            snprintf(buffer, 32, "%.2f GB", (f32)bytes / (f32)GB);
+            snprintf(buffer.data(), buffer.size(), "%.2f GB", (f32)bytes / (f32)GB);
         }
         else if (bytes >= MB)
         {
-            snprintf(buffer, 32, "%.2f MB", (f32)bytes / (f32)MB);
+            snprintf(buffer.data(), buffer.size(), "%.2f MB", (f32)bytes / (f32)MB);
         }
         else if (bytes >= KB)
         {
-            snprintf(buffer, 32, "%.2f KB", (f32)bytes / (f32)KB);
+            snprintf(buffer.data(), buffer.size(), "%.2f KB", (f32)bytes / (f32)KB);
         }
         else
         {
-            snprintf(buffer, 32, "%.2f bytes", (f32)bytes);
+            snprintf(buffer.data(), buffer.size(), "%llu bytes", bytes);
         }
 
-        return buffer;
+        return buffer.data();
     }
 }

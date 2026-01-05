@@ -7,7 +7,6 @@ namespace Engine
     // ----- Public -----
 
     VulkanRenderer::VulkanRenderer()
-        : m_ShaderIndex(0), m_ModelIndex(0), m_PipelineIndex(0), m_DrawcallCount(0)
     {
         m_Context   = MakeScope<VulkanContext>();
         m_Swapchain = m_Context->GetSwapchain();

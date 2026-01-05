@@ -56,7 +56,7 @@ namespace Engine
         };
 
         // Shader stages
-        vk::PipelineShaderStageCreateInfo shaderStages[] =
+        std::array<vk::PipelineShaderStageCreateInfo, 2> shaderStages =
         {
             m_Spec.VertexShader->GetPipelineShaderStageCreateInfo(),
             m_Spec.FragmentShader->GetPipelineShaderStageCreateInfo()
@@ -146,7 +146,7 @@ namespace Engine
         {
             .pNext               = &renderingInfo,
             .stageCount          = 2,
-            .pStages             = shaderStages,
+            .pStages             = shaderStages.data(),
             .pVertexInputState   = &vertexState,
             .pInputAssemblyState = &inputAssemblyState,
             .pViewportState      = &viewportState,

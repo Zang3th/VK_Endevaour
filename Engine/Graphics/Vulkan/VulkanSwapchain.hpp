@@ -43,7 +43,7 @@ namespace Engine
 
             // Properties
             SwapchainProperties m_Properties;
-            b8 m_Resized;
+            b8 m_Resized = false;
 
             // Command pools
             vk::CommandPool m_GraphicsCommandPool;

@@ -29,10 +29,10 @@ namespace Engine
             std::array<Scope<VulkanShader>,   MAX_SHADER_COUNT>   m_Shaders;
             std::array<Scope<VulkanModel>,    MAX_MODEL_COUNT>    m_Models;
             std::array<Scope<VulkanPipeline>, MAX_PIPELINE_COUNT> m_Pipelines;
-            u32 m_ShaderIndex;
-            u32 m_ModelIndex;
-            u32 m_PipelineIndex;
+            u32 m_ShaderIndex = 0;
+            u32 m_ModelIndex  = 0;
+            u32 m_PipelineIndex = 0;
 
-            u32 m_DrawcallCount;
+            u32 m_DrawcallCount = 0;
     };
 }

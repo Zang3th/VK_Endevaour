@@ -14,7 +14,7 @@ namespace
 {
     // ----- Internal -----
 
-    inline std::string GetDriverVersionString(vk::PhysicalDeviceProperties properties)
+    std::string GetDriverVersionString(vk::PhysicalDeviceProperties properties)
     {
         if(properties.vendorID != 0x10DE) // Nvidia
         {
