@@ -92,8 +92,8 @@ namespace Engine
 
     void* VulkanAllocator::MapMemory(VmaAllocation allocation)
     {
-        void* dataPtr;
-        vmaMapMemory(s_Allocator, allocation, &dataPtr);
+        void* dataPtr = nullptr;
+        VK_VERIFY((vk::Result)vmaMapMemory(s_Allocator, allocation, &dataPtr));
         return dataPtr;
     }
 

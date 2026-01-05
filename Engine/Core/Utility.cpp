@@ -30,24 +30,26 @@ namespace Engine
         constexpr u64 KB = 1024ull;
 
         std::array<char, 16> buffer;
+        int res = 0;
 
         if (bytes >= GB)
         {
-            snprintf(buffer.data(), buffer.size(), "%.2f GB", (f64)bytes / (f64)GB);
+            res = std::snprintf(buffer.data(), buffer.size(), "%.2f GB", (f64)bytes / (f64)GB);
         }
         else if (bytes >= MB)
         {
-            snprintf(buffer.data(), buffer.size(), "%.2f MB", (f64)bytes / (f64)MB);
+            res = snprintf(buffer.data(), buffer.size(), "%.2f MB", (f64)bytes / (f64)MB);
         }
         else if (bytes >= KB)
         {
-            snprintf(buffer.data(), buffer.size(), "%.2f KB", (f64)bytes / (f64)KB);
+            res = snprintf(buffer.data(), buffer.size(), "%.2f KB", (f64)bytes / (f64)KB);
         }
         else
         {
-            snprintf(buffer.data(), buffer.size(), "%llu bytes", bytes);
+            res = snprintf(buffer.data(), buffer.size(), "%llu bytes", bytes);
         }
 
+        ASSERT(res >= 0 && res < (int)buffer.size(), "BytesToString failed or truncated. Error: {}", res);
         return buffer.data();
     }
 }

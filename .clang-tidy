@@ -6,14 +6,28 @@ Checks:
   -readability-identifier-length,
   -readability-magic-numbers,
   -readability-implicit-bool-conversion,
+  -readability-simplify-boolean-expr,
 
   modernize-*,
   -modernize-use-trailing-return-type,
   -modernize-use-integer-sign-comparison,
 
-  bugprone-*,
-
   misc-*,
   -misc-non-private-member-variables-in-classes,
   -misc-include-cleaner,
+
+  cert-*,
+  -cert-err58-cpp,
+
+  bugprone-*,
+
+  performance-*,
+
+  portability-*,
+
+  concurrency-*,
+
+  clang-analyzer-*,
+
   "
+FormatStyle: file

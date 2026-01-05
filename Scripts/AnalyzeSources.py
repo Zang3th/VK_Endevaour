@@ -21,7 +21,7 @@ def clang_tidy():
         "-quiet",
         "-source-filter", SOURCE_FILTER,
         "-header-filter", HEADER_FILTER,
-        "-export-fixes", str(Paths.SCRIPTS / "tidy-fixes.yaml"),
+        "-export-fixes", Paths.PROJECT_ROOT / "tidy-fixes.yaml",
     ]
     return run(cmd, silent=True)
 
@@ -51,8 +51,8 @@ def print_tidy_fixes(path: Path) -> None:
         return
 
     diags = data.get("Diagnostics", []) or []
-
     grouped: dict[str, list[tuple[int, str, str]]] = defaultdict(list)
+    validResults = False
 
     for d in diags:
         msg = d.get("DiagnosticMessage") or {}
@@ -64,6 +64,12 @@ def print_tidy_fixes(path: Path) -> None:
         if not file or offset is None:
             continue
 
+        # Last sanity check
+        if "vendor" in file.lower():
+            continue
+
+        validResults = True
+
         line = offset_to_line(Path(file), int(offset))
         grouped[file].append((line, name, text))
 
@@ -73,6 +79,9 @@ def print_tidy_fixes(path: Path) -> None:
             print(f"  [{name}]")
             print(f"    {text}\n")
 
+    # Print something if we had no valid results
+    if not validResults:
+        print("Found no clang-tidy diagnostics outside of the 'Vendor/' directory.")
 # ---------------------------------------------------------------------------
 
 def main():
@@ -86,7 +95,7 @@ def main():
         print("\n====== Running clang-tidy ======\n")
         clang_tidy()
         print("\n====== Printing results ======\n")
-        print_tidy_fixes(Paths.SCRIPTS / "tidy-fixes.yaml")
+        print_tidy_fixes(Paths.PROJECT_ROOT / "tidy-fixes.yaml")
     elif args.verify:
         print("\n====== Verifying config ======\n")
         verify_config()
