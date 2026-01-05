@@ -19,11 +19,12 @@ Checks:
   cert-*,
   -cert-err58-cpp,
 
+  portability-*,
+  -portability-avoid-pragma-once,
+
   bugprone-*,
 
   performance-*,
-
-  portability-*,
 
   concurrency-*,
 

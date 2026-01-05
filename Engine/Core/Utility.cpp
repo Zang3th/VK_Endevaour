@@ -46,7 +46,7 @@ namespace Engine
         }
         else
         {
-            res = snprintf(buffer.data(), buffer.size(), "%llu bytes", bytes);
+            res = snprintf(buffer.data(), buffer.size(), "%lu bytes", bytes);
         }
 
         ASSERT(res >= 0 && res < (int)buffer.size(), "BytesToString failed or truncated. Error: {}", res);

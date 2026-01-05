@@ -76,6 +76,7 @@ namespace Engine
         // Input assembly state
         const vk::PipelineInputAssemblyStateCreateInfo inputAssemblyState
         {
+            .topology               = vk::PrimitiveTopology::eTriangleList,
             .primitiveRestartEnable = vk::False
         };
 
