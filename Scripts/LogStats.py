@@ -1,25 +1,12 @@
 #!/usr/bin/env python3
 
 from pathlib import Path
-
-# ---------------------------------------------------------------------------
-
-TARGET_DIRS = [
-    "Applications/Sandbox",
-    "Engine/Core",
-    "Engine/Debug",
-    "Engine/Graphics",
-    "Engine/Vendor"
-]
-
-EXTENSIONS = [".cpp", ".hpp"]
+from ProjectDefines import TARGET_DIRS, EXTENSIONS
 
 # ---------------------------------------------------------------------------
 
 def count_lines_in_dir(directory: Path) -> int:
     total = 0
-    if not directory.exists():
-        return 0
 
     for path in directory.rglob("*"):
         if path.suffix in EXTENSIONS and path.is_file():
@@ -33,14 +20,11 @@ def count_lines_in_dir(directory: Path) -> int:
 # ---------------------------------------------------------------------------
 
 def main():
-    project_root = Path(__file__).resolve().parent.parent
-
     print("\n====== Code statistics (Lines of code) ======\n")
 
     for dir in TARGET_DIRS:
-        abs_path = project_root / dir
-        loc = count_lines_in_dir(abs_path)
-        print(f"  {dir:<25} {loc}")
+        loc = count_lines_in_dir(dir)
+        print(f"  {str(dir):<45} {loc}")
 
     print("")
 

@@ -86,7 +86,7 @@ python Scripts/BuildEngine.py -d    # Debug
 python Scripts/BuildEngine.py -r    # Release
 python Scripts/BuildEngine.py -c    # Clean
 ```
-**Launching:** Resource paths are relative to the current working directory
+**Launching:** Resource paths are relative to the current working directory.
 
 ### Integrated libraries
 

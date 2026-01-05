@@ -7,3 +7,4 @@ Backup/
 compile_commands.json
 *.spv
 imgui.ini
+__pycache__
