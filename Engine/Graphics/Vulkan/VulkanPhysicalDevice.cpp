@@ -40,7 +40,10 @@ namespace Engine
         PickDevice();
     }
 
-    VulkanPhysicalDevice::~VulkanPhysicalDevice() { LOG_INFO("VulkanPhysicalDevice::Destructor() ..."); }
+    VulkanPhysicalDevice::~VulkanPhysicalDevice()
+    {
+        LOG_INFO("VulkanPhysicalDevice::Destructor() ...");
+    }
 
     void VulkanPhysicalDevice::PickDevice()
     {

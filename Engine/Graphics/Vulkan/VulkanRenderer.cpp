@@ -12,7 +12,10 @@ namespace Engine
         m_Swapchain = m_Context->GetSwapchain();
     }
 
-    VulkanRenderer::~VulkanRenderer() { LOG_INFO("VulkanRenderer::Destructor() ..."); }
+    VulkanRenderer::~VulkanRenderer()
+    {
+        LOG_INFO("VulkanRenderer::Destructor() ...");
+    }
 
     [[nodiscard]] u32 VulkanRenderer::LoadShader(vk::ShaderStageFlagBits stage, const std::filesystem::path& path)
     {
@@ -118,5 +121,8 @@ namespace Engine
         m_Context->GetSwapchain()->AdvanceFrameCount();
     }
 
-    void VulkanRenderer::WaitForDevice() { m_Context->GetDevice()->WaitForIdle(); }
+    void VulkanRenderer::WaitForDevice()
+    {
+        m_Context->GetDevice()->WaitForIdle();
+    }
 }

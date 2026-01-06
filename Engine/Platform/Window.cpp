@@ -26,7 +26,10 @@ namespace Engine
         glfwTerminate();
     }
 
-    void Window::PollEvents() { glfwPollEvents(); }
+    void Window::PollEvents()
+    {
+        glfwPollEvents();
+    }
 
     bool Window::ShouldClose()
     {

@@ -83,7 +83,10 @@ namespace Engine
         return { buffer, allocation };
     }
 
-    void VulkanAllocator::Shutdown() { vmaDestroyAllocator(s_Allocator); }
+    void VulkanAllocator::Shutdown()
+    {
+        vmaDestroyAllocator(s_Allocator);
+    }
 
     void VulkanAllocator::DestroyBuffer(vk::Buffer buffer, VmaAllocation allocation)
     {
@@ -105,7 +108,10 @@ namespace Engine
         return dataPtr;
     }
 
-    void VulkanAllocator::UnmapMemory(VmaAllocation allocation) { vmaUnmapMemory(s_Allocator, allocation); }
+    void VulkanAllocator::UnmapMemory(VmaAllocation allocation)
+    {
+        vmaUnmapMemory(s_Allocator, allocation);
+    }
 
     // ----- Private -----
 

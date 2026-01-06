@@ -69,17 +69,16 @@ namespace Engine
                                                      vk::PipelineStageFlags2 dstStage)
     {
         // Initialize the VkImageMemoryBarrier2 structure
-        const vk::ImageMemoryBarrier2 imageMemoryBarrier
-        {
+        const vk::ImageMemoryBarrier2 imageMemoryBarrier{
             // Specify the pipeline stages and access masks for the barrier
-            .srcStageMask  = srcStage,             // Source pipeline stage mask
-            .srcAccessMask = srcAccessMask,        // Source access mask
-            .dstStageMask  = dstStage,             // Destination pipeline stage mask
-            .dstAccessMask = dstAccessMask,        // Destination access mask
+            .srcStageMask  = srcStage,      // Source pipeline stage mask
+            .srcAccessMask = srcAccessMask, // Source access mask
+            .dstStageMask  = dstStage,      // Destination pipeline stage mask
+            .dstAccessMask = dstAccessMask, // Destination access mask
 
             // Specify the old and new layouts of the image
-            .oldLayout = oldLayout,        // Current layout of the image
-            .newLayout = newLayout,        // Target layout of the image
+            .oldLayout = oldLayout, // Current layout of the image
+            .newLayout = newLayout, // Target layout of the image
 
             // We are not changing the ownership between queues
             .srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
@@ -89,15 +88,13 @@ namespace Engine
             .image = image,
 
             // Define the subresource range (which parts of the image are affected)
-            .subresourceRange =
-            {
-                .aspectMask     = vk::ImageAspectFlagBits::eColor,  // Affects the color aspect of the image
-                .baseMipLevel   = 0,                                // Start at mip level 0
-                .levelCount     = 1,                                // Number of mip levels affected
-                .baseArrayLayer = 0,                                // Start at array layer 0
-                .layerCount     = 1                                 // Number of array layers affected
-            }
-        };
+            .subresourceRange = {
+                .aspectMask     = vk::ImageAspectFlagBits::eColor, // Affects the color aspect of the image
+                .baseMipLevel   = 0,                               // Start at mip level 0
+                .levelCount     = 1,                               // Number of mip levels affected
+                .baseArrayLayer = 0,                               // Start at array layer 0
+                .layerCount     = 1                                // Number of array layers affected
+            }};
 
         // Initialize the VkDependencyInfo structure
         const vk::DependencyInfo dependencyInfo{

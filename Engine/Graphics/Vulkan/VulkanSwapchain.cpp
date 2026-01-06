@@ -190,7 +190,10 @@ namespace Engine
         ASSERT(res == vk::Result::eSuccess, "Failed to present swapchain image!");
     }
 
-    void VulkanSwapchain::AdvanceFrameCount() { m_CurrentFrame = (m_CurrentFrame + 1) % FRAMES_IN_FLIGHT; }
+    void VulkanSwapchain::AdvanceFrameCount()
+    {
+        m_CurrentFrame = (m_CurrentFrame + 1) % FRAMES_IN_FLIGHT;
+    }
 
     // ----- Private -----
 
