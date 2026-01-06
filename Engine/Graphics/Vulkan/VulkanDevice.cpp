@@ -1,6 +1,5 @@
-#include "Graphics/Vulkan/VulkanDevice.hpp"
-
 #include "Graphics/Vulkan/VulkanAssert.hpp"
+#include "Graphics/Vulkan/VulkanDevice.hpp"
 #include "Graphics/Vulkan/VulkanGlobals.hpp"
 
 #include <vulkan/vulkan_structs.hpp>

@@ -52,12 +52,12 @@ TARGET_DIRS = [
     Paths.ENGINE_DEBUG,
     Paths.ENGINE_GRAPHICS,
     Paths.ENGINE_PLATFORM,
-    Paths.ENGINE_VENDOR,
-    Paths.SCRIPTS,
+    # Paths.ENGINE_VENDOR,
+    # Paths.SCRIPTS,
 ]
 
 EXTENSIONS = {
     ".cpp",
     ".hpp",
-    ".py",
+    # ".py",
 }

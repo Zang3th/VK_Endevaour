@@ -1,10 +1,10 @@
 #include "Core/Types.hpp"
 #include "Core/Utility.hpp"
-#include "Graphics/Vulkan/VulkanShader.hpp"
 
 #include "Debug/Log.hpp"
 
 #include "Graphics/Vulkan/VulkanAssert.hpp"
+#include "Graphics/Vulkan/VulkanShader.hpp"
 
 namespace Engine
 {

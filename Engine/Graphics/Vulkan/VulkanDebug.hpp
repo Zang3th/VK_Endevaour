@@ -9,14 +9,20 @@ namespace Engine
     public:
         ~VulkanDebug() = delete;
 
-        static bool                     CheckValidationLayerSupport(const std::vector<const char*>& validationLayers);
+        static bool CheckValidationLayerSupport(const std::vector<const char*>& validationLayers);
+
         static void                     LoadDebugExtensionFunctions(vk::Instance instance);
         static std::vector<const char*> GetInstanceExtensions();
 
-        static VKAPI_ATTR VkBool32 VKAPI_CALL Callback(vk::DebugUtilsMessageSeverityFlagBitsEXT      messageSeverity,
-                                                       vk::DebugUtilsMessageTypeFlagsEXT             messageType,
-                                                       const vk::DebugUtilsMessengerCallbackDataEXT* pCallbackData,
-                                                       void*                                         pUserData);
+        // clang-format off
+        static VKAPI_ATTR VkBool32 VKAPI_CALL Callback
+        (
+            vk::DebugUtilsMessageSeverityFlagBitsEXT      messageSeverity,
+            vk::DebugUtilsMessageTypeFlagsEXT             messageType,
+            const vk::DebugUtilsMessengerCallbackDataEXT* pCallbackData,
+            void*                                         pUserData
+        );
+        // clang-format on
 
         static vk::DebugUtilsMessengerCreateInfoEXT GetDebugCreateInfo();
     };

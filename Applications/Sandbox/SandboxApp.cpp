@@ -1,18 +1,11 @@
 #include "SandboxApp.hpp"
-
 #include <Graphics/Import/ObjLoader.hpp>
 #include <Graphics/Vulkan/VulkanRenderer.hpp>
 #include <Platform/Window.hpp>
 
-Sandbox::Sandbox()
-{
-    Engine::Window::Init({ .Title = "Sandbox" });
-}
+Sandbox::Sandbox() { Engine::Window::Init({ .Title = "Sandbox" }); }
 
-Sandbox::~Sandbox()
-{
-    Engine::Window::Shutdown();
-}
+Sandbox::~Sandbox() { Engine::Window::Shutdown(); }
 
 void Sandbox::Run()
 {

@@ -1,6 +1,6 @@
-#include "Graphics/Vulkan/VulkanModel.hpp"
-
 #include "Debug/Log.hpp"
+
+#include "Graphics/Vulkan/VulkanModel.hpp"
 
 namespace Engine
 {

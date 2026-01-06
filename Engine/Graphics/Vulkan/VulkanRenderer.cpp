@@ -1,6 +1,6 @@
-#include "Graphics/Vulkan/VulkanRenderer.hpp"
-
 #include "Debug/Log.hpp"
+
+#include "Graphics/Vulkan/VulkanRenderer.hpp"
 
 namespace Engine
 {
@@ -76,8 +76,8 @@ namespace Engine
         frame.Begin(m_Swapchain->GetImageAt(frame.ImageIndex), properties.Extent);
 
         // Set dynamic states
-        const vk::Viewport viewport = { .width    = (float)properties.Extent.width,
-                                        .height   = (float)properties.Extent.height,
+        const vk::Viewport viewport = { .width    = (f32)properties.Extent.width,
+                                        .height   = (f32)properties.Extent.height,
                                         .minDepth = 0.0f,
                                         .maxDepth = 1.0f };
         frame.CommandBuffer.setViewport(0, 1, &viewport);

@@ -1,6 +1,5 @@
-#include "Graphics/Vulkan/VulkanSwapchain.hpp"
-
 #include "Graphics/Vulkan/VulkanAssert.hpp"
+#include "Graphics/Vulkan/VulkanSwapchain.hpp"
 
 #include "Platform/Window.hpp"
 

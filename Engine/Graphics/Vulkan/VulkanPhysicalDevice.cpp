@@ -1,9 +1,8 @@
-#include "Graphics/Vulkan/VulkanPhysicalDevice.hpp"
-
 #include "Debug/Log.hpp"
 
 #include "Graphics/Vulkan/VulkanAssert.hpp"
 #include "Graphics/Vulkan/VulkanGlobals.hpp"
+#include "Graphics/Vulkan/VulkanPhysicalDevice.hpp"
 
 #include <vulkan/vulkan_core.h>
 #include <vulkan/vulkan_enums.hpp>

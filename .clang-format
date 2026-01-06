@@ -137,6 +137,8 @@ SpacesInSquareBrackets: false
 # =========================
 SortIncludes: true
 IncludeBlocks: Regroup
+IncludeIsMainRegex: '$^'
+IncludeIsMainSourceRegex: '$^'
 
 IncludeCategories:
   - Regex: '^"Core/.*"'

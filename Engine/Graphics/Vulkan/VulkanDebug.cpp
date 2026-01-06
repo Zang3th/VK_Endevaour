@@ -1,7 +1,8 @@
+#include "Debug/Log.hpp"
+
 #include "Graphics/Vulkan/VulkanDebug.hpp"
 #include "Graphics/Vulkan/VulkanGlobals.hpp"
 
-#include "Debug/Log.hpp"
 #include "Platform/Window.hpp"
 
 // Define two function pointers in anonymous namespace. They will later point to Vulkan extension functions
@@ -11,6 +12,7 @@ namespace
     PFN_vkDestroyDebugUtilsMessengerEXT pfnVkDestroyDebugUtilsMessengerEXT = nullptr;
 }
 
+// clang-format off
 // Forward global Vulkan function calls to dynamically loaded extension functions
 VKAPI_ATTR VkResult VKAPI_CALL vkCreateDebugUtilsMessengerEXT
 (
@@ -32,6 +34,7 @@ VKAPI_ATTR void VKAPI_CALL vkDestroyDebugUtilsMessengerEXT
 {
     pfnVkDestroyDebugUtilsMessengerEXT(instance, messenger, pAllocator);
 }
+// clang-format on
 
 namespace Engine
 {
@@ -71,8 +74,8 @@ namespace Engine
 
     std::vector<const char*> VulkanDebug::GetInstanceExtensions()
     {
-        u32 glfwExtensionCount = 0;
-        const char** glfwExtensions = glfwGetRequiredInstanceExtensions(&glfwExtensionCount);
+        u32          glfwExtensionCount = 0;
+        const char** glfwExtensions     = glfwGetRequiredInstanceExtensions(&glfwExtensionCount);
 
         std::vector<const char*> extensions(glfwExtensions, glfwExtensions + glfwExtensionCount);
 
@@ -91,6 +94,7 @@ namespace Engine
         return extensions;
     }
 
+    // clang-format off
     VKAPI_ATTR VkBool32 VKAPI_CALL VulkanDebug::Callback
     (
         vk::DebugUtilsMessageSeverityFlagBitsEXT      messageSeverity,
@@ -131,7 +135,6 @@ namespace Engine
         return VK_FALSE;
     }
 
-    // clang-format off
     vk::DebugUtilsMessengerCreateInfoEXT VulkanDebug::GetDebugCreateInfo()
     {
         return
@@ -147,7 +150,6 @@ namespace Engine
             .pUserData = nullptr
         };
     }
-    // clang-format on
 
     //Load and assign Vulkan extension functions
     void VulkanDebug::LoadDebugExtensionFunctions(vk::Instance instance)
@@ -166,4 +168,5 @@ namespace Engine
 
         LOG_INFO("Loaded debug extension functions ...");
     }
+    // clang-format on
 }

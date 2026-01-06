@@ -1,6 +1,6 @@
-#include "Window.hpp"
-
 #include "Debug/Log.hpp"
+
+#include "Window.hpp"
 
 namespace Engine
 {
