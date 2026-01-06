@@ -1,4 +1,5 @@
 #include "Window.hpp"
+
 #include "Debug/Log.hpp"
 
 namespace Engine
@@ -16,8 +17,7 @@ namespace Engine
 
         m_Window = glfwCreateWindow((int)m_Spec.Width, (int)m_Spec.Height, m_Spec.Title.c_str(), nullptr, nullptr);
         ASSERT(m_Window, "Failed to create GLFW window: {}", glfwGetError(nullptr));
-        LOG_INFO("Created GLFW window ... (Application: '{}', Size: {}x{})",
-                 m_Spec.Title, m_Spec.Width, m_Spec.Height);
+        LOG_INFO("Created GLFW window ... (Application: '{}', Size: {}x{})", m_Spec.Title, m_Spec.Width, m_Spec.Height);
     }
 
     void Window::Shutdown()
@@ -26,10 +26,7 @@ namespace Engine
         glfwTerminate();
     }
 
-    void Window::PollEvents()
-    {
-        glfwPollEvents();
-    }
+    void Window::PollEvents() { glfwPollEvents(); }
 
     bool Window::ShouldClose()
     {

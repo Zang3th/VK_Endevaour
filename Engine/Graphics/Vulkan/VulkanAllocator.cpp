@@ -1,7 +1,7 @@
-#include "VulkanAllocator.hpp"
-#include "VulkanAssert.hpp"
-
 #include "Core/Utility.hpp"
+
+#include "Graphics/Vulkan/VulkanAllocator.hpp"
+#include "Graphics/Vulkan/VulkanAssert.hpp"
 
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wmissing-field-initializers"
@@ -29,16 +29,26 @@ namespace
     {
         switch(usage)
         {
-            case Engine::MemoryUsage::eUnknown:          return VMA_MEMORY_USAGE_UNKNOWN;
-            case Engine::MemoryUsage::eGPUOnly:          return VMA_MEMORY_USAGE_GPU_ONLY;
-            case Engine::MemoryUsage::eCPUOnly:          return VMA_MEMORY_USAGE_CPU_ONLY;
-            case Engine::MemoryUsage::eCPUToGPU:         return VMA_MEMORY_USAGE_CPU_TO_GPU;
-            case Engine::MemoryUsage::eGPUToCPU:         return VMA_MEMORY_USAGE_GPU_TO_CPU;
-            case Engine::MemoryUsage::eCPUCopy:          return VMA_MEMORY_USAGE_CPU_COPY;
-            case Engine::MemoryUsage::eGPULazy:          return VMA_MEMORY_USAGE_GPU_LAZILY_ALLOCATED;
-            case Engine::MemoryUsage::eAuto:             return VMA_MEMORY_USAGE_AUTO;
-            case Engine::MemoryUsage::eAutoPreferDevice: return VMA_MEMORY_USAGE_AUTO_PREFER_DEVICE;
-            case Engine::MemoryUsage::eAutoPreferHost:   return VMA_MEMORY_USAGE_AUTO_PREFER_HOST;
+        case Engine::MemoryUsage::eUnknown:
+            return VMA_MEMORY_USAGE_UNKNOWN;
+        case Engine::MemoryUsage::eGPUOnly:
+            return VMA_MEMORY_USAGE_GPU_ONLY;
+        case Engine::MemoryUsage::eCPUOnly:
+            return VMA_MEMORY_USAGE_CPU_ONLY;
+        case Engine::MemoryUsage::eCPUToGPU:
+            return VMA_MEMORY_USAGE_CPU_TO_GPU;
+        case Engine::MemoryUsage::eGPUToCPU:
+            return VMA_MEMORY_USAGE_GPU_TO_CPU;
+        case Engine::MemoryUsage::eCPUCopy:
+            return VMA_MEMORY_USAGE_CPU_COPY;
+        case Engine::MemoryUsage::eGPULazy:
+            return VMA_MEMORY_USAGE_GPU_LAZILY_ALLOCATED;
+        case Engine::MemoryUsage::eAuto:
+            return VMA_MEMORY_USAGE_AUTO;
+        case Engine::MemoryUsage::eAutoPreferDevice:
+            return VMA_MEMORY_USAGE_AUTO_PREFER_DEVICE;
+        case Engine::MemoryUsage::eAutoPreferHost:
+            return VMA_MEMORY_USAGE_AUTO_PREFER_HOST;
         }
     };
 }
@@ -59,25 +69,21 @@ namespace Engine
         LOG_INFO("Created allocator with vma ...");
     }
 
-    std::pair<vk::Buffer, VmaAllocation> VulkanAllocator::AllocateBuffer(vk::DeviceSize size, vk::BufferUsageFlags usage, MemoryUsage memoryUsage)
+    std::pair<vk::Buffer, VmaAllocation> VulkanAllocator::AllocateBuffer(vk::DeviceSize       size,
+                                                                         vk::BufferUsageFlags usage,
+                                                                         MemoryUsage          memoryUsage)
     {
-        const vk::BufferCreateInfo bufferInfo
-        {
-            .size        = size,
-            .usage       = usage,
-            .sharingMode = vk::SharingMode::eExclusive
-        };
+        const vk::BufferCreateInfo bufferInfo{ .size        = size,
+                                               .usage       = usage,
+                                               .sharingMode = vk::SharingMode::eExclusive };
 
-        vk::Buffer buffer;
+        vk::Buffer    buffer;
         VmaAllocation allocation = VulkanAllocator::InternalAllocateBuffer(bufferInfo, memoryUsage, buffer);
 
         return { buffer, allocation };
     }
 
-    void VulkanAllocator::Shutdown()
-    {
-        vmaDestroyAllocator(s_Allocator);
-    }
+    void VulkanAllocator::Shutdown() { vmaDestroyAllocator(s_Allocator); }
 
     void VulkanAllocator::DestroyBuffer(vk::Buffer buffer, VmaAllocation allocation)
     {
@@ -87,7 +93,9 @@ namespace Engine
 
         vmaDestroyBuffer(s_Allocator, (VkBuffer)buffer, allocation);
 
-        LOG_VERBOSE("Allocator freed {} of memory. Total memory consumption is {} ...", Utility::BytesToString(allocationInfo.size), Utility::BytesToString(s_totalMemory));
+        LOG_VERBOSE("Allocator freed {} of memory. Total memory consumption is {} ...",
+                    Utility::BytesToString(allocationInfo.size),
+                    Utility::BytesToString(s_totalMemory));
     }
 
     void* VulkanAllocator::MapMemory(VmaAllocation allocation)
@@ -97,32 +105,32 @@ namespace Engine
         return dataPtr;
     }
 
-    void VulkanAllocator::UnmapMemory(VmaAllocation allocation)
-    {
-        vmaUnmapMemory(s_Allocator, allocation);
-    }
+    void VulkanAllocator::UnmapMemory(VmaAllocation allocation) { vmaUnmapMemory(s_Allocator, allocation); }
 
     // ----- Private -----
 
-    VmaAllocation VulkanAllocator::InternalAllocateBuffer(const vk::BufferCreateInfo& bufferCreateInfo, MemoryUsage usage, vk::Buffer& outBuffer)
+    VmaAllocation VulkanAllocator::InternalAllocateBuffer(const vk::BufferCreateInfo& bufferCreateInfo,
+                                                          MemoryUsage                 usage,
+                                                          vk::Buffer&                 outBuffer)
     {
         ASSERT(bufferCreateInfo.size > 0, "Provided buffer size was less or equal to zero!");
 
         VmaAllocationCreateInfo allocCreateInfo = {};
-        allocCreateInfo.usage = MapMemoryUsage(usage);
+        allocCreateInfo.usage                   = MapMemoryUsage(usage);
 
-        VmaAllocation allocation;
+        VmaAllocation     allocation;
         VmaAllocationInfo allocationInfo{};
-        VK_VERIFY((vk::Result)(vmaCreateBuffer(
-            s_Allocator,
-            (const VkBufferCreateInfo*)&bufferCreateInfo,
-            &allocCreateInfo,
-            (VkBuffer*)&outBuffer,
-            &allocation, &allocationInfo
-        )));
+        VK_VERIFY((vk::Result)(vmaCreateBuffer(s_Allocator,
+                                               (const VkBufferCreateInfo*)&bufferCreateInfo,
+                                               &allocCreateInfo,
+                                               (VkBuffer*)&outBuffer,
+                                               &allocation,
+                                               &allocationInfo)));
         s_totalMemory += allocationInfo.size;
 
-        LOG_VERBOSE("Allocator allocated {} of memory. Total memory consumption is {} ...", Utility::BytesToString(allocationInfo.size), Utility::BytesToString(s_totalMemory));
+        LOG_VERBOSE("Allocator allocated {} of memory. Total memory consumption is {} ...",
+                    Utility::BytesToString(allocationInfo.size),
+                    Utility::BytesToString(s_totalMemory));
 
         return allocation;
     }

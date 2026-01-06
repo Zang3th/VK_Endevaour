@@ -1,8 +1,9 @@
-#include "VulkanPhysicalDevice.hpp"
-#include "VulkanAssert.hpp"
-#include "VulkanGlobals.hpp"
+#include "Graphics/Vulkan/VulkanPhysicalDevice.hpp"
 
 #include "Debug/Log.hpp"
+
+#include "Graphics/Vulkan/VulkanAssert.hpp"
+#include "Graphics/Vulkan/VulkanGlobals.hpp"
 
 #include <vulkan/vulkan_core.h>
 #include <vulkan/vulkan_enums.hpp>
@@ -23,7 +24,7 @@ namespace
 
         u32 major     = (properties.driverVersion >> 22) & 0x3ff;
         u32 minor     = (properties.driverVersion >> 14) & 0x0ff;
-        u32 secondary = (properties.driverVersion >> 6)  & 0x0ff;
+        u32 secondary = (properties.driverVersion >> 6) & 0x0ff;
         u32 tertiary  = properties.driverVersion & 0x3f;
 
         return fmt::format("{}.{}.{}.{}", major, minor, secondary, tertiary);
@@ -40,10 +41,7 @@ namespace Engine
         PickDevice();
     }
 
-    VulkanPhysicalDevice::~VulkanPhysicalDevice()
-    {
-        LOG_INFO("VulkanPhysicalDevice::Destructor() ...");
-    }
+    VulkanPhysicalDevice::~VulkanPhysicalDevice() { LOG_INFO("VulkanPhysicalDevice::Destructor() ..."); }
 
     void VulkanPhysicalDevice::PickDevice()
     {
@@ -61,9 +59,10 @@ namespace Engine
             if(IsDeviceSuitable(device))
             {
                 m_PhysicalDevice = device;
-                m_Properties = device.getProperties();
+                m_Properties     = device.getProperties();
                 LOG_INFO("Found suitable device ... (GPU: {}, Driver: {})",
-                        (const char*)m_Properties.deviceName, GetDriverVersionString(m_Properties));
+                         (const char*)m_Properties.deviceName,
+                         GetDriverVersionString(m_Properties));
                 break;
             }
         }
@@ -77,16 +76,15 @@ namespace Engine
     {
         m_QueueFamilyIndices = FindQueueFamilyIndices(device);
 
-        return m_QueueFamilyIndices.isComplete()          &&
-               QuerySwapchainSupport(device).isComplete() &&
-               CheckDeviceExtensionSupport(device);
+        return m_QueueFamilyIndices.isComplete() && QuerySwapchainSupport(device).isComplete()
+               && CheckDeviceExtensionSupport(device);
     }
 
     QueueFamilyIndices VulkanPhysicalDevice::FindQueueFamilyIndices(vk::PhysicalDevice device)
     {
         QueueFamilyIndices queueFamilyIndices;
-        VkBool32 presentSupport = false;
-        u32 index = 0;
+        VkBool32           presentSupport = false;
+        u32                index          = 0;
 
         // Query for queue families
         const auto queueFamilies = device.getQueueFamilyProperties();

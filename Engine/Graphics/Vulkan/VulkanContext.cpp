@@ -1,16 +1,17 @@
-#include "VulkanContext.hpp"
-#include "VulkanGlobals.hpp"
-#include "VulkanAssert.hpp"
-#include "VulkanDebug.hpp"
-#include "VulkanAllocator.hpp"
-
 #include "Core/Memory.hpp"
+
+#include "Graphics/Vulkan/VulkanAllocator.hpp"
+#include "Graphics/Vulkan/VulkanAssert.hpp"
+#include "Graphics/Vulkan/VulkanContext.hpp"
+#include "Graphics/Vulkan/VulkanDebug.hpp"
+#include "Graphics/Vulkan/VulkanGlobals.hpp"
+
 #include "Platform/Window.hpp"
 
 #include <vulkan/vulkan.hpp>
-#include <vulkan/vulkan_structs.hpp>
-#include <vulkan/vulkan_handles.hpp>
 #include <vulkan/vulkan_core.h>
+#include <vulkan/vulkan_handles.hpp>
+#include <vulkan/vulkan_structs.hpp>
 
 namespace Engine
 {
@@ -57,7 +58,7 @@ namespace Engine
     void VulkanContext::CopyBuffer(vk::Buffer srcBuffer, vk::Buffer dstBuffer, vk::DeviceSize size)
     {
         const vk::CommandBuffer commandBuffer = m_Swapchain->CreateTransferCommandBuffer();
-        const vk::BufferCopy bufferCopy = { .size = size };
+        const vk::BufferCopy    bufferCopy    = { .size = size };
         commandBuffer.copyBuffer(srcBuffer, dstBuffer, 1, &bufferCopy);
         m_Swapchain->SubmitTransferCommandBuffer(commandBuffer);
         LOG_INFO("Copied {} bytes from CPU => GPU ...", size);
@@ -74,14 +75,11 @@ namespace Engine
         }
         const std::string& title = Window::GetTitle();
 
-        const vk::ApplicationInfo appInfo
-        {
-            .pApplicationName   = title.c_str(),
-            .applicationVersion = 1,
-            .pEngineName        = "Engine",
-            .engineVersion      = 1,
-            .apiVersion         = VK_API_VERSION_1_4
-        };
+        const vk::ApplicationInfo appInfo{ .pApplicationName   = title.c_str(),
+                                           .applicationVersion = 1,
+                                           .pEngineName        = "Engine",
+                                           .engineVersion      = 1,
+                                           .apiVersion         = VK_API_VERSION_1_4 };
 
         // Query for all required instance extensions
         auto extensions = VulkanDebug::GetInstanceExtensions();
@@ -89,8 +87,7 @@ namespace Engine
         // Create temporary debug messenger to trace instantiating
         auto debugCreateInfo = VulkanDebug::GetDebugCreateInfo();
 
-        const vk::InstanceCreateInfo createInfo
-        {
+        const vk::InstanceCreateInfo createInfo{
             .pNext                   = ENABLE_VALIDATION_LAYERS ? &debugCreateInfo : nullptr,
             .pApplicationInfo        = &appInfo,
             .enabledLayerCount       = ENABLE_VALIDATION_LAYERS ? (u32)(g_ValidationLayers.size()) : 0,
@@ -106,43 +103,35 @@ namespace Engine
     void VulkanContext::CreateDebugMessenger()
     {
         VulkanDebug::LoadDebugExtensionFunctions(m_Instance);
-        const auto [result, debugMessenger] = m_Instance.createDebugUtilsMessengerEXT(VulkanDebug::GetDebugCreateInfo(), nullptr);
-        ASSERT(debugMessenger , "Failed to create debug messenger!");
+        const auto [result, debugMessenger] =
+            m_Instance.createDebugUtilsMessengerEXT(VulkanDebug::GetDebugCreateInfo(), nullptr);
+        ASSERT(debugMessenger, "Failed to create debug messenger!");
         m_DebugMessenger = debugMessenger;
         LOG_INFO("Created debug messenger ...");
     }
 
     void VulkanContext::CreateSurface()
     {
-        VK_VERIFY((vk::Result)(glfwCreateWindowSurface(m_Instance, Window::GetHandle(), nullptr,
-                                                      (VkSurfaceKHR*)&m_Surface)));
+        VK_VERIFY(
+            (vk::Result)(glfwCreateWindowSurface(m_Instance, Window::GetHandle(), nullptr, (VkSurfaceKHR*)&m_Surface)));
         LOG_INFO("Created window surface ...");
     }
 
     void VulkanContext::CreateDispatchLoader()
     {
         // vkGetInstanceProcAddr
-        auto pfnVkGetInstanceProcAddr = reinterpret_cast<PFN_vkGetInstanceProcAddr>
-        (
-            m_Instance.getProcAddr("vkGetInstanceProcAddr")
-        );
-        ASSERT(pfnVkGetInstanceProcAddr , "Unable to load vkGetInstanceProcAddr");
+        auto pfnVkGetInstanceProcAddr =
+            reinterpret_cast<PFN_vkGetInstanceProcAddr>(m_Instance.getProcAddr("vkGetInstanceProcAddr"));
+        ASSERT(pfnVkGetInstanceProcAddr, "Unable to load vkGetInstanceProcAddr");
 
         // vkGetDeviceProcAddr
-        auto pfnVkGetDeviceProcAddr = reinterpret_cast<PFN_vkGetDeviceProcAddr>
-        (
-            m_Instance.getProcAddr("vkGetDeviceProcAddr")
-        );
-        ASSERT(pfnVkGetDeviceProcAddr , "Unable to load vkGetDeviceProcAddr");
+        auto pfnVkGetDeviceProcAddr =
+            reinterpret_cast<PFN_vkGetDeviceProcAddr>(m_Instance.getProcAddr("vkGetDeviceProcAddr"));
+        ASSERT(pfnVkGetDeviceProcAddr, "Unable to load vkGetDeviceProcAddr");
 
         // Init loader
-        m_DispatchLoader = vk::detail::DispatchLoaderDynamic
-        (
-            m_Instance,
-            pfnVkGetInstanceProcAddr,
-            m_Device->GetHandle(),
-            pfnVkGetDeviceProcAddr
-        );
+        m_DispatchLoader = vk::detail::DispatchLoaderDynamic(
+            m_Instance, pfnVkGetInstanceProcAddr, m_Device->GetHandle(), pfnVkGetDeviceProcAddr);
         LOG_INFO("Created dynamic dispatch loader ...");
     }
 }

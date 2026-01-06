@@ -1,4 +1,5 @@
-#include "ObjLoader.hpp"
+#include "Graphics/Import/ObjLoader.hpp"
+
 #include "Debug/Log.hpp"
 
 #define TINYOBJLOADER_IMPLEMENTATION
@@ -8,22 +9,32 @@ namespace Engine
 {
     Mesh ObjLoader::LoadMeshFromFile(const std::filesystem::path& path)
     {
-        tinyobj::attrib_t attrib;
-        std::vector<tinyobj::shape_t> shapes;
+        tinyobj::attrib_t                attrib;
+        std::vector<tinyobj::shape_t>    shapes;
         std::vector<tinyobj::material_t> materials;
-        std::string warn;
-        std::string error;
-        std::ifstream iStream(path, std::ios::binary);
+        std::string                      warn;
+        std::string                      error;
+        std::ifstream                    iStream(path, std::ios::binary);
 
         // Load obj file
         const bool success = LoadObj(&attrib, &shapes, &materials, &warn, &error, &iStream);
         if(!success)
         {
-            if(!warn.empty())  { LOG_WARN("tinyobjloader: {}", warn);   };
-            if(!error.empty()) { LOG_ERROR("tinyobjloader: {}", error); };
+            if(!warn.empty())
+            {
+                LOG_WARN("tinyobjloader: {}", warn);
+            };
+            if(!error.empty())
+            {
+                LOG_ERROR("tinyobjloader: {}", error);
+            };
             ASSERT(success, "Failed to load model '{}'", path.string());
         }
-        LOG_INFO("Loaded model '{}' ... (Shapes: {}, Vertices: {}, Indices: {})", path.string(), shapes.size(), attrib.vertices.size(), shapes.at(0).mesh.indices.size());
+        LOG_INFO("Loaded model '{}' ... (Shapes: {}, Vertices: {}, Indices: {})",
+                 path.string(),
+                 shapes.size(),
+                 attrib.vertices.size(),
+                 shapes.at(0).mesh.indices.size());
 
         // Hash map to store and reuse vertices (needs a hashing function and overloaded comparison operator)
         std::unordered_map<Vertex, u32> uniqueVertices{};
@@ -37,17 +48,13 @@ namespace Engine
             {
                 Vertex vertex{};
 
-                vertex.Position =
-                {
-                    attrib.vertices[(3 * index.vertex_index) + 0],
-                    attrib.vertices[(3 * index.vertex_index) + 1],
-                    attrib.vertices[(3 * index.vertex_index) + 2]
-                };
+                vertex.Position = { attrib.vertices[(3 * index.vertex_index) + 0],
+                                    attrib.vertices[(3 * index.vertex_index) + 1],
+                                    attrib.vertices[(3 * index.vertex_index) + 2] };
 
-                vertex.Color = {1.0f, 1.0f, 1.0f};
+                vertex.Color = { 1.0f, 1.0f, 1.0f };
 
-                vertex.TexCoord =
-                {
+                vertex.TexCoord = {
                     attrib.texcoords[(2 * index.texcoord_index) + 0],
                     1.0f - attrib.texcoords[(2 * index.texcoord_index) + 1] // Flip v-axis
                 };

@@ -8,17 +8,17 @@ namespace Engine
 {
     class VulkanShader
     {
-        public:
-            VulkanShader(const vk::Device& device, vk::ShaderStageFlagBits stage, const std::filesystem::path& path);
-            ~VulkanShader();
+    public:
+        VulkanShader(const vk::Device& device, vk::ShaderStageFlagBits stage, const std::filesystem::path& path);
+        ~VulkanShader();
 
-            [[nodiscard]] vk::PipelineShaderStageCreateInfo GetPipelineShaderStageCreateInfo();
+        [[nodiscard]] vk::PipelineShaderStageCreateInfo GetPipelineShaderStageCreateInfo();
 
-        private:
-            void CreateShaderModule(std::vector<char>&& code);
+    private:
+        void CreateShaderModule(std::vector<char>&& code);
 
-            vk::Device              m_Device = nullptr;
-            vk::ShaderModule        m_Module = nullptr;
-            vk::ShaderStageFlagBits m_Stage;
+        vk::Device              m_Device = nullptr;
+        vk::ShaderModule        m_Module = nullptr;
+        vk::ShaderStageFlagBits m_Stage;
     };
 }

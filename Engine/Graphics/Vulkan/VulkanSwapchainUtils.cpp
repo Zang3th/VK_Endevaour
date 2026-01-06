@@ -1,7 +1,8 @@
-#include "VulkanSwapchainUtils.hpp"
+#include "Graphics/Vulkan/VulkanSwapchainUtils.hpp"
+
+#include "Debug/Log.hpp"
 
 #include "Platform/Window.hpp"
-#include "Debug/Log.hpp"
 
 namespace Engine
 {
@@ -15,26 +16,24 @@ namespace Engine
         }
 
         Engine::Window::UpdateFramebufferSize();
-        vk::Extent2D extent =
-        {
-            .width  = Engine::Window::GetWidth(),
-            .height = Engine::Window::GetHeight()
-        };
+        vk::Extent2D extent = { .width = Engine::Window::GetWidth(), .height = Engine::Window::GetHeight() };
 
         // Clamp width and height between allowed min and max values of the display manager implementation
-        extent.width  = std::clamp(extent.width, capabilities.minImageExtent.width, capabilities.maxImageExtent.width);
-        extent.height = std::clamp(extent.height, capabilities.minImageExtent.height, capabilities.maxImageExtent.height);
+        extent.width = std::clamp(extent.width, capabilities.minImageExtent.width, capabilities.maxImageExtent.width);
+        extent.height =
+            std::clamp(extent.height, capabilities.minImageExtent.height, capabilities.maxImageExtent.height);
 
         return extent;
     }
 
-    vk::SurfaceFormatKHR VulkanSwapchainUtils::ChooseSurfaceFormat(const std::vector<vk::SurfaceFormatKHR>& surfaceFormats)
+    vk::SurfaceFormatKHR VulkanSwapchainUtils::ChooseSurfaceFormat(
+        const std::vector<vk::SurfaceFormatKHR>& surfaceFormats)
     {
         // Check if prefered format is available
         for(const auto& surfaceFormat : surfaceFormats)
         {
-            if(surfaceFormat.format == vk::Format::eB8G8R8A8Srgb &&
-               surfaceFormat.colorSpace == vk::ColorSpaceKHR::eSrgbNonlinear)
+            if(surfaceFormat.format == vk::Format::eB8G8R8A8Srgb
+               && surfaceFormat.colorSpace == vk::ColorSpaceKHR::eSrgbNonlinear)
             {
                 return surfaceFormat;
             }
@@ -60,17 +59,14 @@ namespace Engine
     }
 
     // Copied from Khronos 'hello_triangle_1_3.cpp' example
-    void VulkanSwapchainUtils::TransitionImageLayout
-    (
-        vk::CommandBuffer       cmd,
-        vk::Image               image,
-        vk::ImageLayout         oldLayout,
-        vk::ImageLayout         newLayout,
-        vk::AccessFlags2        srcAccessMask,
-        vk::AccessFlags2        dstAccessMask,
-        vk::PipelineStageFlags2 srcStage,
-        vk::PipelineStageFlags2 dstStage
-    )
+    void VulkanSwapchainUtils::TransitionImageLayout(vk::CommandBuffer       cmd,
+                                                     vk::Image               image,
+                                                     vk::ImageLayout         oldLayout,
+                                                     vk::ImageLayout         newLayout,
+                                                     vk::AccessFlags2        srcAccessMask,
+                                                     vk::AccessFlags2        dstAccessMask,
+                                                     vk::PipelineStageFlags2 srcStage,
+                                                     vk::PipelineStageFlags2 dstStage)
     {
         // Initialize the VkImageMemoryBarrier2 structure
         const vk::ImageMemoryBarrier2 imageMemoryBarrier
@@ -104,10 +100,9 @@ namespace Engine
         };
 
         // Initialize the VkDependencyInfo structure
-        const vk::DependencyInfo dependencyInfo
-        {
-            .imageMemoryBarrierCount = 1,                    // Number of image memory barriers
-            .pImageMemoryBarriers    = &imageMemoryBarrier   // Pointer to the image memory barrier(s)
+        const vk::DependencyInfo dependencyInfo{
+            .imageMemoryBarrierCount = 1,                  // Number of image memory barriers
+            .pImageMemoryBarriers    = &imageMemoryBarrier // Pointer to the image memory barrier(s)
         };
 
         // Record the pipeline barrier into the command buffer

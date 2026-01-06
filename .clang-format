@@ -1,43 +1,163 @@
-# General settings
-BasedOnStyle: Google
+# =========================
+# Language / Standard
+# =========================
 Language: Cpp
-BreakBeforeBraces: Allman
+Standard: c++20
 
-# Indenting
+# =========================
+# Indentation & Access
+# =========================
+AccessModifierOffset: -4
 IndentWidth: 4
-TabWidth: 4
-IndentAccessModifiers: true
-UseTab: Never
-IndentCaseLabels: true
+IndentCaseLabels: false
+IndentGotoLabels: false
+IndentPPDirectives: None
+IndentRequiresClause: true
+IndentWrappedFunctionNames: false
 NamespaceIndentation: All
-IndentPPDirectives: AfterHash
 
-AllowShortFunctionsOnASingleLine: Empty
-ColumnLimit: 120
+# =========================
+# Alignment
+# =========================
+AlignAfterOpenBracket: true
+AlignConsecutiveAssignments: true
+AlignConsecutiveDeclarations: true
+AlignEscapedNewlines: Right
+AlignOperands: true
+AlignTrailingComments: true
+
+# =========================
+# Allow Short / Inline
+# =========================
+AllowAllArgumentsOnNextLine: true
+AllowAllConstructorInitializersOnNextLine: true
+AllowAllParametersOfDeclarationOnNextLine: true
+AllowShortBlocksOnASingleLine: Never
+AllowShortCaseLabelsOnASingleLine: false
+AllowShortFunctionsOnASingleLine: true
+AllowShortIfStatementsOnASingleLine: Never
+AllowShortLambdasOnASingleLine: Inline
+AllowShortLoopsOnASingleLine: false
+
+# =========================
+# Breaking & Wrapping
+# =========================
+AlwaysBreakAfterDefinitionReturnType: None
+AlwaysBreakAfterReturnType: None
+AlwaysBreakBeforeMultilineStrings: false
+AlwaysBreakTemplateDeclarations: Yes
+
 BinPackArguments: false
 BinPackParameters: false
-SpacesInAngles: false
-SpaceBeforeParens: Never
-SpaceAfterCStyleCast: false
+
+BreakBeforeBinaryOperators: NonAssignment
+BreakBeforeBraces: Allman
+BreakBeforeTernaryOperators: true
+BreakConstructorInitializers: BeforeColon
+BreakConstructorInitializersBeforeComma: false
+BreakInheritanceList: BeforeColon
+BreakStringLiterals: true
+
+ColumnLimit: 120
+ContinuationIndentWidth: 4
+
+# =========================
+# Constructor Initializer
+# =========================
+ConstructorInitializerAllOnOneLineOrOnePerLine: true
+ConstructorInitializerIndentWidth: 4
+
+# =========================
+# Derive / Pointer
+# =========================
+DeriveLineEnding: false
 DerivePointerAlignment: false
 PointerAlignment: Left
-SpaceAfterTemplateKeyword: true
-SortIncludes: false
-BreakBeforeBinaryOperators: All
-BreakBeforeTernaryOperators: true
 
-# Alignment
-AlignTrailingComments: true
-AlignAfterOpenBracket: Align
-AlignArrayOfStructures: Right
-AlignConsecutiveAssignments:
-  Enabled: true
-  AcrossEmptyLines: false
-  AcrossComments: false
-  AlignCompound: true
-AlignConsecutiveDeclarations:
-  Enabled: true
-  AcrossEmptyLines: false
-  AcrossComments: false
-  AlignCompound: true
-AlignOperands: AlignAfterOperator
+# =========================
+# Formatting Control
+# =========================
+DisableFormat: false
+ExperimentalAutoDetectBinPacking: false
+FixNamespaceComments: false
+KeepEmptyLinesAtTheStartOfBlocks: false
+MaxEmptyLinesToKeep: 1
+
+# =========================
+# Macros
+# =========================
+MacroBlockBegin: ''
+MacroBlockEnd: ''
+
+# =========================
+# Penalties
+# =========================
+PenaltyBreakAssignment: 2
+PenaltyBreakBeforeFirstCallParameter: 19
+PenaltyBreakComment: 300
+PenaltyBreakFirstLessLess: 120
+PenaltyBreakString: 1000
+PenaltyBreakTemplateDeclaration: 10
+PenaltyExcessCharacter: 1000
+PenaltyReturnTypeOnItsOwnLine: 120
+
+# =========================
+# Requires / Using
+# =========================
+RequiresClausePosition: OwnLine
+SortUsingDeclarations: true
+
+# =========================
+# Spacing
+# =========================
+Cpp11BracedListStyle: false
+
+SpaceAfterCStyleCast: false
+SpaceAfterLogicalNot: false
+SpaceAfterTemplateKeyword: true
+SpaceBeforeAssignmentOperators: true
+SpaceBeforeCpp11BracedList: false
+SpaceBeforeCtorInitializerColon: true
+SpaceBeforeInheritanceColon: true
+SpaceBeforeParens: Never
+SpaceBeforeRangeBasedForLoopColon: true
+SpaceBeforeSquareBrackets: false
+SpaceInEmptyBlock: false
+SpaceInEmptyParentheses: false
+SpacesBeforeTrailingComments: 1
+SpacesInAngles: false
+SpacesInConditionalStatement: false
+SpacesInContainerLiterals: true
+SpacesInCStyleCastParentheses: false
+SpacesInParentheses: false
+SpacesInSquareBrackets: false
+
+# =========================
+# Includes
+# =========================
+SortIncludes: true
+IncludeBlocks: Regroup
+
+IncludeCategories:
+  - Regex: '^"Core/.*"'
+    Priority: 0
+  - Regex: '^"Debug/.*"'
+    Priority: 1
+  - Regex: '^"Graphics/Import/.*"'
+    Priority: 2
+  - Regex: '^"Graphics/Resources/.*"'
+    Priority: 3
+  - Regex: '^"Graphics/UI/.*"'
+    Priority: 4
+  - Regex: '^"Graphics/Vulkan/.*"'
+    Priority: 5
+  - Regex: '^"Platform/.*"'
+    Priority: 6
+  - Regex: '^<vulkan/.*>'
+    Priority: 7
+  - Regex: '^<[^/]+>' # STL / libc++
+    Priority: 8
+  - Regex: '^"Vendor/.*"'
+    Priority: 9
+  - Regex: '.*'
+    Priority: 10

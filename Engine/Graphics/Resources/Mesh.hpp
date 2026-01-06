@@ -3,13 +3,13 @@
 #include "Core/Types.hpp"
 
 #define GLM_ENABLE_EXPERIMENTAL
-#include <Vendor/glm/glm.hpp>
-#include <Vendor/glm/gtx/hash.hpp>
-
 #include <vulkan/vulkan.hpp>
 
 #include <array>
 #include <vector>
+
+#include <Vendor/glm/glm.hpp>
+#include <Vendor/glm/gtx/hash.hpp>
 
 namespace Engine
 {
@@ -26,14 +26,10 @@ namespace Engine
 
         static constexpr vk::VertexInputBindingDescription GetBindingDescription()
         {
-            return
-            {
-                .binding = 0,
-                .stride  = sizeof(Vertex),
-                .inputRate = vk::VertexInputRate::eVertex
-            };
+            return { .binding = 0, .stride = sizeof(Vertex), .inputRate = vk::VertexInputRate::eVertex };
         }
 
+        // clang-format off
         static constexpr std::array<vk::VertexInputAttributeDescription, 3> GetAttributeDescriptions()
         {
             return std::to_array<vk::VertexInputAttributeDescription>
@@ -58,6 +54,7 @@ namespace Engine
                 }
             });
         }
+        // clang-format on
     };
 
     struct Mesh
@@ -66,19 +63,19 @@ namespace Engine
         std::vector<u32>    Indices;
 
         [[nodiscard]] u32 GetVerticeSize() const { return sizeof(Vertex) * Vertices.size(); };
-        [[nodiscard]] u32 GetIndiceSize()  const { return sizeof(u32)    * Indices.size();  };
+        [[nodiscard]] u32 GetIndiceSize() const { return sizeof(u32) * Indices.size(); };
     };
 }
 
 namespace std
 {
-    template<> struct hash<Engine::Vertex>
+    template <>
+    struct hash<Engine::Vertex>
     {
         size_t operator()(Engine::Vertex const& vertex) const
         {
-            return ((hash<glm::vec3>()(vertex.Position) ^
-                    (hash<glm::vec3>()(vertex.Color) << 1)) >> 1) ^
-                    (hash<glm::vec2>()(vertex.TexCoord) << 1);
+            return ((hash<glm::vec3>()(vertex.Position) ^ (hash<glm::vec3>()(vertex.Color) << 1)) >> 1)
+                   ^ (hash<glm::vec2>()(vertex.TexCoord) << 1);
         }
     };
 }

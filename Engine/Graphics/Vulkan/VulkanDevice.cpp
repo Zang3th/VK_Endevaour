@@ -1,6 +1,7 @@
-#include "VulkanDevice.hpp"
-#include "VulkanGlobals.hpp"
-#include "VulkanAssert.hpp"
+#include "Graphics/Vulkan/VulkanDevice.hpp"
+
+#include "Graphics/Vulkan/VulkanAssert.hpp"
+#include "Graphics/Vulkan/VulkanGlobals.hpp"
 
 #include <vulkan/vulkan_structs.hpp>
 
@@ -20,23 +21,19 @@ namespace Engine
         m_Device.destroy();
     }
 
-    void VulkanDevice::WaitForIdle() const
-    {
-        VK_VERIFY(m_Device.waitIdle());
-    }
+    void VulkanDevice::WaitForIdle() const { VK_VERIFY(m_Device.waitIdle()); }
 
     // ----- Private -----
 
     void VulkanDevice::CreateLogicalDevice()
     {
         // Fetch queue familys
-        const auto& queueFamilyIndices = m_PhysicalDevice->GetQueueFamilys();
-        static const f32 queuePriority = 1.0f;
+        const auto&                            queueFamilyIndices = m_PhysicalDevice->GetQueueFamilys();
+        static const f32                       queuePriority      = 1.0f;
         std::vector<vk::DeviceQueueCreateInfo> queueCreateInfos;
 
         // Add queue infos for graphics
-        queueCreateInfos.push_back
-        ({
+        queueCreateInfos.push_back({
             .queueFamilyIndex = (u32)queueFamilyIndices.GraphicsFamily,
             .queueCount       = 1,
             .pQueuePriorities = &queuePriority,
@@ -45,8 +42,7 @@ namespace Engine
         // If transfer uses a different queue, add it too
         if(queueFamilyIndices.GraphicsFamily != queueFamilyIndices.TransferFamily)
         {
-            queueCreateInfos.push_back
-            ({
+            queueCreateInfos.push_back({
                 .queueFamilyIndex = (u32)queueFamilyIndices.TransferFamily,
                 .queueCount       = 1,
                 .pQueuePriorities = &queuePriority,
@@ -57,32 +53,24 @@ namespace Engine
         const vk::PhysicalDeviceFeatures deviceFeatures{};
 
         // Activate dynamic rendering and synchronization2
-        vk::PhysicalDeviceVulkan13Features vulkan13Features
-        {
-            .pNext            = nullptr,
-            .synchronization2 = vk::True,
-            .dynamicRendering = vk::True
-        };
+        vk::PhysicalDeviceVulkan13Features vulkan13Features{ .pNext            = nullptr,
+                                                             .synchronization2 = vk::True,
+                                                             .dynamicRendering = vk::True };
 
         // Activate dynamic state 3 extension
-        vk::PhysicalDeviceExtendedDynamicState3FeaturesEXT extDyn3Features
-        {
-            .pNext                            = &vulkan13Features,
-            .extendedDynamicState3PolygonMode = vk::True
-        };
+        vk::PhysicalDeviceExtendedDynamicState3FeaturesEXT extDyn3Features{ .pNext = &vulkan13Features,
+                                                                            .extendedDynamicState3PolygonMode =
+                                                                                vk::True };
 
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wmissing-designated-field-initializers"
         // Configure logical device
-        const vk::DeviceCreateInfo deviceCreateInfo
-        {
-            .pNext                   = &extDyn3Features,
-            .queueCreateInfoCount    = (u32)(queueCreateInfos.size()),
-            .pQueueCreateInfos       = queueCreateInfos.data(),
-            .enabledExtensionCount   = (u32)(g_DeviceExtensions.size()),
-            .ppEnabledExtensionNames = g_DeviceExtensions.data(),
-            .pEnabledFeatures        = &deviceFeatures
-        };
+        const vk::DeviceCreateInfo deviceCreateInfo{ .pNext                   = &extDyn3Features,
+                                                     .queueCreateInfoCount    = (u32)(queueCreateInfos.size()),
+                                                     .pQueueCreateInfos       = queueCreateInfos.data(),
+                                                     .enabledExtensionCount   = (u32)(g_DeviceExtensions.size()),
+                                                     .ppEnabledExtensionNames = g_DeviceExtensions.data(),
+                                                     .pEnabledFeatures        = &deviceFeatures };
 #pragma clang diagnostic pop
 
         // Create logical device
@@ -93,6 +81,8 @@ namespace Engine
         m_Device.getQueue(queueFamilyIndices.GraphicsFamily, 0, &m_GraphicsQueue);
         m_Device.getQueue(queueFamilyIndices.TransferFamily, 0, &m_TransferQueue);
 
-        LOG_INFO("Retrieved queue family handles ... (Graphics: {}, Transfer: {})", queueFamilyIndices.GraphicsFamily, queueFamilyIndices.TransferFamily);
+        LOG_INFO("Retrieved queue family handles ... (Graphics: {}, Transfer: {})",
+                 queueFamilyIndices.GraphicsFamily,
+                 queueFamilyIndices.TransferFamily);
     }
 }

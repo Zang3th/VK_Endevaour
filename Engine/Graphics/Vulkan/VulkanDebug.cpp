@@ -1,5 +1,5 @@
-#include "VulkanDebug.hpp"
-#include "VulkanGlobals.hpp"
+#include "Graphics/Vulkan/VulkanDebug.hpp"
+#include "Graphics/Vulkan/VulkanGlobals.hpp"
 
 #include "Debug/Log.hpp"
 #include "Platform/Window.hpp"
@@ -131,6 +131,7 @@ namespace Engine
         return VK_FALSE;
     }
 
+    // clang-format off
     vk::DebugUtilsMessengerCreateInfoEXT VulkanDebug::GetDebugCreateInfo()
     {
         return
@@ -146,8 +147,9 @@ namespace Engine
             .pUserData = nullptr
         };
     }
+    // clang-format on
 
-    // Load and assign Vulkan extension functions
+    //Load and assign Vulkan extension functions
     void VulkanDebug::LoadDebugExtensionFunctions(vk::Instance instance)
     {
         pfnVkCreateDebugUtilsMessengerEXT = reinterpret_cast<PFN_vkCreateDebugUtilsMessengerEXT>

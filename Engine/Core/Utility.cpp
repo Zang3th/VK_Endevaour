@@ -1,4 +1,5 @@
-#include "Utility.hpp"
+#include "Core/Utility.hpp"
+
 #include "Debug/Log.hpp"
 
 #include <fstream>
@@ -13,7 +14,7 @@ namespace Engine
 
         // Get the file size, set pointer back to the beginning and read into buffer
         const std::streamsize fileSize = file.tellg();
-        std::vector<char> buffer(fileSize);
+        std::vector<char>     buffer(fileSize);
         file.seekg(0);
         file.read(buffer.data(), fileSize);
         file.close();
@@ -28,15 +29,15 @@ namespace Engine
         constexpr u64 MB = 1024ull * 1024;
         constexpr u64 KB = 1024ull;
 
-        if (bytes >= GB)
+        if(bytes >= GB)
         {
             return fmt::format("{:.2f} GB", (f64)bytes / (f64)GB);
         }
-        if (bytes >= MB)
+        if(bytes >= MB)
         {
             return fmt::format("{:.2f} MB", (f64)bytes / (f64)MB);
         }
-        if (bytes >= KB)
+        if(bytes >= KB)
         {
             return fmt::format("{:.2f} KB", (f64)bytes / (f64)KB);
         }

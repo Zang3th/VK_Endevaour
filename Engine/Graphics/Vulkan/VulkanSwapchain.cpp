@@ -1,5 +1,6 @@
-#include "VulkanSwapchain.hpp"
-#include "VulkanAssert.hpp"
+#include "Graphics/Vulkan/VulkanSwapchain.hpp"
+
+#include "Graphics/Vulkan/VulkanAssert.hpp"
 
 #include "Platform/Window.hpp"
 
@@ -23,8 +24,8 @@ namespace
         properties.ImageCount = swapchainSupport.Capabilities.minImageCount + 1;
 
         // Make sure to not exceed bounds (0 := means no limit)
-        if(swapchainSupport.Capabilities.maxImageCount > 0 &&
-           properties.ImageCount > swapchainSupport.Capabilities.maxImageCount)
+        if(swapchainSupport.Capabilities.maxImageCount > 0
+           && properties.ImageCount > swapchainSupport.Capabilities.maxImageCount)
         {
             properties.ImageCount = swapchainSupport.Capabilities.maxImageCount;
         }
@@ -38,8 +39,8 @@ namespace
     void FramebufferResizeCallback([[maybe_unused]] GLFWwindow* window, int width, int height)
     {
         auto* swapchain = (Engine::VulkanSwapchain*)glfwGetWindowUserPointer(Engine::Window::GetHandle());
-        if(swapchain->GetProperties().Extent.width  != (u32)width ||
-           swapchain->GetProperties().Extent.height != (u32)height)
+        if(swapchain->GetProperties().Extent.width != (u32)width
+           || swapchain->GetProperties().Extent.height != (u32)height)
         {
             LOG_WARN("GLFW: FramebufferResizeCallback ... (Size: {}x{})", width, height);
             Engine::Window::SetWidth((u32)width);
@@ -92,21 +93,15 @@ namespace Engine
     vk::CommandBuffer VulkanSwapchain::CreateTransferCommandBuffer()
     {
         // Allocate command buffer
-        const vk::CommandBufferAllocateInfo allocateInfo
-        {
-            .commandPool        = m_TransferCommandPool,
-            .level              = vk::CommandBufferLevel::ePrimary,
-            .commandBufferCount = 1
-        };
+        const vk::CommandBufferAllocateInfo allocateInfo{ .commandPool        = m_TransferCommandPool,
+                                                          .level              = vk::CommandBufferLevel::ePrimary,
+                                                          .commandBufferCount = 1 };
         auto [res, commandBuffer] = m_Device->GetHandle().allocateCommandBuffers(allocateInfo);
         VK_VERIFY(res);
         ASSERT(!commandBuffer.empty(), "Allocated command buffer vector was empty!");
 
         // Begin command buffer recording
-        const vk::CommandBufferBeginInfo beginInfo
-        {
-            .flags = vk::CommandBufferUsageFlagBits::eOneTimeSubmit
-        };
+        const vk::CommandBufferBeginInfo beginInfo{ .flags = vk::CommandBufferUsageFlagBits::eOneTimeSubmit };
         VK_VERIFY(commandBuffer.at(0).begin(&beginInfo));
 
         return commandBuffer.at(0);
@@ -118,12 +113,8 @@ namespace Engine
         VK_VERIFY(commandBuffer.end());
 
         // Immediately submit recorded commands
-        const vk::SubmitInfo submitInfo
-        {
-            .commandBufferCount = 1,
-            .pCommandBuffers    = &commandBuffer
-        };
-        const vk::Queue transferQueue = m_Device->GetTransferQueue();
+        const vk::SubmitInfo submitInfo{ .commandBufferCount = 1, .pCommandBuffers = &commandBuffer };
+        const vk::Queue      transferQueue = m_Device->GetTransferQueue();
         VK_VERIFY(transferQueue.submit(1, &submitInfo, nullptr));
         VK_VERIFY(transferQueue.waitIdle());
 
@@ -141,7 +132,8 @@ namespace Engine
 
         // TODO: This needs major rework. I should only work with the swapchain image index
         // Aquire
-        const vk::Result res = m_Device->GetHandle().acquireNextImageKHR(m_CurrentSwapchain, UINT64_MAX, currentFrame.ImageAvailable, nullptr, &currentFrame.ImageIndex);
+        const vk::Result res = m_Device->GetHandle().acquireNextImageKHR(
+            m_CurrentSwapchain, UINT64_MAX, currentFrame.ImageAvailable, nullptr, &currentFrame.ImageIndex);
         if(res == vk::Result::eErrorOutOfDateKHR)
         {
             LOG_WARN("vkAcquireNextImageKHR initialized swapchain recreation ...");
@@ -162,18 +154,17 @@ namespace Engine
 
     void VulkanSwapchain::SubmitFrame(const VulkanFrame& frame)
     {
-        const vk::PipelineStageFlags waitStage { vk::PipelineStageFlagBits::eColorAttachmentOutput };
+        const vk::PipelineStageFlags waitStage{ vk::PipelineStageFlagBits::eColorAttachmentOutput };
 
         // Create submit info
-        const vk::SubmitInfo submitInfo
-        {
+        const vk::SubmitInfo submitInfo{
             .waitSemaphoreCount   = 1,
-            .pWaitSemaphores      = &frame.ImageAvailable,  // On which semaphore to wait
+            .pWaitSemaphores      = &frame.ImageAvailable, // On which semaphore to wait
             .pWaitDstStageMask    = &waitStage,
             .commandBufferCount   = 1,
             .pCommandBuffers      = &frame.CommandBuffer,
             .signalSemaphoreCount = 1,
-            .pSignalSemaphores    = &frame.RenderFinished  // Which semaphore to signal after
+            .pSignalSemaphores    = &frame.RenderFinished // Which semaphore to signal after
         };
 
         // Submit frame to queue
@@ -183,14 +174,11 @@ namespace Engine
     void VulkanSwapchain::PresentFrame(const VulkanFrame& frame)
     {
         // Create present info
-        const vk::PresentInfoKHR presentInfo
-        {
-            .waitSemaphoreCount = 1,
-            .pWaitSemaphores    = &frame.RenderFinished,
-            .swapchainCount     = 1,
-            .pSwapchains        = &m_CurrentSwapchain,
-            .pImageIndices      = &frame.ImageIndex
-        };
+        const vk::PresentInfoKHR presentInfo{ .waitSemaphoreCount = 1,
+                                              .pWaitSemaphores    = &frame.RenderFinished,
+                                              .swapchainCount     = 1,
+                                              .pSwapchains        = &m_CurrentSwapchain,
+                                              .pImageIndices      = &frame.ImageIndex };
 
         // Present
         const vk::Result res = m_Device->GetGraphicsQueue().presentKHR(&presentInfo);
@@ -203,10 +191,7 @@ namespace Engine
         ASSERT(res == vk::Result::eSuccess, "Failed to present swapchain image!");
     }
 
-    void VulkanSwapchain::AdvanceFrameCount()
-    {
-        m_CurrentFrame = (m_CurrentFrame + 1) % FRAMES_IN_FLIGHT;
-    }
+    void VulkanSwapchain::AdvanceFrameCount() { m_CurrentFrame = (m_CurrentFrame + 1) % FRAMES_IN_FLIGHT; }
 
     // ----- Private -----
 
@@ -214,34 +199,28 @@ namespace Engine
     {
         m_OldSwapchain = m_CurrentSwapchain;
 
-        const vk::SwapchainCreateInfoKHR swapchainCreate
-        {
-            .surface          = m_Surface,
-            .minImageCount    = m_Properties.ImageCount,
-            .imageFormat      = m_Properties.SurfaceFormat.format,
-            .imageColorSpace  = m_Properties.SurfaceFormat.colorSpace,
-            .imageExtent      = m_Properties.Extent,
-            .imageArrayLayers = 1,
-            .imageUsage       = vk::ImageUsageFlagBits::eColorAttachment,
-            .imageSharingMode = vk::SharingMode::eExclusive,
-            .preTransform     = m_Properties.Transform,
-            .compositeAlpha   = vk::CompositeAlphaFlagBitsKHR::eOpaque,
-            .presentMode      = m_Properties.PresentMode,
-            .clipped          = vk::True,
-            .oldSwapchain     = m_OldSwapchain
-        };
+        const vk::SwapchainCreateInfoKHR swapchainCreate{ .surface          = m_Surface,
+                                                          .minImageCount    = m_Properties.ImageCount,
+                                                          .imageFormat      = m_Properties.SurfaceFormat.format,
+                                                          .imageColorSpace  = m_Properties.SurfaceFormat.colorSpace,
+                                                          .imageExtent      = m_Properties.Extent,
+                                                          .imageArrayLayers = 1,
+                                                          .imageUsage       = vk::ImageUsageFlagBits::eColorAttachment,
+                                                          .imageSharingMode = vk::SharingMode::eExclusive,
+                                                          .preTransform     = m_Properties.Transform,
+                                                          .compositeAlpha   = vk::CompositeAlphaFlagBitsKHR::eOpaque,
+                                                          .presentMode      = m_Properties.PresentMode,
+                                                          .clipped          = vk::True,
+                                                          .oldSwapchain     = m_OldSwapchain };
 
         VK_VERIFY(m_Device->GetHandle().createSwapchainKHR(&swapchainCreate, nullptr, &m_CurrentSwapchain));
 
-        LOG_INFO
-        (
-            "Created swapchain ... (Size: {}x{}, Format: {}, Color: {}, Mode: {})",
-            m_Properties.Extent.width,
-            m_Properties.Extent.height,
-            vk::to_string(m_Properties.SurfaceFormat.format),
-            vk::to_string(m_Properties.SurfaceFormat.colorSpace),
-            vk::to_string(m_Properties.PresentMode)
-        );
+        LOG_INFO("Created swapchain ... (Size: {}x{}, Format: {}, Color: {}, Mode: {})",
+                 m_Properties.Extent.width,
+                 m_Properties.Extent.height,
+                 vk::to_string(m_Properties.SurfaceFormat.format),
+                 vk::to_string(m_Properties.SurfaceFormat.colorSpace),
+                 vk::to_string(m_Properties.PresentMode));
 
         if(m_OldSwapchain != nullptr)
         {
@@ -282,20 +261,15 @@ namespace Engine
         // Create an image view for every image in the swapchain
         for(const auto& image : images)
         {
-            const vk::ImageViewCreateInfo viewCreateInfo =
-            {
-                .image    = image,
-                .viewType = vk::ImageViewType::e2D,
-                .format   = m_Properties.SurfaceFormat.format,
-                .subresourceRange =
-                {
-                    .aspectMask     = vk::ImageAspectFlagBits::eColor,
-                    .baseMipLevel   = 0,
-                    .levelCount     = 1,
-                    .baseArrayLayer = 0,
-                    .layerCount     = 1
-                }
-            };
+            const vk::ImageViewCreateInfo viewCreateInfo = { .image            = image,
+                                                             .viewType         = vk::ImageViewType::e2D,
+                                                             .format           = m_Properties.SurfaceFormat.format,
+                                                             .subresourceRange = { .aspectMask =
+                                                                                       vk::ImageAspectFlagBits::eColor,
+                                                                                   .baseMipLevel   = 0,
+                                                                                   .levelCount     = 1,
+                                                                                   .baseArrayLayer = 0,
+                                                                                   .layerCount     = 1 } };
 
             auto [result, view] = m_Device->GetHandle().createImageView(viewCreateInfo);
             VK_VERIFY(result);
@@ -310,11 +284,9 @@ namespace Engine
     {
         // Create graphics pool
         {
-            const vk::CommandPoolCreateInfo graphicsPoolInfo
-            {
-                .flags = vk::CommandPoolCreateFlagBits::eResetCommandBuffer,
-                .queueFamilyIndex = m_Device->GetGraphicsQueueFamily()
-            };
+            const vk::CommandPoolCreateInfo graphicsPoolInfo{ .flags =
+                                                                  vk::CommandPoolCreateFlagBits::eResetCommandBuffer,
+                                                              .queueFamilyIndex = m_Device->GetGraphicsQueueFamily() };
             auto [res, pool] = m_Device->GetHandle().createCommandPool(graphicsPoolInfo);
             VK_VERIFY(res);
             m_GraphicsCommandPool = pool;
@@ -322,8 +294,7 @@ namespace Engine
 
         // Create transfer pool
         {
-            const vk::CommandPoolCreateInfo transferPoolInfo
-            {
+            const vk::CommandPoolCreateInfo transferPoolInfo{
                 .flags = vk::CommandPoolCreateFlagBits::eTransient | vk::CommandPoolCreateFlagBits::eResetCommandBuffer,
                 .queueFamilyIndex = m_Device->GetTransferQueueFamily()
             };
@@ -352,12 +323,9 @@ namespace Engine
         }
 
         // Allocate command buffers
-        const vk::CommandBufferAllocateInfo allocateInfo
-        {
-            .commandPool        = m_GraphicsCommandPool,
-            .level              = vk::CommandBufferLevel::ePrimary,
-            .commandBufferCount = FRAMES_IN_FLIGHT
-        };
+        const vk::CommandBufferAllocateInfo allocateInfo{ .commandPool        = m_GraphicsCommandPool,
+                                                          .level              = vk::CommandBufferLevel::ePrimary,
+                                                          .commandBufferCount = FRAMES_IN_FLIGHT };
         auto [res, commandBuffers] = m_Device->GetHandle().allocateCommandBuffers(allocateInfo);
         VK_VERIFY(res);
         ASSERT(!commandBuffers.empty(), "Allocated command buffer vector was empty!");

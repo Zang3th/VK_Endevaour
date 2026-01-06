@@ -8,9 +8,9 @@ namespace Engine
 {
     class ObjLoader
     {
-        public:
-            ObjLoader() = delete;
+    public:
+        ObjLoader() = delete;
 
-            static Mesh LoadMeshFromFile(const std::filesystem::path& path);
+        static Mesh LoadMeshFromFile(const std::filesystem::path& path);
     };
 }

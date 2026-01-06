@@ -1,9 +1,8 @@
 #include "SandboxApp.hpp"
 
-#include <Platform/Window.hpp>
-
-#include <Graphics/Vulkan/VulkanRenderer.hpp>
 #include <Graphics/Import/ObjLoader.hpp>
+#include <Graphics/Vulkan/VulkanRenderer.hpp>
+#include <Platform/Window.hpp>
 
 Sandbox::Sandbox()
 {
@@ -21,7 +20,7 @@ void Sandbox::Run()
     Engine::VulkanRenderer vkRenderer;
 
     // Load shader
-    const u32 vertexID   = vkRenderer.LoadShader(vk::ShaderStageFlagBits::eVertex,   "Shaders/Vert.spv");
+    const u32 vertexID   = vkRenderer.LoadShader(vk::ShaderStageFlagBits::eVertex, "Shaders/Vert.spv");
     const u32 fragmentID = vkRenderer.LoadShader(vk::ShaderStageFlagBits::eFragment, "Shaders/Frag.spv");
 
     // Create pipeline
@@ -32,12 +31,9 @@ void Sandbox::Run()
 
     // Create 'hello_world_triangle' mesh
     Engine::Mesh mesh;
-    mesh.Vertices =
-    {
-        { .Position = { 0.0f, -0.5f, 0.0f }, .Color = {1,0,0}, .TexCoord = {0,0} },
-        { .Position = { 0.5f,  0.5f, 0.0f }, .Color = {0,1,0}, .TexCoord = {1,0} },
-        { .Position = {-0.5f,  0.5f, 0.0f }, .Color = {0,0,1}, .TexCoord = {0,1} }
-    };
+    mesh.Vertices = { { .Position = { +0.0f, -0.5f, 0.0f }, .Color = { 1, 0, 0 }, .TexCoord = { 0, 0 } },
+                      { .Position = { +0.5f, +0.5f, 0.0f }, .Color = { 0, 1, 0 }, .TexCoord = { 1, 0 } },
+                      { .Position = { -0.5f, +0.5f, 0.0f }, .Color = { 0, 0, 1 }, .TexCoord = { 0, 1 } } };
     mesh.Indices  = { 0, 1, 2 };
 
     // Create model from mesh

@@ -1,4 +1,4 @@
-#include "VulkanRenderer.hpp"
+#include "Graphics/Vulkan/VulkanRenderer.hpp"
 
 #include "Debug/Log.hpp"
 
@@ -12,16 +12,13 @@ namespace Engine
         m_Swapchain = m_Context->GetSwapchain();
     }
 
-    VulkanRenderer::~VulkanRenderer()
-    {
-        LOG_INFO("VulkanRenderer::Destructor() ...");
-    }
+    VulkanRenderer::~VulkanRenderer() { LOG_INFO("VulkanRenderer::Destructor() ..."); }
 
     [[nodiscard]] u32 VulkanRenderer::LoadShader(vk::ShaderStageFlagBits stage, const std::filesystem::path& path)
     {
         ASSERT(m_ShaderIndex != MAX_SHADER_COUNT, "Reached capacity ... Can't load any more shaders!");
 
-        const u32 currentIndex = m_ShaderIndex;
+        const u32 currentIndex     = m_ShaderIndex;
         m_Shaders.at(currentIndex) = MakeScope<VulkanShader>(m_Context->GetDevice()->GetHandle(), stage, path);
         m_ShaderIndex++;
 
@@ -32,7 +29,7 @@ namespace Engine
     {
         ASSERT(m_ModelIndex != MAX_MODEL_COUNT, "Reached capacity ... Can't load any more models!");
 
-        const u32 currentIndex = m_ModelIndex;
+        const u32 currentIndex    = m_ModelIndex;
         m_Models.at(currentIndex) = MakeScope<VulkanModel>(m_Context.get(), mesh);
         m_ModelIndex++;
 
@@ -43,14 +40,11 @@ namespace Engine
     {
         ASSERT(m_PipelineIndex != MAX_PIPELINE_COUNT, "Reached capacity ... Can't create any more pipelines!");
 
-        const u32 currentIndex = m_PipelineIndex;
-        const PipelineSpecification spec
-        {
-            .VertexShader   = m_Shaders.at(vertexID).get(),
-            .FragmentShader = m_Shaders.at(fragmentID).get(),
-            .DepthTest      = vk::False,
-            .DepthWrite     = vk::False
-        };
+        const u32                   currentIndex = m_PipelineIndex;
+        const PipelineSpecification spec{ .VertexShader   = m_Shaders.at(vertexID).get(),
+                                          .FragmentShader = m_Shaders.at(fragmentID).get(),
+                                          .DepthTest      = vk::False,
+                                          .DepthWrite     = vk::False };
         m_Pipelines[currentIndex] = MakeScope<VulkanPipeline>(m_Context.get(), spec);
         m_PipelineIndex++;
 
@@ -82,13 +76,10 @@ namespace Engine
         frame.Begin(m_Swapchain->GetImageAt(frame.ImageIndex), properties.Extent);
 
         // Set dynamic states
-        const vk::Viewport viewport =
-        {
-            .width  = (float)properties.Extent.width,
-            .height = (float)properties.Extent.height,
-            .minDepth = 0.0f,
-            .maxDepth = 1.0f
-        };
+        const vk::Viewport viewport = { .width    = (float)properties.Extent.width,
+                                        .height   = (float)properties.Extent.height,
+                                        .minDepth = 0.0f,
+                                        .maxDepth = 1.0f };
         frame.CommandBuffer.setViewport(0, 1, &viewport);
 
         const vk::Rect2D scissor = { .extent = properties.Extent };
@@ -127,8 +118,5 @@ namespace Engine
         m_Context->GetSwapchain()->AdvanceFrameCount();
     }
 
-    void VulkanRenderer::WaitForDevice()
-    {
-        m_Context->GetDevice()->WaitForIdle();
-    }
+    void VulkanRenderer::WaitForDevice() { m_Context->GetDevice()->WaitForIdle(); }
 }

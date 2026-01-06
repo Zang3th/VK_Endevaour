@@ -3,7 +3,6 @@
 #include "Core/Types.hpp"
 
 #include "VulkanDevice.hpp"
-
 #include "vulkan/vulkan.hpp"
 
 // Forward-Declaration
@@ -28,19 +27,23 @@ namespace Engine
 
     class VulkanAllocator
     {
-        public:
-            VulkanAllocator() = delete;
+    public:
+        VulkanAllocator() = delete;
 
-            static void Init(const VulkanDevice* device, vk::Instance instance);
-            static void Shutdown();
+        static void Init(const VulkanDevice* device, vk::Instance instance);
+        static void Shutdown();
 
-            static std::pair<vk::Buffer, VmaAllocation> AllocateBuffer(vk::DeviceSize size, vk::BufferUsageFlags usage, MemoryUsage memoryUsage);
-            static void DestroyBuffer(vk::Buffer buffer, VmaAllocation allocation);
+        static std::pair<vk::Buffer, VmaAllocation> AllocateBuffer(vk::DeviceSize       size,
+                                                                   vk::BufferUsageFlags usage,
+                                                                   MemoryUsage          memoryUsage);
+        static void                                 DestroyBuffer(vk::Buffer buffer, VmaAllocation allocation);
 
-            static void* MapMemory(VmaAllocation allocation);
-            static void  UnmapMemory(VmaAllocation allocation);
+        static void* MapMemory(VmaAllocation allocation);
+        static void  UnmapMemory(VmaAllocation allocation);
 
-        private:
-            static VmaAllocation InternalAllocateBuffer(const vk::BufferCreateInfo& bufferCreateInfo, MemoryUsage memoryUsage, vk::Buffer& outBuffer);
+    private:
+        static VmaAllocation InternalAllocateBuffer(const vk::BufferCreateInfo& bufferCreateInfo,
+                                                    MemoryUsage                 memoryUsage,
+                                                    vk::Buffer&                 outBuffer);
     };
 }

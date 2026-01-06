@@ -2,8 +2,8 @@
 
 class Sandbox
 {
-    public:
-        Sandbox();
-        ~Sandbox();
-        static void Run();
+public:
+    Sandbox();
+    ~Sandbox();
+    static void Run();
 };

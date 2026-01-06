@@ -1,7 +1,7 @@
 #pragma once
 
-#include "VulkanShader.hpp"
-#include "VulkanContext.hpp"
+#include "Graphics/Vulkan/VulkanContext.hpp"
+#include "Graphics/Vulkan/VulkanShader.hpp"
 
 namespace Engine
 {
@@ -16,19 +16,19 @@ namespace Engine
 
     class VulkanPipeline
     {
-        public:
-            explicit VulkanPipeline(VulkanContext* context, const PipelineSpecification& spec);
-            ~VulkanPipeline();
+    public:
+        explicit VulkanPipeline(VulkanContext* context, const PipelineSpecification& spec);
+        ~VulkanPipeline();
 
-            void Bind(vk::CommandBuffer commandBuffer) const;
+        void Bind(vk::CommandBuffer commandBuffer) const;
 
-        private:
-            void CreatePipelineLayout();
-            void CreatePipeline();
+    private:
+        void CreatePipelineLayout();
+        void CreatePipeline();
 
-            VulkanContext*        m_Context  = nullptr;
-            vk::PipelineLayout    m_Layout   = nullptr;
-            vk::Pipeline          m_Pipeline = nullptr;
-            PipelineSpecification m_Spec;
+        VulkanContext*        m_Context  = nullptr;
+        vk::PipelineLayout    m_Layout   = nullptr;
+        vk::Pipeline          m_Pipeline = nullptr;
+        PipelineSpecification m_Spec;
     };
 }

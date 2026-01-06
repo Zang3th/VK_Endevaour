@@ -1,4 +1,4 @@
-#include "VulkanModel.hpp"
+#include "Graphics/Vulkan/VulkanModel.hpp"
 
 #include "Debug/Log.hpp"
 
@@ -6,8 +6,7 @@ namespace Engine
 {
     // ----- Public -----
 
-    VulkanModel::VulkanModel(VulkanContext* context, const Mesh* mesh)
-        : m_Context(context), m_Mesh(mesh)
+    VulkanModel::VulkanModel(VulkanContext* context, const Mesh* mesh) : m_Context(context), m_Mesh(mesh)
     {
         CreateVertexBuffer();
         CreateIndexBuffer();
@@ -34,22 +33,16 @@ namespace Engine
         ASSERT(!m_Mesh->Vertices.empty(), "Model has no vertex data!");
 
         // Create vertex buffer
-        auto [vertexBuffer, vertexAllocation] = VulkanAllocator::AllocateBuffer
-        (
+        auto [vertexBuffer, vertexAllocation] = VulkanAllocator::AllocateBuffer(
             m_Mesh->GetVerticeSize(),
             vk::BufferUsageFlagBits::eVertexBuffer | vk::BufferUsageFlagBits::eTransferDst,
-            MemoryUsage::eGPUOnly
-        );
+            MemoryUsage::eGPUOnly);
         m_VertexBuffer     = vertexBuffer;
         m_VertexAllocation = vertexAllocation;
 
         // Create staging buffer
-        auto [stagingBuffer, stagingAllocation] = VulkanAllocator::AllocateBuffer
-        (
-            m_Mesh->GetVerticeSize(),
-            vk::BufferUsageFlagBits::eTransferSrc,
-            MemoryUsage::eCPUOnly
-        );
+        auto [stagingBuffer, stagingAllocation] = VulkanAllocator::AllocateBuffer(
+            m_Mesh->GetVerticeSize(), vk::BufferUsageFlagBits::eTransferSrc, MemoryUsage::eCPUOnly);
 
         // Fill out staging buffer
         void* dataPtr = VulkanAllocator::MapMemory(stagingAllocation);
@@ -70,22 +63,16 @@ namespace Engine
         ASSERT(!m_Mesh->Indices.empty(), "Model has no index data!");
 
         // Create index buffer
-        auto [indexBuffer, indexAllocation] = VulkanAllocator::AllocateBuffer
-        (
+        auto [indexBuffer, indexAllocation] = VulkanAllocator::AllocateBuffer(
             m_Mesh->GetIndiceSize(),
             vk::BufferUsageFlagBits::eIndexBuffer | vk::BufferUsageFlagBits::eTransferDst,
-            MemoryUsage::eGPUOnly
-        );
+            MemoryUsage::eGPUOnly);
         m_IndexBuffer     = indexBuffer;
         m_IndexAllocation = indexAllocation;
 
         // Create staging buffer
-        auto [stagingBuffer, stagingAllocation] = VulkanAllocator::AllocateBuffer
-        (
-            m_Mesh->GetIndiceSize(),
-            vk::BufferUsageFlagBits::eTransferSrc,
-            MemoryUsage::eCPUOnly
-        );
+        auto [stagingBuffer, stagingAllocation] = VulkanAllocator::AllocateBuffer(
+            m_Mesh->GetIndiceSize(), vk::BufferUsageFlagBits::eTransferSrc, MemoryUsage::eCPUOnly);
 
         // Fill out staging buffer
         void* dataPtr = VulkanAllocator::MapMemory(stagingAllocation);
