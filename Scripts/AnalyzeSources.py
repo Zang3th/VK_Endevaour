@@ -65,7 +65,7 @@ def print_tidy_fixes(path: Path) -> None:
             continue
 
         # Last sanity check
-        if "vendor" in file.lower():
+        if "vendor" or "msvc" in file.lower():
             continue
 
         validResults = True
@@ -81,7 +81,7 @@ def print_tidy_fixes(path: Path) -> None:
 
     # Print something if we had no valid results
     if not validResults:
-        print("Found no clang-tidy diagnostics outside of the 'Vendor/' directory.")
+        print("Found no clang-tidy diagnostics outside of 'Vendor/' and the STL.")
 # ---------------------------------------------------------------------------
 
 def main():

@@ -1,23 +1,25 @@
 #!/usr/bin/env python3
 
 from pathlib import Path
-from ProjectDefines import Paths, run, TARGET_DIRS, EXTENSIONS
+from ProjectDefines import Paths, run, STANDARD_DIRS, STANDARD_EXTENSIONS
 
 # ---------------------------------------------------------------------------
 
 def iter_source_files(root: Path):
     for p in root.rglob("*"):
         if not p.is_file():
-                continue
-        if p.suffix not in EXTENSIONS:
-                continue
+            continue
+        if p.suffix not in STANDARD_EXTENSIONS:
+            continue
         yield p
 
 # ---------------------------------------------------------------------------
 
-def main() -> int:
+def main():
+    print("\n====== Formatting files ======\n")
+
     files: list[Path] = []
-    for d in TARGET_DIRS:
+    for d in STANDARD_DIRS:
         if not d.exists():
             print(f"> Warning: missing directory: {d}")
             continue
@@ -25,11 +27,10 @@ def main() -> int:
 
         if not files:
             print("> No files found.")
-            return 0
+            return
 
     run(["clang-format", "-i", *files], cwd=Paths.PROJECT_ROOT)
-    print(f"> Formatted {len(files)} files.")
-    return 0
+    print(f"\n> Formatted {len(files)} files.")
 
 # ---------------------------------------------------------------------------
 

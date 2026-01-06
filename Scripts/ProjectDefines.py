@@ -46,18 +46,26 @@ class Paths:
 
 # ---------------------------------------------------------------------------
 
-TARGET_DIRS = [
+STANDARD_DIRS = [
     Paths.SANDBOX_SRC,
     Paths.ENGINE_CORE,
     Paths.ENGINE_DEBUG,
     Paths.ENGINE_GRAPHICS,
     Paths.ENGINE_PLATFORM,
-    # Paths.ENGINE_VENDOR,
-    # Paths.SCRIPTS,
 ]
 
-EXTENSIONS = {
+STANDARD_EXTENSIONS = {
     ".cpp",
     ".hpp",
-    # ".py",
+}
+
+EXPANDED_DIRS = [
+    *STANDARD_DIRS,
+    Paths.ENGINE_VENDOR,
+    Paths.SCRIPTS,
+]
+
+EXPANDED_EXTENSIONS = {
+    *STANDARD_EXTENSIONS,
+    ".py",
 }

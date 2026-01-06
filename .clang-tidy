@@ -20,7 +20,6 @@ Checks:
   -cert-err58-cpp,
 
   portability-*,
-  -portability-avoid-pragma-once,
 
   bugprone-*,
 
