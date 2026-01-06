@@ -29,15 +29,6 @@ def configure_and_build(build_dir: Path, build_type: str):
     run(cmd, cwd=build_dir)
     run(["ninja"], cwd=build_dir)
 
-    # Copy shaders
-    app_build = build_dir / "Applications" / "Sandbox"
-    app_build_shaders = app_build / "Shaders"
-    app_build_shaders.mkdir(parents=True, exist_ok=True)
-
-    for spv in Paths.SANDBOX_SHADERS.rglob("*.spv"):
-        shutil.copy2(spv, app_build_shaders / spv.name)
-        print(f"> Copied shader '{spv.name}' to '{app_build_shaders}' ...")
-
 # ---------------------------------------------------------------------------
 
 def main():

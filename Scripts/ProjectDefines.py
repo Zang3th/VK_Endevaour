@@ -29,7 +29,6 @@ class Paths:
     # Applications
     APPS = PROJECT_ROOT / "Applications"
     SANDBOX_SRC = APPS / "Sandbox"
-    SANDBOX_SHADERS = SANDBOX_SRC / "Shaders"
 
     # Engine
     ENGINE = PROJECT_ROOT / "Engine"

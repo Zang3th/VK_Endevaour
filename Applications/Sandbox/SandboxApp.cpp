@@ -22,8 +22,10 @@ void Sandbox::Run()
     Engine::VulkanRenderer vkRenderer;
 
     // Load shader
-    const u32 vertexID   = vkRenderer.LoadShader(vk::ShaderStageFlagBits::eVertex, "Shaders/Vert.spv");
-    const u32 fragmentID = vkRenderer.LoadShader(vk::ShaderStageFlagBits::eFragment, "Shaders/Frag.spv");
+    const u32 vertexID =
+        vkRenderer.LoadShader(vk::ShaderStageFlagBits::eVertex, "Applications/Sandbox/Shaders/Vert.spv");
+    const u32 fragmentID =
+        vkRenderer.LoadShader(vk::ShaderStageFlagBits::eFragment, "Applications/Sandbox/Shaders/Frag.spv");
 
     // Create pipeline
     const u32 pipelineID = vkRenderer.CreatePipeline(vertexID, fragmentID);

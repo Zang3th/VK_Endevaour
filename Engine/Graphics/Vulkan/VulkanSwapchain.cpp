@@ -186,6 +186,7 @@ namespace Engine
             LOG_WARN("vkQueuePresentKHR initialized swapchain recreation ...");
             m_Resized = false;
             RecreateSwapchain();
+            return;
         }
         ASSERT(res == vk::Result::eSuccess, "Failed to present swapchain image!");
     }
