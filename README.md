@@ -33,8 +33,10 @@ VK_Endevaour/
 │   ├── Graphics/
 │   │   ├── Import/             # CPU-side asset import (e.g., OBJ)
 │   │   ├── Resources/          # Graphics resources (e.g., Mesh)
+│   │   ├── UI/                 # ImGui integration and UI tooling
 │   │   └── Vulkan/             # Vulkan backend
-│   └── Platform/               # Platform abstraction (windowing, input)
+│   ├── Platform/               # Platform abstraction (windowing, input)
+│   └── Vendor/                 # Third-party libraries
 └── Scripts/                    # Helper scripts (build, checks, stats)
 ```
 
