@@ -26,12 +26,12 @@
 
 ## v0.3 — Testing & Math Infrastructure
 
-- Testing Framework
-- Benchmarking
+- ~Testing Framework~
 - Internal Math Library:
-  - Matrix Infrastructure
+  - Sparse Matrix
   - Iterative Solvers
   - Numerical Validation
+- Benchmarking
 
 ---
 

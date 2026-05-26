@@ -37,7 +37,8 @@ VK_Endevaour/
 │   │   └── Vulkan/             # Vulkan backend
 │   ├── Platform/               # Platform abstraction (windowing, input)
 │   └── Vendor/                 # Third-party libraries
-└── Scripts/                    # Helper scripts (build, checks, stats)
+├── Scripts/                    # Helper scripts (build, checks, stats)
+└── Tests/                      # Tests
 ```
 
 ## Building and compiling
@@ -96,6 +97,7 @@ python Scripts/BuildEngine.py -c    # Clean
 
 | **Library**                                                              | **Version** | **Updated in Engine** | **Functionality**           | **Type**       |
 |:------------------------------------------------------------------------:|:-----------:|:---------------------:|:---------------------------:|:--------------:|
+| [doctest](https://https://github.com/doctest/doctest)                    | 2.5.0       | 26.05.2026            | Testing                     | Source include |
 | [glm](https://github.com/g-truc/glm)                                     | 1.0.3       | 01.01.2026            | Mathematics                 | Source include |
 | [imgui](https://github.com/ocornut/imgui)                                | 1.92.5      | 29.12.2025            | GUI                         | Source include |
 | [vma](https://github.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator) | 3.3.0       | 29.12.2025            | Memory allocation           | Source include |

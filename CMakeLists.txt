@@ -16,3 +16,6 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR}/Engine)
 # Add subprojects
 add_subdirectory(Engine)
 add_subdirectory(Applications)
+
+enable_testing()
+add_subdirectory(Tests)
