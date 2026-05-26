@@ -8,8 +8,8 @@
 #include <array>
 #include <vector>
 
-#include <Vendor/glm/glm.hpp>
-#include <Vendor/glm/gtx/hash.hpp>
+#include "Vendor/glm/glm.hpp"
+#include "Vendor/glm/gtx/hash.hpp"
 
 namespace Engine
 {

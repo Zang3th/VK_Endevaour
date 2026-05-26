@@ -13,7 +13,8 @@ file(
 # Compile to an executable
 add_executable(EngineTests ${APP_SOURCES})
 
-# Link application against the engine
+# Link executable against the engine
 target_link_libraries(EngineTests PRIVATE Engine)
 
+# Register executable with CTest
 add_test(NAME EngineTests COMMAND EngineTests)
