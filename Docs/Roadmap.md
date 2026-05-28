@@ -28,7 +28,8 @@
 
 - ~Testing Framework~
 - Internal Math Library:
-  - Sparse Matrix
+  - ~Scalar Grid~
+  - Staggered Grid
   - Iterative Solvers
   - Numerical Validation
 - Benchmarking
