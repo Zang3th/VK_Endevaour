@@ -97,10 +97,10 @@ namespace Engine
     // clang-format off
     VKAPI_ATTR VkBool32 VKAPI_CALL VulkanDebug::Callback
     (
-        vk::DebugUtilsMessageSeverityFlagBitsEXT      messageSeverity,
-        vk::DebugUtilsMessageTypeFlagsEXT             messageType,
-        const vk::DebugUtilsMessengerCallbackDataEXT* pCallbackData,
-        [[maybe_unused]] void*                        pUserData
+        vk::DebugUtilsMessageSeverityFlagBitsEXT          messageSeverity,
+        [[maybe_unused]]vk::DebugUtilsMessageTypeFlagsEXT messageType,
+        const vk::DebugUtilsMessengerCallbackDataEXT*     pCallbackData,
+        [[maybe_unused]]void*                             pUserData
     )
     {
         using Severity = vk::DebugUtilsMessageSeverityFlagBitsEXT;
@@ -108,23 +108,21 @@ namespace Engine
         switch (messageSeverity)
         {
             case Severity::eVerbose:
-                LOG_VERBOSE("{} {}", vk::to_string(messageType), pCallbackData->pMessage);
+                LOG_VERBOSE("{}", pCallbackData->pMessage);
                 break;
 
             case Severity::eInfo:
-                LOG_INFO("{} {}", vk::to_string(messageType), pCallbackData->pMessage);
+                LOG_INFO("{}", pCallbackData->pMessage);
                 break;
 
             case Severity::eWarning:
-                LOG_WARN("{} {}", vk::to_string(messageType), pCallbackData->pMessage);
+                LOG_WARN("{}", pCallbackData->pMessage);
                 break;
 
             case Severity::eError:
-                LOG_ERROR("##################################");
-                LOG_ERROR("##### VulkanDebug::Callback ######");
-                LOG_ERROR("##################################");
-                LOG_ERROR("{} {}", vk::to_string(messageType), pCallbackData->pMessage);
-                ASSERT(false, "Caught an error with VulkanDebug::Callback!");
+                LOG_HEADER("VulkanDebug::Callback", fmt::color::crimson);
+                LOG_ERROR("{}", pCallbackData->pMessage);
+                ASSERT(false, "Caught an error in VulkanDebug::Callback!");
                 break;
 
             default:
