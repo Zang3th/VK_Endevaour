@@ -22,6 +22,7 @@ Checks:
   portability-*,
 
   bugprone-*,
+  -bugprone-easily-swappable-parameters,
 
   performance-*,
 

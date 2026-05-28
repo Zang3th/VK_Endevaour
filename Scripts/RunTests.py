@@ -14,7 +14,7 @@ def run_tests(build_dir: Path):
     print(f"\n====== Running Tests ({build_dir.name}) ======\n")
 
     run(
-        ["ctest", "--output-on-failure"],
+        [str(build_dir / "Tests" / "EngineTests.exe")],
         cwd=build_dir
     )
 

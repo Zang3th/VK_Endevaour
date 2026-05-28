@@ -15,6 +15,3 @@ add_executable(EngineTests ${APP_SOURCES})
 
 # Link executable against the engine
 target_link_libraries(EngineTests PRIVATE Engine)
-
-# Register executable with CTest
-add_test(NAME EngineTests COMMAND EngineTests)
