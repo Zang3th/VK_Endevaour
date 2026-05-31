@@ -23,14 +23,15 @@ namespace
             Engine::Graphics::VulkanSwapchainUtils::ChoosePresentMode(swapchainSupport.PresentModes);
 
         // Specify amount of images in swapchain
-        properties.ImageCount = swapchainSupport.Capabilities.minImageCount + 1;
+        properties.ImageCount =
+            std::max(Engine::Graphics::FRAMES_IN_FLIGHT, swapchainSupport.Capabilities.minImageCount);
 
         // Make sure to not exceed bounds (0 := means no limit)
-        if(swapchainSupport.Capabilities.maxImageCount > 0
-           && properties.ImageCount > swapchainSupport.Capabilities.maxImageCount)
-        {
-            properties.ImageCount = swapchainSupport.Capabilities.maxImageCount;
-        }
+        // if(swapchainSupport.Capabilities.maxImageCount > 0
+        //    && properties.ImageCount > swapchainSupport.Capabilities.maxImageCount)
+        // {
+        //     properties.ImageCount = swapchainSupport.Capabilities.maxImageCount;
+        // }
 
         // Save current transform
         properties.Transform = swapchainSupport.Capabilities.currentTransform;
@@ -38,14 +39,31 @@ namespace
         return properties;
     }
 
-    void FramebufferResizeCallback([[maybe_unused]] GLFWwindow* window, int width, int height)
+    void FramebufferResizeCallback(GLFWwindow* window, int width, int height)
     {
-        auto* swapchain =
-            (Engine::Graphics::VulkanSwapchain*)glfwGetWindowUserPointer(Engine::Platform::Window::GetHandle());
+        // Only one window is supported
+        ASSERT(window == Engine::Platform::Window::GetHandle());
+
+        auto* swapchain = (Engine::Graphics::VulkanSwapchain*)glfwGetWindowUserPointer(window);
+
+        if(width == 0 || height == 0)
+        {
+            Engine::Platform::Window::SetMinimize(true);
+            LOG_INFO("GLFW::FramebufferResizeCallback(): Window got minimized ...");
+            return;
+        }
+
+        if(Engine::Platform::Window::IsMinimized())
+        {
+            // Reset minimize
+            Engine::Platform::Window::SetMinimize(false);
+            LOG_INFO("GLFW::FramebufferResizeCallback(): Window no longer minimized ...");
+        }
+
         if(swapchain->GetProperties().Extent.width != (Engine::u32)width
            || swapchain->GetProperties().Extent.height != (Engine::u32)height)
         {
-            LOG_WARN("GLFW: FramebufferResizeCallback ... (Size: {}x{})", width, height);
+            LOG_WARN("GLFW::FramebufferResizeCallback: Window got resized ... ({}x{})", width, height);
             Engine::Platform::Window::SetWidth((Engine::u32)width);
             Engine::Platform::Window::SetHeight((Engine::u32)height);
             swapchain->SetResizeFlag();
@@ -130,7 +148,7 @@ namespace Engine::Graphics
         // Get current frame
         VulkanFrame& currentFrame = m_Frames.at(m_CurrentFrame);
 
-        //  Wait for this frame-slot's previous submission to finish
+        // Wait for this frame-slot's previous submission to finish
         VK_VERIFY(m_Device->GetHandle().waitForFences(1, &currentFrame.InFlight, vk::True, UINT64_MAX));
 
         // TODO: This needs major rework. I should only work with the swapchain image index

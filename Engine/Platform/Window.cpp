@@ -31,6 +31,11 @@ namespace Engine::Platform
         glfwPollEvents();
     }
 
+    void Window::WaitEvents()
+    {
+        glfwWaitEvents();
+    }
+
     bool Window::ShouldClose()
     {
         if((glfwWindowShouldClose(m_Window)) || (glfwGetKey(m_Window, GLFW_KEY_ESCAPE) == GLFW_PRESS))

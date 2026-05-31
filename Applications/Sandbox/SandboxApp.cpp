@@ -50,6 +50,12 @@ void Sandbox::Run()
     {
         Engine::Platform::Window::PollEvents();
 
+        if(Engine::Platform::Window::IsMinimized())
+        {
+            Engine::Platform::Window::WaitEvents();
+            continue;
+        }
+
         // Draw
         vkRenderer.DrawFrame(pipelineID);
     }
