@@ -11,11 +11,10 @@ def configure_and_build(build_dir: Path, build_type: str):
     # Delete specific build subdirectory if it exists
     if build_dir.exists():
         shutil.rmtree(build_dir)
-        print(f"> Removed directory '{build_dir}'...")
+        print(f"Removed directory '{build_dir}'...")
 
-    # (Re)create build directory
     build_dir.mkdir(parents=True, exist_ok=True)
-    print(f"> (Re)created '{build_dir}' ...")
+    print(f"Created directory '{build_dir}' ...")
 
     cmd = [
         "cmake",
@@ -35,20 +34,12 @@ def main():
     parser = argparse.ArgumentParser(description="[VK_Endeavour] build helper")
     parser.add_argument("-d", "--debug", action="store_true", help="Build Debug")
     parser.add_argument("-r", "--release", action="store_true", help="Build Release")
-    parser.add_argument("-c", "--clean", action="store_true", help="Remove Build directory")
 
     args = parser.parse_args()
 
-    if not (args.clean or args.debug or args.release):
+    if not (args.debug or args.release):
         print("> No action specified. Use '-h' or '--help' for usage information.")
         return
-
-    if args.clean:
-        if Paths.BUILD.exists():
-            shutil.rmtree(Paths.BUILD)
-            print("> Removed Build directory ...")
-        else:
-            print("> Found no Build directory ...")
 
     if args.debug:
         print("\n====== Building Debug ======\n")

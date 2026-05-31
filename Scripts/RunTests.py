@@ -8,10 +8,10 @@ from ProjectDefines import Paths, run
 
 def run_tests(build_dir: Path):
     if not build_dir.exists():
-        print(f"> Build directory '{build_dir}' does not exist ...")
+        print(f"Build directory '{build_dir}' does not exist ...")
         return
 
-    print(f"\n====== Running Tests ({build_dir.name}) ======\n")
+    print(f"\n====== Running Tests ({build_dir.name}) ======")
 
     run(
         [str(build_dir / "Tests" / "EngineTests.exe")],

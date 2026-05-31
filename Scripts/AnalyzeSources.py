@@ -96,13 +96,13 @@ def main():
         return
 
     if args.verify:
-        print("\n====== Verifying config ======\n")
+        print("\n====== Verifying config ======")
         verify_config()
 
     if args.tidy:
-        print("\n====== Running clang-tidy ======\n")
+        print("\n====== Running clang-tidy ======")
         clang_tidy()
-        print("\n====== Printing results ======\n")
+        print("====== Printing results ======\n")
         print_tidy_fixes(Paths.PROJECT_ROOT / "tidy-fixes.yaml")
 
 # ---------------------------------------------------------------------------

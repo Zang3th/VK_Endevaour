@@ -4,8 +4,27 @@ from pathlib import Path
 
 # ---------------------------------------------------------------------------
 
-def run(cmd, cwd=None, silent=False):
-    print("> " + " ".join(map(str, cmd)))
+# Utility function to format the executed commands on every given argument
+def format_command(cmd, delimiters=("-",)):
+    result = []
+    first = True
+
+    for arg in map(str, cmd):
+        if not first and any(arg.startswith(d) for d in delimiters):
+            result.append("\n  ")
+
+        result.append(arg)
+        result.append(" ")
+
+        first = False
+
+    return "".join(result).rstrip()
+
+# ---------------------------------------------------------------------------
+
+def run(cmd, cwd=None, silent=False, delimiters=("-",)):
+    print("\n> " + format_command(cmd, delimiters) + "\n")
+
     try:
         if silent:
             return subprocess.call(
@@ -14,9 +33,14 @@ def run(cmd, cwd=None, silent=False):
                 stdout=subprocess.DEVNULL,
                 stderr=subprocess.DEVNULL,
             )
-        return subprocess.check_call(list(map(str, cmd)), cwd=cwd)
+
+        return subprocess.check_call(
+            list(map(str, cmd)),
+            cwd=cwd
+        )
+
     except subprocess.CalledProcessError:
-        print("> Command failed, aborting!")
+        print("> Command failed, aborting!\n")
         sys.exit(1)
 
 # ---------------------------------------------------------------------------
