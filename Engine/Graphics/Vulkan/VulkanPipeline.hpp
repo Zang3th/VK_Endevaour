@@ -3,7 +3,7 @@
 #include "Graphics/Vulkan/VulkanContext.hpp"
 #include "Graphics/Vulkan/VulkanShader.hpp"
 
-namespace Engine
+namespace Engine::Graphics
 {
     struct PipelineSpecification
     {

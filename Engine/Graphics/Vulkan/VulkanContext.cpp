@@ -13,7 +13,7 @@
 #include <vulkan/vulkan_handles.hpp>
 #include <vulkan/vulkan_structs.hpp>
 
-namespace Engine
+namespace Engine::Graphics
 {
     // ----- Public -----
 
@@ -73,7 +73,7 @@ namespace Engine
             ASSERT(VulkanDebug::CheckValidationLayerSupport(g_ValidationLayers),
                    "Validation layers were requested, but not available!");
         }
-        const std::string& title = Window::GetTitle();
+        const std::string& title = Platform::Window::GetTitle();
 
         const vk::ApplicationInfo appInfo{ .pApplicationName   = title.c_str(),
                                            .applicationVersion = 1,
@@ -112,8 +112,8 @@ namespace Engine
 
     void VulkanContext::CreateSurface()
     {
-        VK_VERIFY(
-            (vk::Result)(glfwCreateWindowSurface(m_Instance, Window::GetHandle(), nullptr, (VkSurfaceKHR*)&m_Surface)));
+        VK_VERIFY((vk::Result)(glfwCreateWindowSurface(
+            m_Instance, Platform::Window::GetHandle(), nullptr, (VkSurfaceKHR*)&m_Surface)));
         LOG_INFO("Created window surface ...");
     }
 

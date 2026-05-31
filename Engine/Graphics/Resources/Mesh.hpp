@@ -11,7 +11,7 @@
 #include "Vendor/glm/glm.hpp"
 #include "Vendor/glm/gtx/hash.hpp"
 
-namespace Engine
+namespace Engine::Graphics
 {
     struct Vertex
     {
@@ -70,9 +70,9 @@ namespace Engine
 namespace std
 {
     template <>
-    struct hash<Engine::Vertex>
+    struct hash<Engine::Graphics::Vertex>
     {
-        size_t operator()(Engine::Vertex const& vertex) const
+        size_t operator()(Engine::Graphics::Vertex const& vertex) const
         {
             return ((hash<glm::vec3>()(vertex.Position) ^ (hash<glm::vec3>()(vertex.Color) << 1)) >> 1)
                    ^ (hash<glm::vec2>()(vertex.TexCoord) << 1);

@@ -6,7 +6,7 @@
 #include "Graphics/Vulkan/VulkanAssert.hpp"
 #include "Graphics/Vulkan/VulkanShader.hpp"
 
-namespace Engine
+namespace Engine::Graphics
 {
     // ----- Public -----
 
@@ -15,7 +15,7 @@ namespace Engine
                                const std::filesystem::path& path)
         : m_Device(device), m_Stage(stage)
     {
-        std::vector<char> code = Utility::ReadFileAsBytes(path);
+        std::vector<char> code = Core::Utility::ReadFileAsBytes(path);
         CreateShaderModule(std::move(code));
     }
 

@@ -5,7 +5,7 @@
 
 #include "Types.hpp"
 
-namespace Engine
+namespace Engine::Core
 {
     class Utility
     {

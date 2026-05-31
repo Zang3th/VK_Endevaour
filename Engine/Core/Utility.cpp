@@ -4,7 +4,7 @@
 
 #include <fstream>
 
-namespace Engine
+namespace Engine::Core
 {
     std::vector<char> Utility::ReadFileAsBytes(const std::filesystem::path& path)
     {

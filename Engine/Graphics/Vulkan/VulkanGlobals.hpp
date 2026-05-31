@@ -12,7 +12,7 @@ const bool ENABLE_VALIDATION_LAYERS = false;
 const bool ENABLE_VALIDATION_LAYERS = true;
 #endif
 
-namespace Engine
+namespace Engine::Graphics
 {
     inline static const std::vector<const char*> g_ValidationLayers = { "VK_LAYER_KHRONOS_validation" };
 

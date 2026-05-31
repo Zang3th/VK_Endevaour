@@ -9,7 +9,7 @@
 using VmaAllocation = struct VmaAllocation_T*;
 
 // Gets internally mapped to the corresponding vma enums
-namespace Engine
+namespace Engine::Graphics
 {
     enum class MemoryUsage : u8
     {

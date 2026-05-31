@@ -4,7 +4,7 @@
 #include "Graphics/Vulkan/VulkanFrame.hpp"
 #include "Graphics/Vulkan/VulkanGlobals.hpp"
 
-namespace Engine
+namespace Engine::Graphics
 {
     class VulkanSwapchain
     {

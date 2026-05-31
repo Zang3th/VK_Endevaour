@@ -7,7 +7,7 @@
 
 #include <vulkan/vulkan.hpp>
 
-namespace Engine
+namespace Engine::Graphics
 {
     class VulkanModel
     {

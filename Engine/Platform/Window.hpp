@@ -7,7 +7,7 @@
 #define GLFW_INCLUDE_NONE
 #include "Vendor/glfw/include/GLFW/glfw3.h"
 
-namespace Engine
+namespace Engine::Platform
 {
     struct WindowSpecification
     {

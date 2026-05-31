@@ -36,7 +36,7 @@ VKAPI_ATTR void VKAPI_CALL vkDestroyDebugUtilsMessengerEXT
 }
 // clang-format on
 
-namespace Engine
+namespace Engine::Graphics
 {
     // ----- Public -----
 

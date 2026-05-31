@@ -4,7 +4,7 @@
 
 #include "vulkan/vulkan.hpp"
 
-namespace Engine
+namespace Engine::Graphics
 {
 #define VK_VERIFY(func)                                                                                                \
     {                                                                                                                  \

@@ -21,16 +21,16 @@ namespace
             LOG_WARN("GPU vendor isn't Nvidia. Driver version string may be false ...");
         }
 
-        u32 major     = (properties.driverVersion >> 22) & 0x3ff;
-        u32 minor     = (properties.driverVersion >> 14) & 0x0ff;
-        u32 secondary = (properties.driverVersion >> 6) & 0x0ff;
-        u32 tertiary  = properties.driverVersion & 0x3f;
+        Engine::u32 major     = (properties.driverVersion >> 22) & 0x3ff;
+        Engine::u32 minor     = (properties.driverVersion >> 14) & 0x0ff;
+        Engine::u32 secondary = (properties.driverVersion >> 6) & 0x0ff;
+        Engine::u32 tertiary  = properties.driverVersion & 0x3f;
 
         return fmt::format("{}.{}.{}.{}", major, minor, secondary, tertiary);
     }
 }
 
-namespace Engine
+namespace Engine::Graphics
 {
     // ----- Public -----
 

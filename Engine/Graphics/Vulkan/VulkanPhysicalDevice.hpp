@@ -6,7 +6,7 @@
 
 #include <vulkan/vulkan.hpp>
 
-namespace Engine
+namespace Engine::Graphics
 {
     struct QueueFamilyIndices
     {

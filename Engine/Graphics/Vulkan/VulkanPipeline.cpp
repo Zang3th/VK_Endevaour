@@ -3,7 +3,7 @@
 #include "Graphics/Vulkan/VulkanAssert.hpp"
 #include "Graphics/Vulkan/VulkanPipeline.hpp"
 
-namespace Engine
+namespace Engine::Graphics
 {
     // ----- Public -----
 

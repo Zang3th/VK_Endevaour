@@ -30,17 +30,17 @@ namespace
     {
         Engine::Math::ScalarGrid grid{ 8, 6 };
 
-        for(u32 y = 0; y < grid.Height(); ++y)
+        for(Engine::u32 y = 0; y < grid.Height(); ++y)
         {
-            for(u32 x = 0; x < grid.Width(); ++x)
+            for(Engine::u32 x = 0; x < grid.Width(); ++x)
             {
                 grid(x, y) = static_cast<float>(x + (y * 100));
             }
         }
 
-        for(u32 y = 0; y < grid.Height(); ++y)
+        for(Engine::u32 y = 0; y < grid.Height(); ++y)
         {
-            for(u32 x = 0; x < grid.Width(); ++x)
+            for(Engine::u32 x = 0; x < grid.Width(); ++x)
             {
                 CHECK(grid(x, y) == doctest::Approx(static_cast<float>(x + (y * 100))));
             }
@@ -66,9 +66,9 @@ namespace
     {
         Engine::Math::ScalarGrid grid{ 7, 5 };
 
-        for(u32 y = 0; y < grid.Height(); ++y)
+        for(Engine::u32 y = 0; y < grid.Height(); ++y)
         {
-            for(u32 x = 0; x < grid.Width(); ++x)
+            for(Engine::u32 x = 0; x < grid.Width(); ++x)
             {
                 grid(x, y) = static_cast<float>(x + y);
             }
@@ -76,9 +76,9 @@ namespace
 
         grid.Fill(-3.5f);
 
-        for(u32 y = 0; y < grid.Height(); ++y)
+        for(Engine::u32 y = 0; y < grid.Height(); ++y)
         {
-            for(u32 x = 0; x < grid.Width(); ++x)
+            for(Engine::u32 x = 0; x < grid.Width(); ++x)
             {
                 CHECK(grid(x, y) == doctest::Approx(-3.5f));
             }
@@ -169,7 +169,7 @@ namespace
 
         REQUIRE(data != nullptr);
 
-        for(u32 i = 0; i < grid.Size(); ++i)
+        for(Engine::u32 i = 0; i < grid.Size(); ++i)
         {
             CHECK(data[i] == doctest::Approx(6.0f));
         }

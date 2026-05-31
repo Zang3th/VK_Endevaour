@@ -2,7 +2,7 @@
 
 #include "Window.hpp"
 
-namespace Engine
+namespace Engine::Platform
 {
     // ----- Public -----
 

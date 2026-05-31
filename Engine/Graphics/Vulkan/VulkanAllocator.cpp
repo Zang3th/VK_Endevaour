@@ -23,37 +23,37 @@ namespace
     // ----- Internal -----
 
     VmaAllocator s_Allocator   = VK_NULL_HANDLE;
-    u64          s_totalMemory = 0;
+    Engine::u64  s_totalMemory = 0;
 
-    inline VmaMemoryUsage MapMemoryUsage(Engine::MemoryUsage usage)
+    inline VmaMemoryUsage MapMemoryUsage(Engine::Graphics::MemoryUsage usage)
     {
         switch(usage)
         {
-        case Engine::MemoryUsage::eUnknown:
+        case Engine::Graphics::MemoryUsage::eUnknown:
             return VMA_MEMORY_USAGE_UNKNOWN;
-        case Engine::MemoryUsage::eGPUOnly:
+        case Engine::Graphics::MemoryUsage::eGPUOnly:
             return VMA_MEMORY_USAGE_GPU_ONLY;
-        case Engine::MemoryUsage::eCPUOnly:
+        case Engine::Graphics::MemoryUsage::eCPUOnly:
             return VMA_MEMORY_USAGE_CPU_ONLY;
-        case Engine::MemoryUsage::eCPUToGPU:
+        case Engine::Graphics::MemoryUsage::eCPUToGPU:
             return VMA_MEMORY_USAGE_CPU_TO_GPU;
-        case Engine::MemoryUsage::eGPUToCPU:
+        case Engine::Graphics::MemoryUsage::eGPUToCPU:
             return VMA_MEMORY_USAGE_GPU_TO_CPU;
-        case Engine::MemoryUsage::eCPUCopy:
+        case Engine::Graphics::MemoryUsage::eCPUCopy:
             return VMA_MEMORY_USAGE_CPU_COPY;
-        case Engine::MemoryUsage::eGPULazy:
+        case Engine::Graphics::MemoryUsage::eGPULazy:
             return VMA_MEMORY_USAGE_GPU_LAZILY_ALLOCATED;
-        case Engine::MemoryUsage::eAuto:
+        case Engine::Graphics::MemoryUsage::eAuto:
             return VMA_MEMORY_USAGE_AUTO;
-        case Engine::MemoryUsage::eAutoPreferDevice:
+        case Engine::Graphics::MemoryUsage::eAutoPreferDevice:
             return VMA_MEMORY_USAGE_AUTO_PREFER_DEVICE;
-        case Engine::MemoryUsage::eAutoPreferHost:
+        case Engine::Graphics::MemoryUsage::eAutoPreferHost:
             return VMA_MEMORY_USAGE_AUTO_PREFER_HOST;
         }
     };
 }
 
-namespace Engine
+namespace Engine::Graphics
 {
     // ----- Public -----
 
@@ -97,8 +97,8 @@ namespace Engine
         vmaDestroyBuffer(s_Allocator, (VkBuffer)buffer, allocation);
 
         LOG_VERBOSE("Allocator freed {} of memory. Total memory consumption is {} ...",
-                    Utility::BytesToString(allocationInfo.size),
-                    Utility::BytesToString(s_totalMemory));
+                    Core::Utility::BytesToString(allocationInfo.size),
+                    Core::Utility::BytesToString(s_totalMemory));
     }
 
     void* VulkanAllocator::MapMemory(VmaAllocation allocation)
@@ -135,8 +135,8 @@ namespace Engine
         s_totalMemory += allocationInfo.size;
 
         LOG_VERBOSE("Allocator allocated {} of memory. Total memory consumption is {} ...",
-                    Utility::BytesToString(allocationInfo.size),
-                    Utility::BytesToString(s_totalMemory));
+                    Core::Utility::BytesToString(allocationInfo.size),
+                    Core::Utility::BytesToString(s_totalMemory));
 
         return allocation;
     }

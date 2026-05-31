@@ -4,7 +4,7 @@
 
 #include <vulkan/vulkan_structs.hpp>
 
-namespace Engine
+namespace Engine::Graphics
 {
     // ----- Public -----
 

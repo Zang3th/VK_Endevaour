@@ -5,7 +5,7 @@
 #define TINYOBJLOADER_IMPLEMENTATION
 #include "Vendor/tinyobjloader/tiny_obj_loader.hpp"
 
-namespace Engine
+namespace Engine::Graphics
 {
     Mesh ObjLoader::LoadMeshFromFile(const std::filesystem::path& path)
     {

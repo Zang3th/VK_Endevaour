@@ -2,7 +2,7 @@
 
 #include "VulkanPhysicalDevice.hpp"
 
-namespace Engine
+namespace Engine::Graphics
 {
     class VulkanDevice
     {

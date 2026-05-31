@@ -6,7 +6,7 @@
 #include "Graphics/Vulkan/VulkanPipeline.hpp"
 #include "Graphics/Vulkan/VulkanShader.hpp"
 
-namespace Engine
+namespace Engine::Graphics
 {
     class VulkanRenderer
     {

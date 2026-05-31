@@ -7,17 +7,20 @@ namespace
 {
     // ----- Internal -----
 
-    Engine::SwapchainProperties GetSwapchainProperties(const Engine::VulkanPhysicalDevice* physicalDevice)
+    Engine::Graphics::SwapchainProperties GetSwapchainProperties(
+        const Engine::Graphics::VulkanPhysicalDevice* physicalDevice)
     {
-        Engine::SwapchainProperties properties{};
+        Engine::Graphics::SwapchainProperties properties{};
 
         // Get swapchain capabilites from the physical device
-        const Engine::SwapchainSupport swapchainSupport = physicalDevice->GetSwapchainSupport();
+        const Engine::Graphics::SwapchainSupport swapchainSupport = physicalDevice->GetSwapchainSupport();
 
         // Choose most optimal swapchain properties
-        properties.Extent        = Engine::VulkanSwapchainUtils::ChooseExtent(swapchainSupport.Capabilities);
-        properties.SurfaceFormat = Engine::VulkanSwapchainUtils::ChooseSurfaceFormat(swapchainSupport.Formats);
-        properties.PresentMode   = Engine::VulkanSwapchainUtils::ChoosePresentMode(swapchainSupport.PresentModes);
+        properties.Extent = Engine::Graphics::VulkanSwapchainUtils::ChooseExtent(swapchainSupport.Capabilities);
+        properties.SurfaceFormat =
+            Engine::Graphics::VulkanSwapchainUtils::ChooseSurfaceFormat(swapchainSupport.Formats);
+        properties.PresentMode =
+            Engine::Graphics::VulkanSwapchainUtils::ChoosePresentMode(swapchainSupport.PresentModes);
 
         // Specify amount of images in swapchain
         properties.ImageCount = swapchainSupport.Capabilities.minImageCount + 1;
@@ -37,19 +40,20 @@ namespace
 
     void FramebufferResizeCallback([[maybe_unused]] GLFWwindow* window, int width, int height)
     {
-        auto* swapchain = (Engine::VulkanSwapchain*)glfwGetWindowUserPointer(Engine::Window::GetHandle());
-        if(swapchain->GetProperties().Extent.width != (u32)width
-           || swapchain->GetProperties().Extent.height != (u32)height)
+        auto* swapchain =
+            (Engine::Graphics::VulkanSwapchain*)glfwGetWindowUserPointer(Engine::Platform::Window::GetHandle());
+        if(swapchain->GetProperties().Extent.width != (Engine::u32)width
+           || swapchain->GetProperties().Extent.height != (Engine::u32)height)
         {
             LOG_WARN("GLFW: FramebufferResizeCallback ... (Size: {}x{})", width, height);
-            Engine::Window::SetWidth((u32)width);
-            Engine::Window::SetHeight((u32)height);
+            Engine::Platform::Window::SetWidth((Engine::u32)width);
+            Engine::Platform::Window::SetHeight((Engine::u32)height);
             swapchain->SetResizeFlag();
         }
     }
 }
 
-namespace Engine
+namespace Engine::Graphics
 {
     // ----- Public -----
 
@@ -63,8 +67,8 @@ namespace Engine
         CreateImages();
 
         // Set framebuffer resize callback
-        glfwSetWindowUserPointer(Window::GetHandle(), this);
-        glfwSetFramebufferSizeCallback(Window::GetHandle(), FramebufferResizeCallback);
+        glfwSetWindowUserPointer(Platform::Window::GetHandle(), this);
+        glfwSetFramebufferSizeCallback(Platform::Window::GetHandle(), FramebufferResizeCallback);
     }
 
     VulkanSwapchain::~VulkanSwapchain()

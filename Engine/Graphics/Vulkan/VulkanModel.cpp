@@ -2,7 +2,7 @@
 
 #include "Graphics/Vulkan/VulkanModel.hpp"
 
-namespace Engine
+namespace Engine::Graphics
 {
     // ----- Public -----
 

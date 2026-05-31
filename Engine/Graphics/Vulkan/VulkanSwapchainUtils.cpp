@@ -4,7 +4,7 @@
 
 #include "Platform/Window.hpp"
 
-namespace Engine
+namespace Engine::Graphics
 {
     vk::Extent2D VulkanSwapchainUtils::ChooseExtent(vk::SurfaceCapabilitiesKHR capabilities)
     {
@@ -15,8 +15,8 @@ namespace Engine
             return capabilities.currentExtent;
         }
 
-        Engine::Window::UpdateFramebufferSize();
-        vk::Extent2D extent = { .width = Engine::Window::GetWidth(), .height = Engine::Window::GetHeight() };
+        Platform::Window::UpdateFramebufferSize();
+        vk::Extent2D extent = { .width = Platform::Window::GetWidth(), .height = Platform::Window::GetHeight() };
 
         // Clamp width and height between allowed min and max values of the display manager implementation
         extent.width = std::clamp(extent.width, capabilities.minImageExtent.width, capabilities.maxImageExtent.width);

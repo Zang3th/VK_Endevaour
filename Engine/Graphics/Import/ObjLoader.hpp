@@ -4,7 +4,7 @@
 
 #include <filesystem>
 
-namespace Engine
+namespace Engine::Graphics
 {
     class ObjLoader
     {

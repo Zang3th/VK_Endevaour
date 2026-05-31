@@ -8,7 +8,7 @@
 
 #include <vulkan/vulkan_handles.hpp>
 
-namespace Engine
+namespace Engine::Graphics
 {
     class VulkanContext
     {

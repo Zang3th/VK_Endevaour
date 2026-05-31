@@ -2,7 +2,7 @@
 #include "Graphics/Vulkan/VulkanFrame.hpp"
 #include "Graphics/Vulkan/VulkanSwapchainUtils.hpp"
 
-namespace Engine
+namespace Engine::Graphics
 {
     void VulkanFrame::Begin(const SwapchainImage& image, vk::Extent2D extent) const
     {
