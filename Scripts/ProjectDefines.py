@@ -35,6 +35,7 @@ class Paths:
     ENGINE_CORE = ENGINE / "Core"
     ENGINE_DEBUG = ENGINE / "Debug"
     ENGINE_GRAPHICS = ENGINE / "Graphics"
+    ENGINE_MATH = ENGINE / "Math"
     ENGINE_PLATFORM = ENGINE / "Platform"
     ENGINE_VENDOR = ENGINE / "Vendor"
 
@@ -50,6 +51,7 @@ STANDARD_DIRS = [
     Paths.ENGINE_CORE,
     Paths.ENGINE_DEBUG,
     Paths.ENGINE_GRAPHICS,
+    Paths.ENGINE_MATH,
     Paths.ENGINE_PLATFORM,
 ]
 

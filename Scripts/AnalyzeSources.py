@@ -8,7 +8,7 @@ import yaml
 
 # ---------------------------------------------------------------------------
 
-SOURCE_FILTER = r".*[\\/]Engine[\\/](Core|Debug|Graphics|Platform)[\\/].*|.*[\\/]Applications[\\/].*"
+SOURCE_FILTER = r".*[\\/]Engine[\\/](Core|Debug|Graphics|Math|Platform)[\\/].*|.*[\\/]Applications[\\/].*"
 HEADER_FILTER = SOURCE_FILTER
 
 # ---------------------------------------------------------------------------
@@ -91,14 +91,19 @@ def main():
 
     args = parser.parse_args()
 
+    if not (args.tidy or args.verify):
+        print("> No action specified. Use '-h' or '--help' for usage information.")
+        return
+
+    if args.verify:
+        print("\n====== Verifying config ======\n")
+        verify_config()
+
     if args.tidy:
         print("\n====== Running clang-tidy ======\n")
         clang_tidy()
         print("\n====== Printing results ======\n")
         print_tidy_fixes(Paths.PROJECT_ROOT / "tidy-fixes.yaml")
-    elif args.verify:
-        print("\n====== Verifying config ======\n")
-        verify_config()
 
 # ---------------------------------------------------------------------------
 

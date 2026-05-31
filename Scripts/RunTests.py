@@ -39,6 +39,10 @@ def main():
 
     args = parser.parse_args()
 
+    if not (args.debug or args.release):
+        print("> No action specified. Use '-h' or '--help' for usage information.")
+        return
+
     if args.debug:
         run_tests(Paths.DEBUG)
 

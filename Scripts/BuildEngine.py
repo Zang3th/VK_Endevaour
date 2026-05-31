@@ -39,6 +39,10 @@ def main():
 
     args = parser.parse_args()
 
+    if not (args.clean or args.debug or args.release):
+        print("> No action specified. Use '-h' or '--help' for usage information.")
+        return
+
     if args.clean:
         if Paths.BUILD.exists():
             shutil.rmtree(Paths.BUILD)
