@@ -77,7 +77,7 @@ All third-party libraries are fully vendored, either header-only or built as sta
 A helper script exists to verify basic build requirements:
 
 ```bash
-python ./Scripts/CheckDependencies.py
+python .\Scripts\CheckDependencies.py
 ```
 
 This script provides a best-effort assessment of whether the system is able to build the project.
@@ -87,8 +87,7 @@ This script provides a best-effort assessment of whether the system is able to b
 Manual CMake usage or via the provided build script:
 
 ```bash
-python ./Scripts/BuildEngine.py -d    # Debug
-python ./Scripts/BuildEngine.py -r    # Release
+python .\Scripts\BuildEngine.py -dr    # Debug + Release
 ```
 
 ### Launching
@@ -96,14 +95,11 @@ python ./Scripts/BuildEngine.py -r    # Release
 Applications should be launched from the project root directory:
 
 ```bash
-C:\Dev\VK_Endevaour> .\Build\Debug\Applications\Sandbox\Sandbox.exe
+...\VK_Endevaour> .\Build\Debug\Applications\Sandbox\Sandbox.exe
 ```
 
 This ensures that all relative resource paths resolve correctly (e.g. shaders,
 models, textures, configuration files).
-
-The same applies when attaching a debugger: make sure the working directory is
-set to the project root (VK_Endevaour/), otherwise resource loading may fail.
 
 ### Integrated libraries
 
