@@ -9,18 +9,17 @@
   - ~CheckDependencies~
   - ~BuildEngine~
   - ...
-- Frame System Refactor:
-  - Synchronization Cleanup
-  - Swapchain Stability
+- ~Frame System Refactor:~
+  - ~Synchronization Cleanup~
+  - ~Swapchain Stability~
 
 ---
 
 ## v0.2 — Pixel Renderer & UI
 
-- PixelRenderer
 - ImGui Integration
-- Debug Visualization
-- Runtime Controls
+  - Profiling
+- PixelRenderer
 
 ---
 
@@ -32,7 +31,6 @@
   - Staggered Grid
   - Iterative Solvers
   - Numerical Validation
-- Benchmarking
 
 ---
 

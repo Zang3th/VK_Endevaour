@@ -4,6 +4,7 @@ Backup/
 .cache/
 .idea/
 *.obj
+*.png
 compile_commands.json
 *.spv
 imgui.ini

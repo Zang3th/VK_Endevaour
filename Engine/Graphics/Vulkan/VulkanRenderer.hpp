@@ -18,7 +18,7 @@ namespace Engine::Graphics
         [[nodiscard]] u32 CreateModel(const Mesh* mesh);
         [[nodiscard]] u32 CreatePipeline(u32 vertexID, u32 fragmentID);
 
-        void AssignPipeline(u32 modelID, u32 pipelineID);
+        void AssignModelToPipeline(u32 modelID, u32 pipelineID);
         void DrawFrame(u32 pipelineID);
         void WaitForDevice();
 

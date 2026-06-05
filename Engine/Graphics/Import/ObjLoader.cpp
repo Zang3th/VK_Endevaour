@@ -14,22 +14,24 @@ namespace Engine::Graphics
         std::vector<tinyobj::material_t> materials;
         std::string                      warn;
         std::string                      error;
-        std::ifstream                    iStream(path, std::ios::binary);
+        std::string                      objPath = path.string();
 
         // Load obj file
-        const bool success = LoadObj(&attrib, &shapes, &materials, &warn, &error, &iStream);
-        if(!success)
+        if(!tinyobj::LoadObj(&attrib, &shapes, &materials, &warn, &error, objPath.c_str()))
         {
             if(!warn.empty())
             {
                 LOG_WARN("tinyobjloader: {}", warn);
-            };
+            }
+
             if(!error.empty())
             {
                 LOG_ERROR("tinyobjloader: {}", error);
-            };
-            ASSERT(success, "Failed to load model '{}'", path.string());
+            }
+
+            ASSERT(false, "Failed to load model '{}'", path.string());
         }
+
         LOG_INFO("Loaded model '{}' ... (Shapes: {}, Vertices: {}, Indices: {})",
                  path.string(),
                  shapes.size(),
@@ -52,7 +54,7 @@ namespace Engine::Graphics
                                     attrib.vertices[(3 * index.vertex_index) + 1],
                                     attrib.vertices[(3 * index.vertex_index) + 2] };
 
-                vertex.Color = { 1.0f, 1.0f, 1.0f };
+                vertex.Color = vertex.Position;
 
                 vertex.TexCoord = {
                     attrib.texcoords[(2 * index.texcoord_index) + 0],

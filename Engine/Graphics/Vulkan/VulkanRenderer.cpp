@@ -54,7 +54,7 @@ namespace Engine::Graphics
         return currentIndex;
     }
 
-    void VulkanRenderer::AssignPipeline(u32 modelID, u32 pipelineID)
+    void VulkanRenderer::AssignModelToPipeline(u32 modelID, u32 pipelineID)
     {
         m_Models.at(modelID)->AssignPipeline(pipelineID);
         LOG_INFO("Bound model '{}' to pipeline '{}' ...", modelID, pipelineID);
