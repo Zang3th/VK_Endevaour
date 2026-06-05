@@ -65,18 +65,24 @@ namespace Engine::Graphics
         // Reset drawcall counter
         m_DrawcallCount = 0;
 
-        // Get next frame from swapchain
-        auto [renderNextFrame, frame] = m_Context->GetSwapchain()->GetNextFrame();
-        if(!renderNextFrame)
+        // Get current frame from swapchain
+        VulkanFrame& frame = m_Swapchain->GetCurrentFrame();
+
+        // Acquire next image index
+        auto imageIndex = m_Swapchain->AcquireImage(frame);
+        if(!imageIndex)
         {
             return; // Swapchain was probably recreated
         }
 
-        // Get swapchain properties for this frame
+        // If an image was successfully acquired, reset the current frame
+        m_Swapchain->ResetFrame(frame);
+
+        // Get swapchain properties
         const SwapchainProperties properties = m_Swapchain->GetProperties();
 
         // Begin frame
-        frame.Begin(m_Swapchain->GetImageAt(frame.ImageIndex), properties.Extent);
+        frame.Begin(m_Swapchain->GetImageAt(*imageIndex), properties.Extent);
 
         // Set dynamic states
         const vk::Viewport viewport = { .width    = (f32)properties.Extent.width,
@@ -113,12 +119,12 @@ namespace Engine::Graphics
         }
 
         // End frame
-        frame.End(m_Swapchain->GetImageAt(frame.ImageIndex));
+        frame.End(m_Swapchain->GetImageAt(*imageIndex));
 
         // Submit, present, advance
-        m_Context->GetSwapchain()->SubmitFrame(frame);
-        m_Context->GetSwapchain()->PresentFrame(frame);
-        m_Context->GetSwapchain()->AdvanceFrameCount();
+        m_Swapchain->SubmitFrame(frame);
+        m_Swapchain->PresentFrame(frame, *imageIndex);
+        m_Swapchain->AdvanceFrameCount();
     }
 
     void VulkanRenderer::WaitForDevice()

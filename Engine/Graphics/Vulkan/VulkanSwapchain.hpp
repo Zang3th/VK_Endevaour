@@ -4,6 +4,8 @@
 #include "Graphics/Vulkan/VulkanFrame.hpp"
 #include "Graphics/Vulkan/VulkanGlobals.hpp"
 
+#include <optional>
+
 namespace Engine::Graphics
 {
     class VulkanSwapchain
@@ -19,10 +21,13 @@ namespace Engine::Graphics
         [[nodiscard]] vk::CommandBuffer CreateTransferCommandBuffer();
         void                            SubmitTransferCommandBuffer(vk::CommandBuffer commandBuffer);
 
-        std::pair<b8, VulkanFrame&> GetNextFrame();
-        void                        SubmitFrame(const VulkanFrame& frame);
-        void                        PresentFrame(const VulkanFrame& frame);
-        void                        AdvanceFrameCount();
+        [[nodiscard]] VulkanFrame&       GetCurrentFrame();
+        [[nodiscard]] std::optional<u32> AcquireImage(const VulkanFrame& frame);
+
+        void ResetFrame(const VulkanFrame& frame);
+        void SubmitFrame(const VulkanFrame& frame);
+        void PresentFrame(const VulkanFrame& frame, u32 imageIndex);
+        void AdvanceFrameCount();
 
         void SetResizeFlag() { m_Resized = true; };
 

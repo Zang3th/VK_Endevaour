@@ -6,11 +6,9 @@
 
 namespace Engine::Graphics
 {
-    // FIX: Das Frame-Konzept hier ist konzeptionell falsch.
-    // Vulkan garantiert nie, dass 1 Frame ==  1 Image ist.
-    // Ein Frame rendert in ein Image, welches dem WSI gehört.
-    // Deswegen crashed dieser Code wenn ich auf Swapchains mit bspw. 4 Images treffe.
-    // Die beiden Konzepte und Synchronisationsmechanismen müssen grundsätzlich entkoppelt werden.
+    // Per-frame CPU/GPU synchronization resources.
+    // This is independent from the acquired swapchain image.
+    // The actual image index is returned by vkAcquireNextImageKHR per frame.
     class VulkanFrame
     {
     public:
@@ -21,6 +19,5 @@ namespace Engine::Graphics
         vk::Semaphore     ImageAvailable = nullptr;
         vk::Semaphore     RenderFinished = nullptr;
         vk::Fence         InFlight       = nullptr;
-        u32               ImageIndex     = UINT32_MAX;
     };
 }

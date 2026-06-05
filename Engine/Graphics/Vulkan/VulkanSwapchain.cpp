@@ -23,15 +23,14 @@ namespace
             Engine::Graphics::VulkanSwapchainUtils::ChoosePresentMode(swapchainSupport.PresentModes);
 
         // Specify amount of images in swapchain
-        properties.ImageCount =
-            std::max(Engine::Graphics::FRAMES_IN_FLIGHT, swapchainSupport.Capabilities.minImageCount);
+        properties.ImageCount = swapchainSupport.Capabilities.minImageCount + 1;
 
         // Make sure to not exceed bounds (0 := means no limit)
-        // if(swapchainSupport.Capabilities.maxImageCount > 0
-        //    && properties.ImageCount > swapchainSupport.Capabilities.maxImageCount)
-        // {
-        //     properties.ImageCount = swapchainSupport.Capabilities.maxImageCount;
-        // }
+        if(swapchainSupport.Capabilities.maxImageCount > 0
+           && properties.ImageCount > swapchainSupport.Capabilities.maxImageCount)
+        {
+            properties.ImageCount = swapchainSupport.Capabilities.maxImageCount;
+        }
 
         // Save current transform
         properties.Transform = swapchainSupport.Capabilities.currentTransform;
@@ -143,7 +142,7 @@ namespace Engine::Graphics
         m_Device->GetHandle().freeCommandBuffers(m_TransferCommandPool, 1, &commandBuffer);
     }
 
-    [[nodiscard]] std::pair<b8, VulkanFrame&> VulkanSwapchain::GetNextFrame()
+    [[nodiscard]] VulkanFrame& VulkanSwapchain::GetCurrentFrame()
     {
         // Get current frame
         VulkanFrame& currentFrame = m_Frames.at(m_CurrentFrame);
@@ -151,26 +150,37 @@ namespace Engine::Graphics
         // Wait for this frame-slot's previous submission to finish
         VK_VERIFY(m_Device->GetHandle().waitForFences(1, &currentFrame.InFlight, vk::True, UINT64_MAX));
 
-        // TODO: This needs major rework. I should only work with the swapchain image index
-        // Aquire
+        // Return frame
+        return currentFrame;
+    }
+
+    [[nodiscard]] std::optional<u32> VulkanSwapchain::AcquireImage(const VulkanFrame& frame)
+    {
+        u32 imageIndex = UINT32_MAX;
+
         const vk::Result res = m_Device->GetHandle().acquireNextImageKHR(
-            m_CurrentSwapchain, UINT64_MAX, currentFrame.ImageAvailable, nullptr, &currentFrame.ImageIndex);
+            m_CurrentSwapchain, UINT64_MAX, frame.ImageAvailable, nullptr, &imageIndex);
+
         if(res == vk::Result::eErrorOutOfDateKHR)
         {
             LOG_WARN("vkAcquireNextImageKHR initialized swapchain recreation ...");
             RecreateSwapchain();
-            return { false, currentFrame };
+            return std::nullopt;
         }
-        ASSERT(res == vk::Result::eSuccess, "Failed to acquire swapchain image!");
 
+        // eSuboptimalKHR still returns a valid image. Defer recreation until present
+        ASSERT(res == vk::Result::eSuccess || res == vk::Result::eSuboptimalKHR, "Failed to acquire swapchain image!");
+
+        return imageIndex;
+    }
+
+    void VulkanSwapchain::ResetFrame(const VulkanFrame& frame)
+    {
         // Reset fence
-        VK_VERIFY(m_Device->GetHandle().resetFences(1, &currentFrame.InFlight));
+        VK_VERIFY(m_Device->GetHandle().resetFences(1, &frame.InFlight));
 
         // Reset command buffer
-        VK_VERIFY(currentFrame.CommandBuffer.reset());
-
-        // Return frame
-        return { true, currentFrame };
+        VK_VERIFY(frame.CommandBuffer.reset());
     }
 
     void VulkanSwapchain::SubmitFrame(const VulkanFrame& frame)
@@ -192,14 +202,14 @@ namespace Engine::Graphics
         VK_VERIFY(m_Device->GetGraphicsQueue().submit(1, &submitInfo, frame.InFlight));
     }
 
-    void VulkanSwapchain::PresentFrame(const VulkanFrame& frame)
+    void VulkanSwapchain::PresentFrame(const VulkanFrame& frame, u32 imageIndex)
     {
         // Create present info
         const vk::PresentInfoKHR presentInfo{ .waitSemaphoreCount = 1,
                                               .pWaitSemaphores    = &frame.RenderFinished,
                                               .swapchainCount     = 1,
                                               .pSwapchains        = &m_CurrentSwapchain,
-                                              .pImageIndices      = &frame.ImageIndex };
+                                              .pImageIndices      = &imageIndex };
 
         // Present
         const vk::Result res = m_Device->GetGraphicsQueue().presentKHR(&presentInfo);
@@ -361,6 +371,6 @@ namespace Engine::Graphics
             m_Frames[i].CommandBuffer = commandBuffers.at(i);
         }
 
-        LOG_INFO("Initialized sync objects and command buffers for {} frames ...", FRAMES_IN_FLIGHT);
+        LOG_INFO("Initialized sync objects and command buffers for {} frame(s)-in-flight ...", FRAMES_IN_FLIGHT);
     }
 }
