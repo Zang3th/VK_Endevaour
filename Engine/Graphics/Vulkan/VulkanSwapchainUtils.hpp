@@ -27,8 +27,9 @@ namespace Engine::Graphics
 
     struct SwapchainImage
     {
-        vk::Image     Image = nullptr;
-        vk::ImageView View  = nullptr;
+        vk::Image     Image          = nullptr;
+        vk::ImageView View           = nullptr;
+        vk::Semaphore RenderFinished = nullptr;
     };
 
     class VulkanSwapchainUtils

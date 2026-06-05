@@ -98,7 +98,6 @@ namespace Engine::Graphics
         for(size_t i = 0; i < FRAMES_IN_FLIGHT; i++)
         {
             m_Device->GetHandle().destroySemaphore(m_Frames.at(i).ImageAvailable);
-            m_Device->GetHandle().destroySemaphore(m_Frames.at(i).RenderFinished);
             m_Device->GetHandle().destroyFence(m_Frames.at(i).InFlight);
         }
 
@@ -183,7 +182,7 @@ namespace Engine::Graphics
         VK_VERIFY(frame.CommandBuffer.reset());
     }
 
-    void VulkanSwapchain::SubmitFrame(const VulkanFrame& frame)
+    void VulkanSwapchain::SubmitFrame(const VulkanFrame& frame, u32 imageIndex)
     {
         const vk::PipelineStageFlags waitStage{ vk::PipelineStageFlagBits::eColorAttachmentOutput };
 
@@ -195,18 +194,18 @@ namespace Engine::Graphics
             .commandBufferCount   = 1,
             .pCommandBuffers      = &frame.CommandBuffer,
             .signalSemaphoreCount = 1,
-            .pSignalSemaphores    = &frame.RenderFinished // Which semaphore to signal after
+            .pSignalSemaphores    = &m_Images.at(imageIndex).RenderFinished // Which semaphore to signal after
         };
 
         // Submit frame to queue
         VK_VERIFY(m_Device->GetGraphicsQueue().submit(1, &submitInfo, frame.InFlight));
     }
 
-    void VulkanSwapchain::PresentFrame(const VulkanFrame& frame, u32 imageIndex)
+    void VulkanSwapchain::PresentFrame(u32 imageIndex)
     {
         // Create present info
         const vk::PresentInfoKHR presentInfo{ .waitSemaphoreCount = 1,
-                                              .pWaitSemaphores    = &frame.RenderFinished,
+                                              .pWaitSemaphores    = &m_Images.at(imageIndex).RenderFinished,
                                               .swapchainCount     = 1,
                                               .pSwapchains        = &m_CurrentSwapchain,
                                               .pImageIndices      = &imageIndex };
@@ -270,6 +269,7 @@ namespace Engine::Graphics
         for(auto& image : m_Images)
         {
             m_Device->GetHandle().destroyImageView(image.View);
+            m_Device->GetHandle().destroySemaphore(image.RenderFinished);
         }
         m_Images.clear();
     }
@@ -309,10 +309,14 @@ namespace Engine::Graphics
             auto [result, view] = m_Device->GetHandle().createImageView(viewCreateInfo);
             VK_VERIFY(result);
 
-            m_Images.emplace_back(image, view);
+            const vk::SemaphoreCreateInfo semaphoreInfo{};
+            auto [semaphoreResult, renderFinished] = m_Device->GetHandle().createSemaphore(semaphoreInfo);
+            VK_VERIFY(semaphoreResult);
+
+            m_Images.emplace_back(SwapchainImage{ .Image = image, .View = view, .RenderFinished = renderFinished });
         }
 
-        LOG_INFO("Created {} image view(s) ...", images.size());
+        LOG_INFO("Created {} swapchain image view(s) and render-finished semaphore(s) ...", images.size());
     }
 
     void VulkanSwapchain::CreateCommandPools()
@@ -353,7 +357,6 @@ namespace Engine::Graphics
         for(u32 i = 0; i < FRAMES_IN_FLIGHT; i++)
         {
             VK_VERIFY(m_Device->GetHandle().createSemaphore(&semaphoreInfo, nullptr, &m_Frames[i].ImageAvailable));
-            VK_VERIFY(m_Device->GetHandle().createSemaphore(&semaphoreInfo, nullptr, &m_Frames[i].RenderFinished));
             VK_VERIFY(m_Device->GetHandle().createFence(&fenceInfo, nullptr, &m_Frames[i].InFlight));
         }
 

@@ -122,8 +122,8 @@ namespace Engine::Graphics
         frame.End(m_Swapchain->GetImageAt(*imageIndex));
 
         // Submit, present, advance
-        m_Swapchain->SubmitFrame(frame);
-        m_Swapchain->PresentFrame(frame, *imageIndex);
+        m_Swapchain->SubmitFrame(frame, *imageIndex);
+        m_Swapchain->PresentFrame(*imageIndex);
         m_Swapchain->AdvanceFrameCount();
     }
 

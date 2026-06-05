@@ -25,8 +25,8 @@ namespace Engine::Graphics
         [[nodiscard]] std::optional<u32> AcquireImage(const VulkanFrame& frame);
 
         void ResetFrame(const VulkanFrame& frame);
-        void SubmitFrame(const VulkanFrame& frame);
-        void PresentFrame(const VulkanFrame& frame, u32 imageIndex);
+        void SubmitFrame(const VulkanFrame& frame, u32 imageIndex);
+        void PresentFrame(u32 imageIndex);
         void AdvanceFrameCount();
 
         void SetResizeFlag() { m_Resized = true; };

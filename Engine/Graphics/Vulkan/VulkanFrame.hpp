@@ -17,7 +17,6 @@ namespace Engine::Graphics
 
         vk::CommandBuffer CommandBuffer  = nullptr;
         vk::Semaphore     ImageAvailable = nullptr;
-        vk::Semaphore     RenderFinished = nullptr;
         vk::Fence         InFlight       = nullptr;
     };
 }
