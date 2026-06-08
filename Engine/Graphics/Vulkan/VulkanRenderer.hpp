@@ -1,5 +1,7 @@
 #pragma once
 
+#include "Graphics/UI/ImGuiLayer.hpp"
+
 #include "Graphics/Vulkan/VulkanContext.hpp"
 #include "Graphics/Vulkan/VulkanGlobals.hpp"
 #include "Graphics/Vulkan/VulkanModel.hpp"
@@ -24,6 +26,7 @@ namespace Engine::Graphics
 
     private:
         Scope<VulkanContext> m_Context;
+        Scope<ImGuiLayer>    m_ImGuiLayer;
         VulkanSwapchain*     m_Swapchain = nullptr;
 
         std::array<Scope<VulkanShader>, MAX_SHADER_COUNT>     m_Shaders;

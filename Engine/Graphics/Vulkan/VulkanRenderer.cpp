@@ -8,8 +8,9 @@ namespace Engine::Graphics
 
     VulkanRenderer::VulkanRenderer()
     {
-        m_Context   = MakeScope<VulkanContext>();
-        m_Swapchain = m_Context->GetSwapchain();
+        m_Context    = MakeScope<VulkanContext>();
+        m_ImGuiLayer = MakeScope<ImGuiLayer>(m_Context.get());
+        m_Swapchain  = m_Context->GetSwapchain();
     }
 
     VulkanRenderer::~VulkanRenderer()
@@ -117,6 +118,10 @@ namespace Engine::Graphics
                 m_DrawcallCount++;
             }
         }
+
+        // ImGui rendering
+        m_ImGuiLayer->BeginFrame();
+        m_ImGuiLayer->EndFrame(frame.CommandBuffer);
 
         // End frame
         frame.End(m_Swapchain->GetImageAt(*imageIndex));
