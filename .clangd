@@ -1,2 +1,32 @@
 CompileFlags:
   CompilationDatabase: Build/Debug
+
+---
+If:
+  PathMatch: .*[\/\\]VulkanSDK[\/\\].*
+
+Diagnostics:
+  Suppress: '*'
+
+Index:
+  Background: Skip
+
+---
+If:
+  PathMatch: .*[\/\\]Engine[\/\\]Vendor[\/\\].*
+
+Diagnostics:
+  Suppress: '*'
+
+Index:
+  Background: Skip
+
+---
+If:
+  PathMatch: .*[\/\\]Build[\/\\].*
+
+Diagnostics:
+  Suppress: '*'
+
+Index:
+  Background: Skip
