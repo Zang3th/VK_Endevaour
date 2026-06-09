@@ -24,6 +24,7 @@ namespace Engine::Platform
     {
         glfwDestroyWindow(m_Window);
         glfwTerminate();
+        m_Window = nullptr;
     }
 
     void Window::PollEvents()

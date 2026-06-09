@@ -18,8 +18,8 @@ namespace Engine::Graphics
         [[nodiscard]] const vk::Queue&            GetTransferQueue() const { return m_TransferQueue; }
         [[nodiscard]] const VulkanPhysicalDevice* GetPhysicalDevice() const { return m_PhysicalDevice; }
 
-        [[nodiscard]] u32 GetGraphicsQueueFamily() const { return m_PhysicalDevice->GetQueueFamilys().GraphicsFamily; }
-        [[nodiscard]] u32 GetTransferQueueFamily() const { return m_PhysicalDevice->GetQueueFamilys().TransferFamily; }
+        [[nodiscard]] u32 GetGraphicsQueueFamily() const { return m_PhysicalDevice->GetQueueFamilies().GraphicsFamily; }
+        [[nodiscard]] u32 GetTransferQueueFamily() const { return m_PhysicalDevice->GetQueueFamilies().TransferFamily; }
 
         void WaitForIdle() const;
 

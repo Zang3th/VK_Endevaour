@@ -13,7 +13,9 @@ namespace Engine::Graphics
         u32 GraphicsFamily = UINT32_MAX;
         u32 TransferFamily = UINT32_MAX;
 
-        [[nodiscard]] b8 isComplete() const
+        [[nodiscard]] b8 HasGraphicsFamily() const { return GraphicsFamily != UINT32_MAX; }
+        [[nodiscard]] b8 HasTransferFamily() const { return TransferFamily != UINT32_MAX; }
+        [[nodiscard]] b8 IsComplete() const
         {
             return ((GraphicsFamily != UINT32_MAX) && (TransferFamily != UINT32_MAX));
         };
@@ -26,18 +28,18 @@ namespace Engine::Graphics
         ~VulkanPhysicalDevice();
 
         [[nodiscard]] const vk::PhysicalDevice&           GetHandle() const { return m_PhysicalDevice; };
-        [[nodiscard]] const QueueFamilyIndices&           GetQueueFamilys() const { return m_QueueFamilyIndices; };
+        [[nodiscard]] const QueueFamilyIndices&           GetQueueFamilies() const { return m_QueueFamilyIndices; };
         [[nodiscard]] const vk::PhysicalDeviceProperties& GetProperties() const { return m_Properties; };
 
         [[nodiscard]] SwapchainSupport GetSwapchainSupport() const { return QuerySwapchainSupport(m_PhysicalDevice); };
 
     private:
-        void               PickDevice();
-        bool               IsDeviceSuitable(vk::PhysicalDevice device);
-        QueueFamilyIndices FindQueueFamilyIndices(vk::PhysicalDevice device);
-        static bool        CheckDeviceExtensionSupport(vk::PhysicalDevice device);
+        void        PickDevice();
+        static bool CheckDeviceExtensionSupport(vk::PhysicalDevice device);
 
-        [[nodiscard]] SwapchainSupport QuerySwapchainSupport(vk::PhysicalDevice physicalDevice) const;
+        [[nodiscard]] bool               IsDeviceSuitable(vk::PhysicalDevice device) const;
+        [[nodiscard]] QueueFamilyIndices FindQueueFamilyIndices(vk::PhysicalDevice device) const;
+        [[nodiscard]] SwapchainSupport   QuerySwapchainSupport(vk::PhysicalDevice physicalDevice) const;
 
         const vk::Instance&          m_Instance;
         const vk::SurfaceKHR&        m_Surface;

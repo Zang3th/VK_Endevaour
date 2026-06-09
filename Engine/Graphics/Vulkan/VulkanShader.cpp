@@ -25,7 +25,7 @@ namespace Engine::Graphics
         m_Device.destroyShaderModule(m_Module);
     }
 
-    [[nodiscard]] vk::PipelineShaderStageCreateInfo VulkanShader::GetPipelineShaderStageCreateInfo()
+    [[nodiscard]] vk::PipelineShaderStageCreateInfo VulkanShader::GetPipelineShaderStageCreateInfo() const
     {
         return { .stage = m_Stage, .module = m_Module, .pName = "main" };
     }

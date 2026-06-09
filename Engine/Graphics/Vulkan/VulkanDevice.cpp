@@ -30,7 +30,7 @@ namespace Engine::Graphics
     void VulkanDevice::CreateLogicalDevice()
     {
         // Fetch queue familys
-        const auto&                            queueFamilyIndices = m_PhysicalDevice->GetQueueFamilys();
+        const auto&                            queueFamilyIndices = m_PhysicalDevice->GetQueueFamilies();
         static const f32                       queuePriority      = 1.0f;
         std::vector<vk::DeviceQueueCreateInfo> queueCreateInfos;
 

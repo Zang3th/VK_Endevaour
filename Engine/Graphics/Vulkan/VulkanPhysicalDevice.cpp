@@ -45,6 +45,8 @@ namespace Engine::Graphics
         LOG_INFO("VulkanPhysicalDevice::Destructor() ...");
     }
 
+    // ----- Private -----
+
     void VulkanPhysicalDevice::PickDevice()
     {
         // Query for devices
@@ -57,6 +59,8 @@ namespace Engine::Graphics
         // Check each device for suitability
         for (const auto& device : devices)
         {
+            m_QueueFamilyIndices = FindQueueFamilyIndices(device);
+
             // Break at first suitable device
             if (IsDeviceSuitable(device))
             {
@@ -70,57 +74,6 @@ namespace Engine::Graphics
         }
 
         ASSERT(m_PhysicalDevice, "Failed to find suitable device!");
-    }
-
-    // ----- Private -----
-
-    bool VulkanPhysicalDevice::IsDeviceSuitable(vk::PhysicalDevice device)
-    {
-        m_QueueFamilyIndices = FindQueueFamilyIndices(device);
-
-        return m_QueueFamilyIndices.isComplete() && QuerySwapchainSupport(device).isComplete()
-               && CheckDeviceExtensionSupport(device);
-    }
-
-    QueueFamilyIndices VulkanPhysicalDevice::FindQueueFamilyIndices(vk::PhysicalDevice device)
-    {
-        QueueFamilyIndices queueFamilyIndices;
-        VkBool32           presentSupport = false;
-        u32                index          = 0;
-
-        // Query for queue families
-        const auto queueFamilies = device.getQueueFamilyProperties();
-
-        // Iterate over queue familys
-        for (const auto& queueFamily : queueFamilies)
-        {
-            // Query for graphics capable queue family
-            if (queueFamily.queueFlags & vk::QueueFlagBits::eGraphics)
-            {
-                // Query for capability of presenting to a window surface
-                VK_VERIFY((vk::Result)device.getSurfaceSupportKHR(index, m_Surface, &presentSupport));
-
-                if (presentSupport)
-                {
-                    queueFamilyIndices.GraphicsFamily = index;
-                }
-
-                // If no dedicated transfer queue was found, use graphics queue for transfer
-                if (queueFamilyIndices.TransferFamily < 0)
-                {
-                    queueFamilyIndices.TransferFamily = index;
-                }
-            }
-            // Query for dedicated transfer queue
-            else if (queueFamily.queueFlags & vk::QueueFlagBits::eTransfer)
-            {
-                queueFamilyIndices.TransferFamily = index;
-            }
-
-            index++;
-        }
-
-        return queueFamilyIndices;
     }
 
     bool VulkanPhysicalDevice::CheckDeviceExtensionSupport(vk::PhysicalDevice device)
@@ -151,6 +104,53 @@ namespace Engine::Graphics
         }
 
         return requiredExtensions.empty();
+    }
+
+    [[nodiscard]] bool VulkanPhysicalDevice::IsDeviceSuitable(vk::PhysicalDevice device) const
+    {
+        return m_QueueFamilyIndices.IsComplete() && QuerySwapchainSupport(device).isComplete()
+               && CheckDeviceExtensionSupport(device);
+    }
+
+    [[nodiscard]] QueueFamilyIndices VulkanPhysicalDevice::FindQueueFamilyIndices(vk::PhysicalDevice device) const
+    {
+        QueueFamilyIndices queueFamilyIndices;
+        VkBool32           presentSupport = false;
+        u32                index          = 0;
+
+        // Query for queue families
+        const auto queueFamilies = device.getQueueFamilyProperties();
+
+        // Iterate over queue familys
+        for (const auto& queueFamily : queueFamilies)
+        {
+            // Query for graphics capable queue family
+            if (queueFamily.queueFlags & vk::QueueFlagBits::eGraphics)
+            {
+                // Query for capability of presenting to a window surface
+                VK_VERIFY((vk::Result)device.getSurfaceSupportKHR(index, m_Surface, &presentSupport));
+
+                if (presentSupport)
+                {
+                    queueFamilyIndices.GraphicsFamily = index;
+                }
+
+                // If no dedicated transfer queue was found, use graphics queue for transfer
+                if (!queueFamilyIndices.HasTransferFamily())
+                {
+                    queueFamilyIndices.TransferFamily = queueFamilyIndices.GraphicsFamily;
+                }
+            }
+            // Query for dedicated transfer queue
+            else if (queueFamily.queueFlags & vk::QueueFlagBits::eTransfer)
+            {
+                queueFamilyIndices.TransferFamily = index;
+            }
+
+            index++;
+        }
+
+        return queueFamilyIndices;
     }
 
     [[nodiscard]] SwapchainSupport VulkanPhysicalDevice::QuerySwapchainSupport(vk::PhysicalDevice physicalDevice) const

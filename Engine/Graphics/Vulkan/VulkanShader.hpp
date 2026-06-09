@@ -15,7 +15,7 @@ namespace Engine::Graphics
         VulkanShader(const VulkanShader&)            = delete;
         VulkanShader& operator=(const VulkanShader&) = delete;
 
-        [[nodiscard]] vk::PipelineShaderStageCreateInfo GetPipelineShaderStageCreateInfo();
+        [[nodiscard]] vk::PipelineShaderStageCreateInfo GetPipelineShaderStageCreateInfo() const;
 
     private:
         void CreateShaderModule(std::vector<char>&& code);
