@@ -71,7 +71,7 @@ namespace Engine::Graphics
 
         // Acquire next image index
         auto imageIndex = m_Swapchain->AcquireImage(frame);
-        if(!imageIndex)
+        if (!imageIndex)
         {
             return; // Swapchain was probably recreated
         }
@@ -104,13 +104,13 @@ namespace Engine::Graphics
         m_Pipelines.at(pipelineID)->Bind(frame.CommandBuffer);
 
         // Draw all models assigned to this pipeline
-        for(u32 i = 0; i < m_ModelIndex; i++)
+        for (u32 i = 0; i < m_ModelIndex; i++)
         {
             // Get model
             const VulkanModel* model = m_Models.at(i).get();
 
             // Check for pipeline
-            if(model->GetPipelineID() == pipelineID)
+            if (model->GetPipelineID() == pipelineID)
             {
                 // Bind, draw, increment
                 model->Bind(frame.CommandBuffer);

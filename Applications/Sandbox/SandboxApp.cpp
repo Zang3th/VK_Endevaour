@@ -46,11 +46,11 @@ void Sandbox::Run()
     // Assign model to pipeline
     vkRenderer.AssignModelToPipeline(modelID, pipelineID);
 
-    while(!Engine::Platform::Window::ShouldClose())
+    while (!Engine::Platform::Window::ShouldClose())
     {
         Engine::Platform::Window::PollEvents();
 
-        if(Engine::Platform::Window::IsMinimized())
+        if (Engine::Platform::Window::IsMinimized())
         {
             Engine::Platform::Window::WaitEvents();
             continue;

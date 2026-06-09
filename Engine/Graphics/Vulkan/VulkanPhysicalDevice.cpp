@@ -16,7 +16,7 @@ namespace
 
     std::string GetDriverVersionString(vk::PhysicalDeviceProperties properties)
     {
-        if(properties.vendorID != 0x10DE) // Nvidia
+        if (properties.vendorID != 0x10DE) // Nvidia
         {
             LOG_WARN("GPU vendor isn't Nvidia. Driver version string may be false ...");
         }
@@ -55,10 +55,10 @@ namespace Engine::Graphics
         LOG_INFO("Check for suitable device ...");
 
         // Check each device for suitability
-        for(const auto& device : devices)
+        for (const auto& device : devices)
         {
             // Break at first suitable device
-            if(IsDeviceSuitable(device))
+            if (IsDeviceSuitable(device))
             {
                 m_PhysicalDevice = device;
                 m_Properties     = device.getProperties();
@@ -92,27 +92,27 @@ namespace Engine::Graphics
         const auto queueFamilies = device.getQueueFamilyProperties();
 
         // Iterate over queue familys
-        for(const auto& queueFamily : queueFamilies)
+        for (const auto& queueFamily : queueFamilies)
         {
             // Query for graphics capable queue family
-            if(queueFamily.queueFlags & vk::QueueFlagBits::eGraphics)
+            if (queueFamily.queueFlags & vk::QueueFlagBits::eGraphics)
             {
                 // Query for capability of presenting to a window surface
                 VK_VERIFY((vk::Result)device.getSurfaceSupportKHR(index, m_Surface, &presentSupport));
 
-                if(presentSupport)
+                if (presentSupport)
                 {
                     queueFamilyIndices.GraphicsFamily = index;
                 }
 
                 // If no dedicated transfer queue was found, use graphics queue for transfer
-                if(queueFamilyIndices.TransferFamily < 0)
+                if (queueFamilyIndices.TransferFamily < 0)
                 {
                     queueFamilyIndices.TransferFamily = index;
                 }
             }
             // Query for dedicated transfer queue
-            else if(queueFamily.queueFlags & vk::QueueFlagBits::eTransfer)
+            else if (queueFamily.queueFlags & vk::QueueFlagBits::eTransfer)
             {
                 queueFamilyIndices.TransferFamily = index;
             }
@@ -133,18 +133,18 @@ namespace Engine::Graphics
         std::set<std::string> requiredExtensions(g_DeviceExtensions.begin(), g_DeviceExtensions.end());
 
         // Delete if available
-        for(const auto& extension : availableExtensions)
+        for (const auto& extension : availableExtensions)
         {
-            if(requiredExtensions.contains(extension.extensionName))
+            if (requiredExtensions.contains(extension.extensionName))
             {
                 LOG_INFO("Found support for required device extension: {} ...", extension.extensionName.data());
                 requiredExtensions.erase(extension.extensionName);
             }
         }
 
-        if(!requiredExtensions.empty())
+        if (!requiredExtensions.empty())
         {
-            for(const auto& ext : requiredExtensions)
+            for (const auto& ext : requiredExtensions)
             {
                 LOG_WARN("Missing required device extension: {}", ext);
             }

@@ -3,13 +3,13 @@
 #include "Core/Types.hpp"
 
 #define GLM_ENABLE_EXPERIMENTAL
+#include "Vendor/glm/glm.hpp"
+#include "Vendor/glm/gtx/hash.hpp"
+
 #include <vulkan/vulkan.hpp>
 
 #include <array>
 #include <vector>
-
-#include "Vendor/glm/glm.hpp"
-#include "Vendor/glm/gtx/hash.hpp"
 
 namespace Engine::Graphics
 {

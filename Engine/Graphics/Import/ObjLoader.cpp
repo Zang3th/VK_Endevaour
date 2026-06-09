@@ -17,14 +17,14 @@ namespace Engine::Graphics
         std::string                      objPath = path.string();
 
         // Load obj file
-        if(!tinyobj::LoadObj(&attrib, &shapes, &materials, &warn, &error, objPath.c_str()))
+        if (!tinyobj::LoadObj(&attrib, &shapes, &materials, &warn, &error, objPath.c_str()))
         {
-            if(!warn.empty())
+            if (!warn.empty())
             {
                 LOG_WARN("tinyobjloader: {}", warn);
             }
 
-            if(!error.empty())
+            if (!error.empty())
             {
                 LOG_ERROR("tinyobjloader: {}", error);
             }
@@ -44,9 +44,9 @@ namespace Engine::Graphics
         Mesh mesh;
 
         // Combine all faces into a single mesh by iterating over all shapes
-        for(const auto& shape : shapes)
+        for (const auto& shape : shapes)
         {
-            for(const auto& index : shape.mesh.indices)
+            for (const auto& index : shape.mesh.indices)
             {
                 Vertex vertex{};
 
@@ -63,7 +63,7 @@ namespace Engine::Graphics
                 };
 
                 // Check for duplicate vertex
-                if(!uniqueVertices.contains(vertex))
+                if (!uniqueVertices.contains(vertex))
                 {
                     uniqueVertices[vertex] = (u32)(mesh.Vertices.size());
                     mesh.Vertices.push_back(vertex);

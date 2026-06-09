@@ -1,9 +1,9 @@
 #pragma once
 
-#include <source_location>
-
 #include "Vendor/fmt/include/fmt/color.h"
 #include "Vendor/fmt/include/fmt/core.h"
+
+#include <source_location>
 
 #define LOG_LOCATION() std::source_location::current().file_name(), std::source_location::current().line()
 
@@ -20,7 +20,7 @@
             stdout, fg(fmt::color::crimson) | fmt::emphasis::bold, "\n[ERROR] " msg "\n" __VA_OPT__(, __VA_ARGS__));   \
                                                                                                                        \
         fmt::print(stdout, fg(fmt::color::crimson), "     -> {}:{}\n", LOG_LOCATION());                                \
-    } while(false)
+    } while (false)
 
 #define LOG_ASSERT(msg, ...)                                                                                           \
     do                                                                                                                 \
@@ -29,17 +29,17 @@
             stdout, fg(fmt::color::purple) | fmt::emphasis::bold, "\n[ASSERT] " msg "\n" __VA_OPT__(, __VA_ARGS__));   \
                                                                                                                        \
         fmt::print(stdout, fg(fmt::color::purple), "      -> {}:{}\n", LOG_LOCATION());                                \
-    } while(false)
+    } while (false)
 
 #define ASSERT(condition, ...)                                                                                         \
     do                                                                                                                 \
     {                                                                                                                  \
-        if(!(condition))                                                                                               \
+        if (!(condition))                                                                                              \
         {                                                                                                              \
             LOG_ASSERT(__VA_ARGS__);                                                                                   \
             __builtin_trap();                                                                                          \
         }                                                                                                              \
-    } while(false)
+    } while (false)
 
 #define LOG_HEADER(title, color)                                                                                       \
     do                                                                                                                 \
@@ -49,4 +49,4 @@
         fmt::print(stdout, fg(color) | fmt::emphasis::bold, "##### {:<21} #####\n", title);                            \
                                                                                                                        \
         fmt::print(stdout, fg(color) | fmt::emphasis::bold, "#################################\n");                    \
-    } while(false)
+    } while (false)

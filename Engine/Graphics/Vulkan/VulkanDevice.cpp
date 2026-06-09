@@ -42,7 +42,7 @@ namespace Engine::Graphics
         });
 
         // If transfer uses a different queue, add it too
-        if(queueFamilyIndices.GraphicsFamily != queueFamilyIndices.TransferFamily)
+        if (queueFamilyIndices.GraphicsFamily != queueFamilyIndices.TransferFamily)
         {
             queueCreateInfos.push_back({
                 .queueFamilyIndex = (u32)queueFamilyIndices.TransferFamily,

@@ -45,7 +45,7 @@ namespace Engine::Math
 
     void ScalarGrid::Fill(float value)
     {
-        for(float& index : _data)
+        for (float& index : _data)
         {
             index = value;
         }

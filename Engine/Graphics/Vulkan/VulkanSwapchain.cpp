@@ -26,8 +26,8 @@ namespace
         properties.ImageCount = swapchainSupport.Capabilities.minImageCount + 1;
 
         // Make sure to not exceed bounds (0 := means no limit)
-        if(swapchainSupport.Capabilities.maxImageCount > 0
-           && properties.ImageCount > swapchainSupport.Capabilities.maxImageCount)
+        if (swapchainSupport.Capabilities.maxImageCount > 0
+            && properties.ImageCount > swapchainSupport.Capabilities.maxImageCount)
         {
             properties.ImageCount = swapchainSupport.Capabilities.maxImageCount;
         }
@@ -45,22 +45,22 @@ namespace
 
         auto* swapchain = (Engine::Graphics::VulkanSwapchain*)glfwGetWindowUserPointer(window);
 
-        if(width == 0 || height == 0)
+        if (width == 0 || height == 0)
         {
             Engine::Platform::Window::SetMinimize(true);
             LOG_INFO("GLFW::FramebufferResizeCallback(): Window got minimized ...");
             return;
         }
 
-        if(Engine::Platform::Window::IsMinimized())
+        if (Engine::Platform::Window::IsMinimized())
         {
             // Reset minimize
             Engine::Platform::Window::SetMinimize(false);
             LOG_INFO("GLFW::FramebufferResizeCallback(): Window no longer minimized ...");
         }
 
-        if(swapchain->GetProperties().Extent.width != (Engine::u32)width
-           || swapchain->GetProperties().Extent.height != (Engine::u32)height)
+        if (swapchain->GetProperties().Extent.width != (Engine::u32)width
+            || swapchain->GetProperties().Extent.height != (Engine::u32)height)
         {
             LOG_WARN("GLFW::FramebufferResizeCallback: Window got resized ... ({}x{})", width, height);
             Engine::Platform::Window::SetWidth((Engine::u32)width);
@@ -95,7 +95,7 @@ namespace Engine::Graphics
         DestroyImages();
 
         // Destroy sync objects
-        for(size_t i = 0; i < FRAMES_IN_FLIGHT; i++)
+        for (size_t i = 0; i < FRAMES_IN_FLIGHT; i++)
         {
             m_Device->GetHandle().destroySemaphore(m_Frames.at(i).ImageAvailable);
             m_Device->GetHandle().destroyFence(m_Frames.at(i).InFlight);
@@ -160,7 +160,7 @@ namespace Engine::Graphics
         const vk::Result res = m_Device->GetHandle().acquireNextImageKHR(
             m_CurrentSwapchain, UINT64_MAX, frame.ImageAvailable, nullptr, &imageIndex);
 
-        if(res == vk::Result::eErrorOutOfDateKHR)
+        if (res == vk::Result::eErrorOutOfDateKHR)
         {
             LOG_WARN("vkAcquireNextImageKHR initialized swapchain recreation ...");
             RecreateSwapchain();
@@ -212,7 +212,7 @@ namespace Engine::Graphics
 
         // Present
         const vk::Result res = m_Device->GetGraphicsQueue().presentKHR(&presentInfo);
-        if(res == vk::Result::eErrorOutOfDateKHR || res == vk::Result::eSuboptimalKHR || m_Resized)
+        if (res == vk::Result::eErrorOutOfDateKHR || res == vk::Result::eSuboptimalKHR || m_Resized)
         {
             LOG_WARN("vkQueuePresentKHR initialized swapchain recreation ...");
             m_Resized = false;
@@ -256,7 +256,7 @@ namespace Engine::Graphics
                  vk::to_string(m_Properties.SurfaceFormat.colorSpace),
                  vk::to_string(m_Properties.PresentMode));
 
-        if(m_OldSwapchain != nullptr)
+        if (m_OldSwapchain != nullptr)
         {
             DestroyImages();
             m_Device->GetHandle().destroySwapchainKHR(m_OldSwapchain);
@@ -266,7 +266,7 @@ namespace Engine::Graphics
     void VulkanSwapchain::DestroyImages()
     {
         // Destroy image views
-        for(auto& image : m_Images)
+        for (auto& image : m_Images)
         {
             m_Device->GetHandle().destroyImageView(image.View);
             m_Device->GetHandle().destroySemaphore(image.RenderFinished);
@@ -294,7 +294,7 @@ namespace Engine::Graphics
         m_Images.reserve(images.size());
 
         // Create an image view for every image in the swapchain
-        for(const auto& image : images)
+        for (const auto& image : images)
         {
             const vk::ImageViewCreateInfo viewCreateInfo = { .image            = image,
                                                              .viewType         = vk::ImageViewType::e2D,
@@ -354,7 +354,7 @@ namespace Engine::Graphics
         const vk::FenceCreateInfo fenceInfo{ .flags = vk::FenceCreateFlagBits::eSignaled };
 
         // Create sync objects
-        for(u32 i = 0; i < FRAMES_IN_FLIGHT; i++)
+        for (u32 i = 0; i < FRAMES_IN_FLIGHT; i++)
         {
             VK_VERIFY(m_Device->GetHandle().createSemaphore(&semaphoreInfo, nullptr, &m_Frames[i].ImageAvailable));
             VK_VERIFY(m_Device->GetHandle().createFence(&fenceInfo, nullptr, &m_Frames[i].InFlight));
@@ -369,7 +369,7 @@ namespace Engine::Graphics
         ASSERT(!commandBuffers.empty(), "Allocated command buffer vector was empty!");
 
         // Copy command buffers in frame struct
-        for(u32 i = 0; i < FRAMES_IN_FLIGHT; i++)
+        for (u32 i = 0; i < FRAMES_IN_FLIGHT; i++)
         {
             m_Frames[i].CommandBuffer = commandBuffers.at(i);
         }

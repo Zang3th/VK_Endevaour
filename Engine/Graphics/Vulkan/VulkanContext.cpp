@@ -22,7 +22,7 @@ namespace Engine::Graphics
         CreateInstance();
         CreateSurface();
 
-        if(ENABLE_VALIDATION_LAYERS)
+        if (ENABLE_VALIDATION_LAYERS)
         {
             CreateDebugMessenger();
         }
@@ -46,7 +46,7 @@ namespace Engine::Graphics
         m_Device.reset();
         m_PhysicalDevice.reset();
 
-        if(ENABLE_VALIDATION_LAYERS)
+        if (ENABLE_VALIDATION_LAYERS)
         {
             m_Instance.destroyDebugUtilsMessengerEXT(m_DebugMessenger, nullptr);
         }
@@ -68,7 +68,7 @@ namespace Engine::Graphics
 
     void VulkanContext::CreateInstance()
     {
-        if(ENABLE_VALIDATION_LAYERS)
+        if (ENABLE_VALIDATION_LAYERS)
         {
             ASSERT(VulkanDebug::CheckValidationLayerSupport(g_ValidationLayers),
                    "Validation layers were requested, but not available!");

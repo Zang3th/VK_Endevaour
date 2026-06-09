@@ -26,7 +26,7 @@ namespace
 
     inline VmaMemoryUsage MapMemoryUsage(Engine::Graphics::MemoryUsage usage)
     {
-        switch(usage)
+        switch (usage)
         {
         case Engine::Graphics::MemoryUsage::eUnknown:
             return VMA_MEMORY_USAGE_UNKNOWN;

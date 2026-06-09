@@ -69,16 +69,18 @@ IncludeCategories:
     Priority: 4
   - Regex: '^[<"]Graphics/Vulkan/.*[>"]'
     Priority: 5
-  - Regex: '^[<"]Platform/.*[>"]'
+  - Regex: '^[<"]Math/.*[>"]'
     Priority: 6
-  - Regex: '^<vulkan/.*>'
+  - Regex: '^[<"]Platform/.*[>"]'
     Priority: 7
-  - Regex: '^<[^/]+>' # STL / libc++
-    Priority: 8
   - Regex: '^[<"]Vendor/.*[>"]'
+    Priority: 8
+  - Regex: '^<vulkan/.*>'
     Priority: 9
-  - Regex: '.*'
+  - Regex: '^<[^/]+>' # STL / libc++
     Priority: 10
+  - Regex: '.*'
+    Priority: 11
 
 # =========================
 # Indentation & Access
@@ -148,7 +150,7 @@ SpaceBeforeAssignmentOperators: true
 SpaceBeforeCpp11BracedList: false
 SpaceBeforeCtorInitializerColon: true
 SpaceBeforeInheritanceColon: true
-SpaceBeforeParens: Never
+SpaceBeforeParens: ControlStatements
 SpaceBeforeRangeBasedForLoopColon: true
 SpaceBeforeSquareBrackets: false
 SpaceInEmptyBlock: false

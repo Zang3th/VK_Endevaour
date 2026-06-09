@@ -38,7 +38,7 @@ namespace Engine::Platform
 
     bool Window::ShouldClose()
     {
-        if((glfwWindowShouldClose(m_Window)) || (glfwGetKey(m_Window, GLFW_KEY_ESCAPE) == GLFW_PRESS))
+        if ((glfwWindowShouldClose(m_Window)) || (glfwGetKey(m_Window, GLFW_KEY_ESCAPE) == GLFW_PRESS))
         {
             LOG_INFO("Closed GLFW window ...");
             return true;

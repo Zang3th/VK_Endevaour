@@ -9,7 +9,7 @@ namespace Engine::Graphics
     vk::Extent2D VulkanSwapchainUtils::ChooseExtent(vk::SurfaceCapabilitiesKHR capabilities)
     {
         // Swapchain dimensions are fixed by the surface. Don't change anything
-        if(capabilities.currentExtent.width != std::numeric_limits<u32>::max())
+        if (capabilities.currentExtent.width != std::numeric_limits<u32>::max())
         {
             LOG_WARN("Swapchain dimensions are fixed by the surface ...");
             return capabilities.currentExtent;
@@ -30,10 +30,10 @@ namespace Engine::Graphics
         const std::vector<vk::SurfaceFormatKHR>& surfaceFormats)
     {
         // Check if prefered format is available
-        for(const auto& surfaceFormat : surfaceFormats)
+        for (const auto& surfaceFormat : surfaceFormats)
         {
-            if(surfaceFormat.format == vk::Format::eB8G8R8A8Srgb
-               && surfaceFormat.colorSpace == vk::ColorSpaceKHR::eSrgbNonlinear)
+            if (surfaceFormat.format == vk::Format::eB8G8R8A8Srgb
+                && surfaceFormat.colorSpace == vk::ColorSpaceKHR::eSrgbNonlinear)
             {
                 return surfaceFormat;
             }
@@ -46,9 +46,9 @@ namespace Engine::Graphics
     vk::PresentModeKHR VulkanSwapchainUtils::ChoosePresentMode(const std::vector<vk::PresentModeKHR>& presentModes)
     {
         // Check if mailbox mode aka triple buffering is available
-        for(const auto& presentMode : presentModes)
+        for (const auto& presentMode : presentModes)
         {
-            if(presentMode == vk::PresentModeKHR::eMailbox)
+            if (presentMode == vk::PresentModeKHR::eMailbox)
             {
                 return presentMode;
             }

@@ -9,7 +9,7 @@ namespace Engine::Graphics
 #define VK_VERIFY(func)                                                                                                \
     {                                                                                                                  \
         const vk::Result VK_VerifyResult = (func);                                                                     \
-        if(VK_VerifyResult != vk::Result::eSuccess)                                                                    \
+        if (VK_VerifyResult != vk::Result::eSuccess)                                                                   \
         {                                                                                                              \
             LOG_ERROR("######################");                                                                       \
             LOG_ERROR("##### VK_VERFIY ######");                                                                       \

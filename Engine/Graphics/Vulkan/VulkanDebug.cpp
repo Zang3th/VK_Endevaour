@@ -48,13 +48,13 @@ namespace Engine::Graphics
         std::vector<VkLayerProperties> availableLayers(layerCount);
         vkEnumerateInstanceLayerProperties(&layerCount, availableLayers.data());
 
-        for(const char* layerName : validationLayers)
+        for (const char* layerName : validationLayers)
         {
             bool layerFound = false;
 
-            for(const auto& layerProperties : availableLayers)
+            for (const auto& layerProperties : availableLayers)
             {
-                if(strcmp(layerName, layerProperties.layerName) == 0)
+                if (strcmp(layerName, layerProperties.layerName) == 0)
                 {
                     LOG_INFO("Found requested validation layer ... ({})", layerName);
                     layerFound = true;
@@ -62,7 +62,7 @@ namespace Engine::Graphics
                 }
             }
 
-            if(!layerFound)
+            if (!layerFound)
             {
                 LOG_ERROR("Validation layer is missing: {}", layerName);
                 return false;
@@ -79,13 +79,13 @@ namespace Engine::Graphics
 
         std::vector<const char*> extensions(glfwExtensions, glfwExtensions + glfwExtensionCount);
 
-        if(ENABLE_VALIDATION_LAYERS)
+        if (ENABLE_VALIDATION_LAYERS)
         {
             // Add the debug messenger extension conditionally
             extensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
 
             // Log extensions
-            for(const auto& ext : extensions)
+            for (const auto& ext : extensions)
             {
                 LOG_INFO("Application requires instance extension: {} ...", ext);
             }
