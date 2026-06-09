@@ -16,6 +16,9 @@ namespace Engine::Graphics
         VulkanContext();
         ~VulkanContext();
 
+        VulkanContext(const VulkanContext&)            = delete;
+        VulkanContext& operator=(const VulkanContext&) = delete;
+
         [[nodiscard]] const vk::Instance&    GetInstance() const { return m_Instance; }
         [[nodiscard]] const vk::SurfaceKHR&  GetSurface() const { return m_Surface; }
         [[nodiscard]] const VulkanDevice*    GetDevice() const { return m_Device.get(); }

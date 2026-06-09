@@ -11,6 +11,9 @@ namespace Engine::Graphics
         ImGuiLayer(VulkanContext* context);
         ~ImGuiLayer();
 
+        ImGuiLayer(const ImGuiLayer&)            = delete;
+        ImGuiLayer& operator=(const ImGuiLayer&) = delete;
+
         void BeginFrame();
         void EndFrame(vk::CommandBuffer commandBuffer);
 

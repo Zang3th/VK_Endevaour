@@ -15,6 +15,9 @@ namespace Engine::Graphics
         VulkanModel(VulkanContext* context, const Mesh* mesh);
         ~VulkanModel();
 
+        VulkanModel(const VulkanModel&)            = delete;
+        VulkanModel& operator=(const VulkanModel&) = delete;
+
         void Bind(vk::CommandBuffer commandBuffer) const;
 
         [[nodiscard]] vk::Buffer GetVertexBuffer() const { return m_VertexBuffer; };

@@ -12,6 +12,9 @@ namespace Engine::Graphics
         VulkanShader(const vk::Device& device, vk::ShaderStageFlagBits stage, const std::filesystem::path& path);
         ~VulkanShader();
 
+        VulkanShader(const VulkanShader&)            = delete;
+        VulkanShader& operator=(const VulkanShader&) = delete;
+
         [[nodiscard]] vk::PipelineShaderStageCreateInfo GetPipelineShaderStageCreateInfo();
 
     private:

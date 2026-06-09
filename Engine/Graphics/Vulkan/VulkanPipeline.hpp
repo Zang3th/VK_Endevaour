@@ -20,6 +20,9 @@ namespace Engine::Graphics
         explicit VulkanPipeline(VulkanContext* context, const PipelineSpecification& spec);
         ~VulkanPipeline();
 
+        VulkanPipeline(const VulkanPipeline&)            = delete;
+        VulkanPipeline& operator=(const VulkanPipeline&) = delete;
+
         void Bind(vk::CommandBuffer commandBuffer) const;
 
     private:

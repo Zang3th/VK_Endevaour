@@ -10,6 +10,9 @@ namespace Engine::Graphics
         explicit VulkanDevice(const VulkanPhysicalDevice* physicalDevice);
         ~VulkanDevice();
 
+        VulkanDevice(const VulkanDevice&)            = delete;
+        VulkanDevice& operator=(const VulkanDevice&) = delete;
+
         [[nodiscard]] const vk::Device&           GetHandle() const { return m_Device; }
         [[nodiscard]] const vk::Queue&            GetGraphicsQueue() const { return m_GraphicsQueue; }
         [[nodiscard]] const vk::Queue&            GetTransferQueue() const { return m_TransferQueue; }

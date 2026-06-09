@@ -14,6 +14,9 @@ namespace Engine::Graphics
         VulkanSwapchain(const VulkanDevice* device, const vk::SurfaceKHR& surface);
         ~VulkanSwapchain();
 
+        VulkanSwapchain(const VulkanSwapchain&)            = delete;
+        VulkanSwapchain& operator=(const VulkanSwapchain&) = delete;
+
         [[nodiscard]] const vk::SwapchainKHR&    GetHandle() const { return m_CurrentSwapchain; };
         [[nodiscard]] const SwapchainProperties& GetProperties() const { return m_Properties; };
         [[nodiscard]] const SwapchainImage&      GetImageAt(u32 index) const { return m_Images.at(index); };
