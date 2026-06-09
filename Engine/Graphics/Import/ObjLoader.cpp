@@ -54,6 +54,7 @@ namespace Engine::Graphics
                                     attrib.vertices[(3 * index.vertex_index) + 1],
                                     attrib.vertices[(3 * index.vertex_index) + 2] };
 
+                // For debug purposes
                 vertex.Color = vertex.Position;
 
                 vertex.TexCoord = {

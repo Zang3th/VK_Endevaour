@@ -15,34 +15,38 @@
 
 ---
 
-## v0.2 — Pixel Renderer & UI
-
-- ImGui Integration
-  - Profiling
-- PixelRenderer
-
----
-
-## v0.3 — Testing & Math Infrastructure
+## v0.2 — UI & Debug Infrastructure
 
 - ~Testing Framework~
-- Internal Math Library:
+- ~Internal Math Library:~
   - ~Scalar Grid~
-  - Staggered Grid
-  - Iterative Solvers
-  - Numerical Validation
+- Vulkan:
+  - Descriptor Pools
+- ImGui Integration
+- Profiler
 
 ---
 
-## v0.4 — Eulerian Fluid Simulation
+## v0.3 — GPU Terrain Foundation
 
-- 2D Grid Simulation
-- Velocity Field
-- Pressure Solver
-- Advection
-- Diffusion
-- Boundary Conditions
-- Simulation Visualization
+- Vulkan:
+  - UniformBuffer
+  - StorageBuffer
+  - StorageImage
+  - SampledImage
+- CPU terrain metadata
+- GPU terrain resource model
+- Compute pipeline infrastructure
+- Storage buffers/images for generated data
+
+---
+
+## v0.4 — Procedural Heightfield Generation
+
+- GPU noise generation
+- Heightmap storage images
+- Normal generation
+- Basic debug visualization
 
 ---
 
