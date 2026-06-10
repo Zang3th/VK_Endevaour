@@ -22,21 +22,16 @@
         fmt::print(stdout, fg(fmt::color::crimson), "     -> {}:{}\n", LOG_LOCATION());                                \
     } while (false)
 
-#define LOG_ASSERT(msg, ...)                                                                                           \
-    do                                                                                                                 \
-    {                                                                                                                  \
-        fmt::print(                                                                                                    \
-            stdout, fg(fmt::color::purple) | fmt::emphasis::bold, "\n[ASSERT] " msg "\n" __VA_OPT__(, __VA_ARGS__));   \
-                                                                                                                       \
-        fmt::print(stdout, fg(fmt::color::purple), "      -> {}:{}\n", LOG_LOCATION());                                \
-    } while (false)
-
-#define ASSERT(condition, ...)                                                                                         \
+#define ASSERT(condition, msg, ...)                                                                                    \
     do                                                                                                                 \
     {                                                                                                                  \
         if (!(condition))                                                                                              \
         {                                                                                                              \
-            LOG_ASSERT(__VA_ARGS__);                                                                                   \
+            fmt::print(stdout,                                                                                         \
+                       fg(fmt::color::purple) | fmt::emphasis::bold,                                                   \
+                       "\n[ASSERT] " msg "\n" __VA_OPT__(, __VA_ARGS__));                                              \
+                                                                                                                       \
+            fmt::print(stdout, fg(fmt::color::purple), "      -> {}:{}\n", LOG_LOCATION());                            \
             __builtin_trap();                                                                                          \
         }                                                                                                              \
     } while (false)

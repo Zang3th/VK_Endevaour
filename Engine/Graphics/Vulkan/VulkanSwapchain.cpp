@@ -41,7 +41,8 @@ namespace
     void FramebufferResizeCallback(GLFWwindow* window, int width, int height)
     {
         // Only one window is supported
-        ASSERT(window == Engine::Platform::Window::GetHandle());
+        ASSERT(window == Engine::Platform::Window::GetHandle(),
+               "GLFW::FramebufferResizeCallback(): Received multiple windows ...");
 
         auto* swapchain = (Engine::Graphics::VulkanSwapchain*)glfwGetWindowUserPointer(window);
 
