@@ -108,7 +108,7 @@ namespace Engine::Graphics
 
     [[nodiscard]] bool VulkanPhysicalDevice::IsDeviceSuitable(vk::PhysicalDevice device) const
     {
-        return m_QueueFamilyIndices.IsComplete() && QuerySwapchainSupport(device).isComplete()
+        return m_QueueFamilyIndices.IsComplete() && QuerySwapchainSupport(device).IsComplete()
                && CheckDeviceExtensionSupport(device);
     }
 

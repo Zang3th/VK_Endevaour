@@ -23,6 +23,7 @@ namespace Engine::Graphics
     void VulkanDevice::WaitForIdle() const
     {
         VK_VERIFY(m_Device.waitIdle());
+        LOG_VERBOSE("DeviceWaitIdle returned successfully ...");
     }
 
     // ----- Private -----

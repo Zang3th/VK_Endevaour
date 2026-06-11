@@ -8,15 +8,18 @@
 
 namespace Engine::Graphics
 {
+    // Capabilities and options reported by the physical device for the current surface.
+    // Used to choose the concrete swapchain properties during creation/recreation.
     struct SwapchainSupport
     {
         vk::SurfaceCapabilitiesKHR        Capabilities;
         std::vector<vk::SurfaceFormatKHR> Formats;
         std::vector<vk::PresentModeKHR>   PresentModes;
 
-        [[nodiscard]] b8 isComplete() const { return (!Formats.empty() && !PresentModes.empty()); };
+        [[nodiscard]] b8 IsComplete() const { return (!Formats.empty() && !PresentModes.empty()); };
     };
 
+    // These values describe the current swapchain and may change during recreation.
     struct SwapchainProperties
     {
         vk::Extent2D                    Extent        = { .width = 0, .height = 0 };
@@ -26,10 +29,11 @@ namespace Engine::Graphics
         vk::SurfaceTransformFlagBitsKHR Transform     = vk::SurfaceTransformFlagBitsKHR::eIdentity;
 
         static constexpr u32 ColorAttachmentCount = 1; // WARN: Hardcoded for now. Will break for values > 1
-                                                       //
+
         u32 MinImageCount = 0;
     };
 
+    // Per-swapchain-image resources. The swapchain owns a vector of these.
     struct SwapchainImage
     {
         vk::Image     Image          = nullptr;
@@ -37,9 +41,9 @@ namespace Engine::Graphics
         vk::Semaphore RenderFinished = nullptr;
     };
 
-    // Per-frame CPU/GPU synchronization resources.
+    // Per-frame-in-flight CPU/GPU synchronization and command recording resources.
     // This is independent from the acquired swapchain image.
-    // The actual image index is returned by vkAcquireNextImageKHR per frame.
+    // The actual swapchain image index is returned by vkAcquireNextImageKHR per frame.
     struct VulkanFrameResources
     {
         vk::CommandBuffer CommandBuffer  = nullptr;
@@ -47,6 +51,9 @@ namespace Engine::Graphics
         vk::Fence         InFlight       = nullptr;
     };
 
+    // Transient frame context returned after acquiring a swapchain image.
+    // Combines the current frame-in-flight resources with the acquired image index.
+    // Valid only for the frame in which it was returned.
     struct SwapchainFrame
     {
         VulkanFrameResources* Resources  = nullptr;

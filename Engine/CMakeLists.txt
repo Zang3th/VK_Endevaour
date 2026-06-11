@@ -13,6 +13,9 @@ file(
 # Compile to a static library
 add_library(Engine STATIC ${ENGINE_SOURCES})
 
+# Important because I include everything myself
+target_compile_definitions(Engine PRIVATE GLFW_INCLUDE_NONE)
+
 # Configure fmt
 set(FMT_TEST OFF CACHE BOOL "" FORCE)
 set(FMT_DOC OFF CACHE BOOL "" FORCE)
