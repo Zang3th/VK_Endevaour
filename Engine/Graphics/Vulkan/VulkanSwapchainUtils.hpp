@@ -22,7 +22,9 @@ namespace Engine::Graphics
                                                           .colorSpace = vk::ColorSpaceKHR::eSrgbNonlinear };
         vk::PresentModeKHR              PresentMode   = vk::PresentModeKHR::eFifo;
         vk::SurfaceTransformFlagBitsKHR Transform     = vk::SurfaceTransformFlagBitsKHR::eIdentity;
-        u32                             ImageCount    = 0;
+
+        u32 MinImageCount        = 0;
+        u32 ColorAttachmentCount = 1; // Hardcoded for now
     };
 
     struct SwapchainImage

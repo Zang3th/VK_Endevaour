@@ -33,7 +33,7 @@ namespace Engine::Graphics
         // Begin rendering
         const vk::RenderingInfo renderingInfo{ .renderArea = { .offset = { .x = 0, .y = 0 }, .extent = extent },
                                                .layerCount = 1,
-                                               .colorAttachmentCount = 1,
+                                               .colorAttachmentCount = 1, // TODO: Needs rework
                                                .pColorAttachments    = &colorAttachment };
 
         CommandBuffer.beginRendering(&renderingInfo);

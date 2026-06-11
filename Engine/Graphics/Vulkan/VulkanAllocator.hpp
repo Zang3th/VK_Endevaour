@@ -30,7 +30,7 @@ namespace Engine::Graphics
     public:
         VulkanAllocator() = delete;
 
-        static void Init(const VulkanDevice* device, vk::Instance instance);
+        static void Init(const VulkanDevice* device, vk::Instance instance, u32 apiVersion);
         static void Shutdown();
 
         static std::pair<vk::Buffer, VmaAllocation> AllocateBuffer(vk::DeviceSize       size,

@@ -22,14 +22,14 @@ namespace
         properties.PresentMode =
             Engine::Graphics::VulkanSwapchainUtils::ChoosePresentMode(swapchainSupport.PresentModes);
 
-        // Specify amount of images in swapchain
-        properties.ImageCount = swapchainSupport.Capabilities.minImageCount + 1;
+        // Specify minimum amount of images in swapchain
+        properties.MinImageCount = swapchainSupport.Capabilities.minImageCount + 1;
 
         // Make sure to not exceed bounds (0 := means no limit)
         if (swapchainSupport.Capabilities.maxImageCount > 0
-            && properties.ImageCount > swapchainSupport.Capabilities.maxImageCount)
+            && properties.MinImageCount > swapchainSupport.Capabilities.maxImageCount)
         {
-            properties.ImageCount = swapchainSupport.Capabilities.maxImageCount;
+            properties.MinImageCount = swapchainSupport.Capabilities.maxImageCount;
         }
 
         // Save current transform
@@ -42,7 +42,7 @@ namespace
     {
         // Only one window is supported
         ASSERT(window == Engine::Platform::Window::GetHandle(),
-               "GLFW::FramebufferResizeCallback(): Received multiple windows ...");
+               "GLFW::FramebufferResizeCallback(): Received the wrong window ...");
 
         auto* swapchain = (Engine::Graphics::VulkanSwapchain*)glfwGetWindowUserPointer(window);
 
@@ -235,7 +235,7 @@ namespace Engine::Graphics
         m_OldSwapchain = m_CurrentSwapchain;
 
         const vk::SwapchainCreateInfoKHR swapchainCreate{ .surface          = m_Surface,
-                                                          .minImageCount    = m_Properties.ImageCount,
+                                                          .minImageCount    = m_Properties.MinImageCount,
                                                           .imageFormat      = m_Properties.SurfaceFormat.format,
                                                           .imageColorSpace  = m_Properties.SurfaceFormat.colorSpace,
                                                           .imageExtent      = m_Properties.Extent,
@@ -317,7 +317,7 @@ namespace Engine::Graphics
             m_Images.emplace_back(SwapchainImage{ .Image = image, .View = view, .RenderFinished = renderFinished });
         }
 
-        LOG_INFO("Created {} swapchain image view(s) and render-finished semaphore(s) ...", images.size());
+        LOG_INFO("Created {} swapchain image view(s) with render-finished semaphore(s) ...", m_Images.size());
     }
 
     void VulkanSwapchain::CreateCommandPools()

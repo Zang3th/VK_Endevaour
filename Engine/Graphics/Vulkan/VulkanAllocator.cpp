@@ -56,13 +56,13 @@ namespace Engine::Graphics
 {
     // ----- Public -----
 
-    void VulkanAllocator::Init(const VulkanDevice* device, vk::Instance instance)
+    void VulkanAllocator::Init(const VulkanDevice* device, vk::Instance instance, u32 apiVersion)
     {
         VmaAllocatorCreateInfo allocatorInfo{};
         allocatorInfo.physicalDevice   = device->GetPhysicalDevice()->GetHandle();
         allocatorInfo.device           = device->GetHandle();
         allocatorInfo.instance         = instance;
-        allocatorInfo.vulkanApiVersion = VK_API_VERSION_1_4;
+        allocatorInfo.vulkanApiVersion = apiVersion;
 
         VK_VERIFY((vk::Result)(vmaCreateAllocator(&allocatorInfo, &s_Allocator)));
         LOG_INFO("Created allocator with vma ...");

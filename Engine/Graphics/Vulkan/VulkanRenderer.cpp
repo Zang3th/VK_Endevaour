@@ -121,7 +121,8 @@ namespace Engine::Graphics
 
         // ImGui rendering
         m_ImGuiLayer->BeginFrame();
-        m_ImGuiLayer->EndFrame(frame.CommandBuffer);
+        // TODO: Render ProfilerPanel
+        m_ImGuiLayer->RenderFrame(frame.CommandBuffer);
 
         // End frame
         frame.End(m_Swapchain->GetImageAt(*imageIndex));

@@ -27,6 +27,8 @@ namespace Engine::Graphics
         [[nodiscard]] VulkanFrame&       GetCurrentFrame();
         [[nodiscard]] std::optional<u32> AcquireImage(const VulkanFrame& frame);
 
+        [[nodiscard]] u32 GetImageCount() const { return m_Images.size(); }
+
         void ResetFrame(const VulkanFrame& frame);
         void SubmitFrame(const VulkanFrame& frame, u32 imageIndex);
         void PresentFrame(u32 imageIndex);

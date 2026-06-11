@@ -43,9 +43,10 @@ namespace Engine::Graphics
     {
         // ----- Construct the different states making up the pipeline (using dynamic rendering) -----
 
-        // Pipeline rendering info (for dynamic rendering)
-        const vk::Format                      format = m_Context->GetSwapchain()->GetProperties().SurfaceFormat.format;
-        const vk::PipelineRenderingCreateInfo renderingInfo{ .colorAttachmentCount    = 1,
+        // Dynamic rendering specification
+        const vk::Format format               = m_Context->GetSwapchain()->GetProperties().SurfaceFormat.format;
+        const u32        colorAttachmentCount = m_Context->GetSwapchain()->GetProperties().ColorAttachmentCount;
+        const vk::PipelineRenderingCreateInfo renderingInfo{ .colorAttachmentCount    = colorAttachmentCount,
                                                              .pColorAttachmentFormats = &format };
 
         // Shader stages
@@ -97,7 +98,7 @@ namespace Engine::Graphics
         };
 
         // Color blend state
-        const vk::PipelineColorBlendStateCreateInfo colorBlendState{ .attachmentCount = 1,
+        const vk::PipelineColorBlendStateCreateInfo colorBlendState{ .attachmentCount = colorAttachmentCount,
                                                                      .pAttachments    = &blendAttachment };
 
         // Specify dynamic states (can be changed without recreating the whole pipeline)

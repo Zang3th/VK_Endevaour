@@ -15,12 +15,11 @@ namespace Engine::Graphics
         ImGuiLayer& operator=(const ImGuiLayer&) = delete;
 
         void BeginFrame();
-        void EndFrame(vk::CommandBuffer commandBuffer);
+        void RenderFrame(vk::CommandBuffer commandBuffer);
 
     private:
         void CreateDescriptorPool();
         void Init();
-        void Shutdown();
 
         VulkanContext*              m_Context;
         Scope<VulkanDescriptorPool> m_DescriptorPool;
