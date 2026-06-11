@@ -1,8 +1,10 @@
 #pragma once
 
 #include "Graphics/Vulkan/VulkanDevice.hpp"
-#include "Graphics/Vulkan/VulkanFrame.hpp"
 #include "Graphics/Vulkan/VulkanGlobals.hpp"
+#include "Graphics/Vulkan/VulkanSwapchainStructs.hpp"
+
+#include "Vendor/glm/vec4.hpp"
 
 #include <optional>
 
@@ -19,20 +21,17 @@ namespace Engine::Graphics
 
         [[nodiscard]] const vk::SwapchainKHR&    GetHandle() const { return m_CurrentSwapchain; };
         [[nodiscard]] const SwapchainProperties& GetProperties() const { return m_Properties; };
-        [[nodiscard]] const SwapchainImage&      GetImageAt(u32 index) const { return m_Images.at(index); };
+
+        [[nodiscard]] u32 GetImageCount() const { return m_Images.size(); }
 
         [[nodiscard]] vk::CommandBuffer CreateTransferCommandBuffer();
         void                            SubmitTransferCommandBuffer(vk::CommandBuffer commandBuffer);
 
-        [[nodiscard]] VulkanFrame&       GetCurrentFrame();
-        [[nodiscard]] std::optional<u32> AcquireImage(const VulkanFrame& frame);
+        [[nodiscard]] std::optional<SwapchainFrame> BeginFrame();
 
-        [[nodiscard]] u32 GetImageCount() const { return m_Images.size(); }
-
-        void ResetFrame(const VulkanFrame& frame);
-        void SubmitFrame(const VulkanFrame& frame, u32 imageIndex);
-        void PresentFrame(u32 imageIndex);
-        void AdvanceFrameCount();
+        void BeginRendering(const SwapchainFrame& frame, glm::vec4 clearColor = { 1.0f, 1.0f, 1.0f, 1.0f });
+        void EndRendering(const SwapchainFrame& frame);
+        void SubmitAndPresent(const SwapchainFrame& frame);
 
         void SetResizeFlag() { m_Resized = true; };
 
@@ -43,6 +42,7 @@ namespace Engine::Graphics
         void DestroyImages();
         void CreateCommandPools();
         void InitializeFrames();
+        void AdvanceFrameCount();
 
         // Handles
         const VulkanDevice*   m_Device  = nullptr;
@@ -63,7 +63,7 @@ namespace Engine::Graphics
         std::vector<SwapchainImage> m_Images;
 
         // Frames
-        std::array<VulkanFrame, FRAMES_IN_FLIGHT> m_Frames;
-        u32                                       m_CurrentFrame = 0;
+        std::array<VulkanFrameResources, FRAMES_IN_FLIGHT> m_FrameResources;
+        u32                                                m_CurrentFrame = 0;
     };
 }

@@ -1,5 +1,6 @@
 #include "Graphics/Vulkan/VulkanAssert.hpp"
 #include "Graphics/Vulkan/VulkanSwapchain.hpp"
+#include "Graphics/Vulkan/VulkanSwapchainUtils.hpp"
 
 #include "Platform/Window.hpp"
 
@@ -98,8 +99,8 @@ namespace Engine::Graphics
         // Destroy sync objects
         for (size_t i = 0; i < FRAMES_IN_FLIGHT; i++)
         {
-            m_Device->GetHandle().destroySemaphore(m_Frames.at(i).ImageAvailable);
-            m_Device->GetHandle().destroyFence(m_Frames.at(i).InFlight);
+            m_Device->GetHandle().destroySemaphore(m_FrameResources.at(i).ImageAvailable);
+            m_Device->GetHandle().destroyFence(m_FrameResources.at(i).InFlight);
         }
 
         // Destroy command pools
@@ -142,24 +143,19 @@ namespace Engine::Graphics
         m_Device->GetHandle().freeCommandBuffers(m_TransferCommandPool, 1, &commandBuffer);
     }
 
-    [[nodiscard]] VulkanFrame& VulkanSwapchain::GetCurrentFrame()
+    [[nodiscard]] std::optional<SwapchainFrame> VulkanSwapchain::BeginFrame()
     {
-        // Get current frame
-        VulkanFrame& currentFrame = m_Frames.at(m_CurrentFrame);
+        // Get current frame resources
+        VulkanFrameResources* currentFrameResources = &m_FrameResources.at(m_CurrentFrame);
 
         // Wait for this frame-slot's previous submission to finish
-        VK_VERIFY(m_Device->GetHandle().waitForFences(1, &currentFrame.InFlight, vk::True, UINT64_MAX));
+        VK_VERIFY(m_Device->GetHandle().waitForFences(1, &currentFrameResources->InFlight, vk::True, UINT64_MAX));
 
-        // Return frame
-        return currentFrame;
-    }
-
-    [[nodiscard]] std::optional<u32> VulkanSwapchain::AcquireImage(const VulkanFrame& frame)
-    {
         u32 imageIndex = UINT32_MAX;
 
+        // Try to aquire next image
         const vk::Result res = m_Device->GetHandle().acquireNextImageKHR(
-            m_CurrentSwapchain, UINT64_MAX, frame.ImageAvailable, nullptr, &imageIndex);
+            m_CurrentSwapchain, UINT64_MAX, currentFrameResources->ImageAvailable, nullptr, &imageIndex);
 
         if (res == vk::Result::eErrorOutOfDateKHR)
         {
@@ -171,45 +167,110 @@ namespace Engine::Graphics
         // eSuboptimalKHR still returns a valid image. Defer recreation until present
         ASSERT(res == vk::Result::eSuccess || res == vk::Result::eSuboptimalKHR, "Failed to acquire swapchain image!");
 
-        return imageIndex;
-    }
-
-    void VulkanSwapchain::ResetFrame(const VulkanFrame& frame)
-    {
         // Reset fence
-        VK_VERIFY(m_Device->GetHandle().resetFences(1, &frame.InFlight));
+        VK_VERIFY(m_Device->GetHandle().resetFences(1, &currentFrameResources->InFlight));
 
         // Reset command buffer
-        VK_VERIFY(frame.CommandBuffer.reset());
+        VK_VERIFY(currentFrameResources->CommandBuffer.reset());
+
+        return SwapchainFrame{ .Resources  = currentFrameResources,
+                               .ImageIndex = imageIndex,
+                               .Extent     = m_Properties.Extent };
     }
 
-    void VulkanSwapchain::SubmitFrame(const VulkanFrame& frame, u32 imageIndex)
+    void VulkanSwapchain::BeginRendering(const SwapchainFrame& frame, glm::vec4 clearColor)
     {
+        // Grab shortcut handles to current frame data
+        vk::CommandBuffer cmdBuffer = frame.Resources->CommandBuffer;
+        SwapchainImage    image     = m_Images.at(frame.ImageIndex);
+
+        // Start command buffer recording
+        const vk::CommandBufferBeginInfo cmdBeginInfo{};
+        VK_VERIFY(cmdBuffer.begin(&cmdBeginInfo));
+
+        // Transition image layout from undefined to color
+        VulkanSwapchainUtils::TransitionImageLayout(cmdBuffer,
+                                                    image.Image,
+                                                    vk::ImageLayout::eUndefined,
+                                                    vk::ImageLayout::eColorAttachmentOptimal,
+                                                    vk::AccessFlagBits2::eNone,
+                                                    vk::AccessFlagBits2::eColorAttachmentWrite,
+                                                    vk::PipelineStageFlagBits2::eTopOfPipe,
+                                                    vk::PipelineStageFlagBits2::eColorAttachmentOutput);
+
+        // Set up clear value
+        const vk::ClearValue clearValue{ .color = { { { clearColor.x, clearColor.y, clearColor.z, clearColor.a } } } };
+
+        // Set up rendering attachment info
+        const vk::RenderingAttachmentInfo colorAttachment{ .imageView   = image.View,
+                                                           .imageLayout = vk::ImageLayout::eColorAttachmentOptimal,
+                                                           .loadOp      = vk::AttachmentLoadOp::eClear,
+                                                           .storeOp     = vk::AttachmentStoreOp::eStore,
+                                                           .clearValue  = clearValue };
+
+        // Begin rendering
+        const vk::RenderingInfo renderingInfo{ .renderArea = { .offset = { .x = 0, .y = 0 }, .extent = frame.Extent },
+                                               .layerCount = 1,
+                                               .colorAttachmentCount = m_Properties.ColorAttachmentCount,
+                                               .pColorAttachments    = &colorAttachment };
+
+        cmdBuffer.beginRendering(&renderingInfo);
+    }
+
+    void VulkanSwapchain::EndRendering(const SwapchainFrame& frame)
+    {
+        // Grab shortcut handles to current frame data
+        vk::CommandBuffer cmdBuffer = frame.Resources->CommandBuffer;
+        SwapchainImage    image     = m_Images.at(frame.ImageIndex);
+
+        // Finish up rendering
+        cmdBuffer.endRendering();
+
+        // Transition image layout from color to present
+        VulkanSwapchainUtils::TransitionImageLayout(cmdBuffer,
+                                                    image.Image,
+                                                    vk::ImageLayout::eColorAttachmentOptimal,
+                                                    vk::ImageLayout::ePresentSrcKHR,
+                                                    vk::AccessFlagBits2::eColorAttachmentWrite,
+                                                    vk::AccessFlagBits2::eNone,
+                                                    vk::PipelineStageFlagBits2::eColorAttachmentOutput,
+                                                    vk::PipelineStageFlagBits2::eBottomOfPipe);
+
+        // End command buffer recording
+        VK_VERIFY(cmdBuffer.end());
+    }
+
+    void VulkanSwapchain::SubmitAndPresent(const SwapchainFrame& frame)
+    {
+        // Grab shortcut handles to current frame data
+        vk::CommandBuffer cmdBuffer = frame.Resources->CommandBuffer;
+        SwapchainImage    image     = m_Images.at(frame.ImageIndex);
+
         const vk::PipelineStageFlags waitStage{ vk::PipelineStageFlagBits::eColorAttachmentOutput };
 
         // Create submit info
         const vk::SubmitInfo submitInfo{
             .waitSemaphoreCount   = 1,
-            .pWaitSemaphores      = &frame.ImageAvailable, // On which semaphore to wait
+            .pWaitSemaphores      = &frame.Resources->ImageAvailable, // On which semaphore to wait
             .pWaitDstStageMask    = &waitStage,
             .commandBufferCount   = 1,
-            .pCommandBuffers      = &frame.CommandBuffer,
+            .pCommandBuffers      = &cmdBuffer,
             .signalSemaphoreCount = 1,
-            .pSignalSemaphores    = &m_Images.at(imageIndex).RenderFinished // Which semaphore to signal after
+            .pSignalSemaphores    = &image.RenderFinished // Which semaphore to signal after
         };
 
         // Submit frame to queue
-        VK_VERIFY(m_Device->GetGraphicsQueue().submit(1, &submitInfo, frame.InFlight));
-    }
+        VK_VERIFY(m_Device->GetGraphicsQueue().submit(1, &submitInfo, frame.Resources->InFlight));
 
-    void VulkanSwapchain::PresentFrame(u32 imageIndex)
-    {
+        // Advance frame count no matter if presentKHR will trigger a recreate
+        AdvanceFrameCount();
+
         // Create present info
         const vk::PresentInfoKHR presentInfo{ .waitSemaphoreCount = 1,
-                                              .pWaitSemaphores    = &m_Images.at(imageIndex).RenderFinished,
+                                              .pWaitSemaphores    = &image.RenderFinished,
                                               .swapchainCount     = 1,
                                               .pSwapchains        = &m_CurrentSwapchain,
-                                              .pImageIndices      = &imageIndex };
+                                              .pImageIndices      = &frame.ImageIndex };
 
         // Present
         const vk::Result res = m_Device->GetGraphicsQueue().presentKHR(&presentInfo);
@@ -221,11 +282,6 @@ namespace Engine::Graphics
             return;
         }
         ASSERT(res == vk::Result::eSuccess, "Failed to present swapchain image!");
-    }
-
-    void VulkanSwapchain::AdvanceFrameCount()
-    {
-        m_CurrentFrame = (m_CurrentFrame + 1) % FRAMES_IN_FLIGHT;
     }
 
     // ----- Private -----
@@ -357,8 +413,9 @@ namespace Engine::Graphics
         // Create sync objects
         for (u32 i = 0; i < FRAMES_IN_FLIGHT; i++)
         {
-            VK_VERIFY(m_Device->GetHandle().createSemaphore(&semaphoreInfo, nullptr, &m_Frames[i].ImageAvailable));
-            VK_VERIFY(m_Device->GetHandle().createFence(&fenceInfo, nullptr, &m_Frames[i].InFlight));
+            VK_VERIFY(
+                m_Device->GetHandle().createSemaphore(&semaphoreInfo, nullptr, &m_FrameResources[i].ImageAvailable));
+            VK_VERIFY(m_Device->GetHandle().createFence(&fenceInfo, nullptr, &m_FrameResources[i].InFlight));
         }
 
         // Allocate command buffers
@@ -372,9 +429,14 @@ namespace Engine::Graphics
         // Copy command buffers in frame struct
         for (u32 i = 0; i < FRAMES_IN_FLIGHT; i++)
         {
-            m_Frames[i].CommandBuffer = commandBuffers.at(i);
+            m_FrameResources[i].CommandBuffer = commandBuffers.at(i);
         }
 
         LOG_INFO("Initialized sync objects and command buffers for {} frame(s)-in-flight ...", FRAMES_IN_FLIGHT);
+    }
+
+    void VulkanSwapchain::AdvanceFrameCount()
+    {
+        m_CurrentFrame = (m_CurrentFrame + 1) % FRAMES_IN_FLIGHT;
     }
 }

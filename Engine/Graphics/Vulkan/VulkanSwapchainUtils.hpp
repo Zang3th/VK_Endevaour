@@ -1,39 +1,9 @@
 #pragma once
 
-#include "Core/Types.hpp"
-
 #include <vulkan/vulkan.hpp>
 
 namespace Engine::Graphics
 {
-    struct SwapchainSupport
-    {
-        vk::SurfaceCapabilitiesKHR        Capabilities;
-        std::vector<vk::SurfaceFormatKHR> Formats;
-        std::vector<vk::PresentModeKHR>   PresentModes;
-
-        [[nodiscard]] b8 isComplete() const { return (!Formats.empty() && !PresentModes.empty()); };
-    };
-
-    struct SwapchainProperties
-    {
-        vk::Extent2D                    Extent        = { .width = 0, .height = 0 };
-        vk::SurfaceFormatKHR            SurfaceFormat = { .format     = vk::Format::eUndefined,
-                                                          .colorSpace = vk::ColorSpaceKHR::eSrgbNonlinear };
-        vk::PresentModeKHR              PresentMode   = vk::PresentModeKHR::eFifo;
-        vk::SurfaceTransformFlagBitsKHR Transform     = vk::SurfaceTransformFlagBitsKHR::eIdentity;
-
-        u32 MinImageCount        = 0;
-        u32 ColorAttachmentCount = 1; // Hardcoded for now
-    };
-
-    struct SwapchainImage
-    {
-        vk::Image     Image          = nullptr;
-        vk::ImageView View           = nullptr;
-        vk::Semaphore RenderFinished = nullptr;
-    };
-
     class VulkanSwapchainUtils
     {
     public:

@@ -2,7 +2,7 @@
 
 #include "Core/Types.hpp"
 
-#include "Graphics/Vulkan/VulkanSwapchainUtils.hpp"
+#include "Graphics/Vulkan/VulkanSwapchainStructs.hpp"
 
 #include <vulkan/vulkan.hpp>
 

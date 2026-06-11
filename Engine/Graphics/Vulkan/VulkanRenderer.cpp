@@ -66,42 +66,49 @@ namespace Engine::Graphics
         // Reset drawcall counter
         m_DrawcallCount = 0;
 
-        // Get current frame from swapchain
-        VulkanFrame& frame = m_Swapchain->GetCurrentFrame();
-
-        // Acquire next image index
-        auto imageIndex = m_Swapchain->AcquireImage(frame);
-        if (!imageIndex)
+        auto frame = m_Swapchain->BeginFrame();
+        if (!frame)
         {
-            return; // Swapchain was probably recreated
+            return;
         }
 
-        // If an image was successfully acquired, reset the current frame
-        m_Swapchain->ResetFrame(frame);
+        m_Swapchain->BeginRendering(*frame, glm::vec4(1.0, 0.0, 0.0, 1.0));
 
-        // Get swapchain properties
-        const SwapchainProperties properties = m_Swapchain->GetProperties();
+        SetDynamicStates(frame->Resources->CommandBuffer, frame->Extent);
+        RenderScene(frame->Resources->CommandBuffer, pipelineID);
+        RenderUI(frame->Resources->CommandBuffer);
 
-        // Begin frame
-        frame.Begin(m_Swapchain->GetImageAt(*imageIndex), properties.Extent);
+        m_Swapchain->EndRendering(*frame);
+        m_Swapchain->SubmitAndPresent(*frame);
+    }
 
-        // Set dynamic states
-        const vk::Viewport viewport = { .width    = (f32)properties.Extent.width,
-                                        .height   = (f32)properties.Extent.height,
-                                        .minDepth = 0.0f,
-                                        .maxDepth = 1.0f };
-        frame.CommandBuffer.setViewport(0, 1, &viewport);
+    void VulkanRenderer::WaitForDevice()
+    {
+        m_Context->GetDevice()->WaitForIdle();
+    }
 
-        const vk::Rect2D scissor = { .extent = properties.Extent };
-        frame.CommandBuffer.setScissor(0, 1, &scissor);
+    // ----- Private -----
 
-        frame.CommandBuffer.setPolygonModeEXT(vk::PolygonMode::eFill, m_Context->GetLoader());
-        frame.CommandBuffer.setPrimitiveTopology(vk::PrimitiveTopology::eTriangleList);
-        frame.CommandBuffer.setCullMode(vk::CullModeFlagBits::eBack);
-        frame.CommandBuffer.setFrontFace(vk::FrontFace::eClockwise);
+    void VulkanRenderer::SetDynamicStates(vk::CommandBuffer cmdBuffer, vk::Extent2D extent)
+    {
+        const vk::Viewport viewport = {
+            .width = (f32)extent.width, .height = (f32)extent.height, .minDepth = 0.0f, .maxDepth = 1.0f
+        };
+        cmdBuffer.setViewport(0, 1, &viewport);
 
+        const vk::Rect2D scissor = { .extent = extent };
+        cmdBuffer.setScissor(0, 1, &scissor);
+
+        cmdBuffer.setPolygonModeEXT(vk::PolygonMode::eFill, m_Context->GetLoader());
+        cmdBuffer.setPrimitiveTopology(vk::PrimitiveTopology::eTriangleList);
+        cmdBuffer.setCullMode(vk::CullModeFlagBits::eBack);
+        cmdBuffer.setFrontFace(vk::FrontFace::eClockwise);
+    }
+
+    void VulkanRenderer::RenderScene(vk::CommandBuffer cmdBuffer, u32 pipelineID)
+    {
         // Bind pipeline
-        m_Pipelines.at(pipelineID)->Bind(frame.CommandBuffer);
+        m_Pipelines.at(pipelineID)->Bind(cmdBuffer);
 
         // Draw all models assigned to this pipeline
         for (u32 i = 0; i < m_ModelIndex; i++)
@@ -113,28 +120,19 @@ namespace Engine::Graphics
             if (model->GetPipelineID() == pipelineID)
             {
                 // Bind, draw, increment
-                model->Bind(frame.CommandBuffer);
-                frame.CommandBuffer.drawIndexed(model->GetIndexCount(), 1, 0, 0, 0);
+                model->Bind(cmdBuffer);
+                cmdBuffer.drawIndexed(model->GetIndexCount(), 1, 0, 0, 0);
                 m_DrawcallCount++;
             }
         }
-
-        // ImGui rendering
-        m_ImGuiLayer->BeginFrame();
-        // TODO: Render ProfilerPanel
-        m_ImGuiLayer->RenderFrame(frame.CommandBuffer);
-
-        // End frame
-        frame.End(m_Swapchain->GetImageAt(*imageIndex));
-
-        // Submit, present, advance
-        m_Swapchain->SubmitFrame(frame, *imageIndex);
-        m_Swapchain->PresentFrame(*imageIndex);
-        m_Swapchain->AdvanceFrameCount();
     }
 
-    void VulkanRenderer::WaitForDevice()
+    void VulkanRenderer::RenderUI(vk::CommandBuffer cmdBuffer)
     {
-        m_Context->GetDevice()->WaitForIdle();
+        m_ImGuiLayer->BeginFrame();
+
+        // TODO: Render ProfilerPanel
+
+        m_ImGuiLayer->RenderFrame(cmdBuffer);
     }
 }

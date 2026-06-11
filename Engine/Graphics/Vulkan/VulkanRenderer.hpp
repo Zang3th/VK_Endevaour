@@ -28,6 +28,10 @@ namespace Engine::Graphics
         void WaitForDevice();
 
     private:
+        void SetDynamicStates(vk::CommandBuffer cmdBuffer, vk::Extent2D extent);
+        void RenderScene(vk::CommandBuffer cmdBuffer, u32 pipelineID);
+        void RenderUI(vk::CommandBuffer cmdBuffer);
+
         Scope<VulkanContext> m_Context;
         Scope<ImGuiLayer>    m_ImGuiLayer;
         VulkanSwapchain*     m_Swapchain = nullptr;
