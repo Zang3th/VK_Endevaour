@@ -95,7 +95,7 @@ namespace Engine::Graphics
             .pColorAttachmentFormats = &format
         };
 
-        ImGui_ImplVulkan_PipelineInfo pipelineInfo{
+        const ImGui_ImplVulkan_PipelineInfo pipelineInfo{
             .RenderPass                  = nullptr,
             .Subpass                     = 0,
             .ExtraDynamicStates          = {},

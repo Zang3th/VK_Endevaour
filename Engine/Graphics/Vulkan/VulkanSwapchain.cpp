@@ -146,8 +146,8 @@ namespace Engine::Graphics
     void VulkanSwapchain::BeginRendering(const SwapchainFrame& frame, glm::vec4 clearColor)
     {
         // Grab shortcut handles to current frame data
-        vk::CommandBuffer cmdBuffer = frame.Resources->CommandBuffer;
-        SwapchainImage    image     = m_Images.at(frame.ImageIndex);
+        const vk::CommandBuffer cmdBuffer = frame.Resources->CommandBuffer;
+        const SwapchainImage    image     = m_Images.at(frame.ImageIndex);
 
         // Start command buffer recording
         const vk::CommandBufferBeginInfo cmdBeginInfo{};
@@ -185,8 +185,8 @@ namespace Engine::Graphics
     void VulkanSwapchain::EndRendering(const SwapchainFrame& frame)
     {
         // Grab shortcut handles to current frame data
-        vk::CommandBuffer cmdBuffer = frame.Resources->CommandBuffer;
-        SwapchainImage    image     = m_Images.at(frame.ImageIndex);
+        const vk::CommandBuffer cmdBuffer = frame.Resources->CommandBuffer;
+        const SwapchainImage    image     = m_Images.at(frame.ImageIndex);
 
         // Finish up rendering
         cmdBuffer.endRendering();
@@ -208,8 +208,8 @@ namespace Engine::Graphics
     void VulkanSwapchain::SubmitAndPresent(const SwapchainFrame& frame)
     {
         // Grab shortcut handles to current frame data
-        vk::CommandBuffer cmdBuffer = frame.Resources->CommandBuffer;
-        SwapchainImage    image     = m_Images.at(frame.ImageIndex);
+        const vk::CommandBuffer cmdBuffer = frame.Resources->CommandBuffer;
+        const SwapchainImage    image     = m_Images.at(frame.ImageIndex);
 
         const vk::PipelineStageFlags waitStage{ vk::PipelineStageFlagBits::eColorAttachmentOutput };
 

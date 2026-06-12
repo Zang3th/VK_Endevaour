@@ -31,11 +31,11 @@ void Sandbox::Run()
     const Engine::u32 pipelineID = vkRenderer.CreatePipeline(vertexID, fragmentID);
 
     // Load mesh
-    Engine::Graphics::Mesh mesh =
+    const Engine::Graphics::Mesh mesh =
         Engine::Graphics::ObjLoader::LoadMeshFromFile("Applications/Sandbox/Models/viking_room.obj");
 
     // Create 'hello_world_triangle' mesh
-    // Engine::Graphics::Mesh mesh;
+    // const Engine::Graphics::Mesh mesh;
     // mesh.Vertices = { { .Position = { +0.0f, -0.5f, 0.0f }, .Color = { 1, 0, 0 }, .TexCoord = { 0, 0 } },
     //                   { .Position = { +0.5f, +0.5f, 0.0f }, .Color = { 0, 1, 0 }, .TexCoord = { 1, 0 } },
     //                   { .Position = { -0.5f, +0.5f, 0.0f }, .Color = { 0, 0, 1 }, .TexCoord = { 0, 1 } } };

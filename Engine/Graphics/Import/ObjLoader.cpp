@@ -14,7 +14,7 @@ namespace Engine::Graphics
         std::vector<tinyobj::material_t> materials;
         std::string                      warn;
         std::string                      error;
-        std::string                      objPath = path.string();
+        const std::string                objPath = path.string();
 
         // Load obj file
         if (!tinyobj::LoadObj(&attrib, &shapes, &materials, &warn, &error, objPath.c_str()))
