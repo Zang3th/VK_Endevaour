@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 from pathlib import Path
-from ProjectDefines import EXPANDED_DIRS, EXPANDED_EXTENSIONS
+from ProjectDefines import EXPANDED_DIR_GROUPS, EXPANDED_EXTENSIONS
 
 # ---------------------------------------------------------------------------
 
@@ -20,13 +20,14 @@ def count_lines_in_dir(directory: Path) -> int:
 # ---------------------------------------------------------------------------
 
 def main():
-    print("\n====== Code statistics (Lines of code) ======\n")
+    print("\n============ Code statistics (Lines of code) ============\n")
 
-    for dir in EXPANDED_DIRS:
-        loc = count_lines_in_dir(dir)
-        print(f"  {str(dir):<50} {loc}")
-
-    print("")
+    for group_name, dirs in EXPANDED_DIR_GROUPS:
+        print(f"{group_name}:")
+        for dir in dirs:
+            loc = count_lines_in_dir(dir)
+            print(f"  {str(dir):<55} {loc}")
+        print("")
 
 # ---------------------------------------------------------------------------
 

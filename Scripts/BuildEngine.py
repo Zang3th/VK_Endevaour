@@ -47,12 +47,14 @@ def main():
         return
 
     if args.debug:
-        print("\n====== Building Debug ======\n")
+        print("\n============ Building Debug ============\n")
         configure_and_build(Paths.DEBUG, "Debug", args.clean)
 
     if args.release:
-        print("\n====== Building Release ======\n")
+        print("\n============ Building Release ============\n")
         configure_and_build(Paths.RELEASE, "Release", args.clean)
+
+    print("")
 
 # ---------------------------------------------------------------------------
 

@@ -20,7 +20,7 @@ def generate_rdi(build_dir: Path):
     pdb_files = list(build_dir.rglob("*.pdb"))
 
     if not pdb_files:
-        print("Found no '.pdb' files ...")
+        print("Found no '.pdb' files ...\n")
         return
 
     print(f"Found {len(pdb_files)} '.pdb' files ...")
@@ -66,11 +66,11 @@ def main():
         return
 
     if args.debug:
-        print("\n====== Generating Debug RDI Files ======\n")
+        print("\n============ Generating Debug RDI Files ============\n")
         generate_rdi(Paths.DEBUG)
 
     if args.release:
-        print("\n====== Generating Release RDI Files ======\n")
+        print("\n============ Generating Release RDI Files ============\n")
         generate_rdi(Paths.RELEASE)
 
 # ---------------------------------------------------------------------------

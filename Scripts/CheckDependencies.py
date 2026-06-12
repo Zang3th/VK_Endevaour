@@ -135,12 +135,12 @@ def check_existence(name: str):
 # ---------------------------------------------------------------------------
 
 def main():
-    print("\n====== Building ======\n")
+    print("\n============ Building ============\n")
     check_existence("cmake")
     check_existence("clang++")
     check_existence("ninja")
 
-    print("====== Vulkan ======\n")
+    print("============ Vulkan ============\n")
     check_vk_loader()
     check_vk_info()
     check_existence("glslc")

@@ -16,7 +16,7 @@ def iter_source_files(root: Path):
 # ---------------------------------------------------------------------------
 
 def main():
-    print("\n====== Formatting files ======")
+    print("\n============ Formatting files ============")
 
     files: list[Path] = []
     for d in STANDARD_DIRS:
@@ -30,7 +30,7 @@ def main():
             return
 
     run(["clang-format", "-i", *files], cwd=Paths.PROJECT_ROOT, delimiters=("C:"))
-    print(f"Formatted {len(files)} files.")
+    print(f"Formatted {len(files)} files.\n")
 
 # ---------------------------------------------------------------------------
 

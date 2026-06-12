@@ -11,7 +11,7 @@ def run_tests(build_dir: Path):
         print(f"Build directory '{build_dir}' does not exist ...")
         return
 
-    print(f"\n====== Running Tests ({build_dir.name}) ======")
+    print(f"\n============ Running Tests ({build_dir.name}) ============")
 
     run(
         [str(build_dir / "Tests" / "EngineTests.exe")],
@@ -48,6 +48,8 @@ def main():
 
     if args.release:
         run_tests(Paths.RELEASE)
+
+    print("")
 
 # ---------------------------------------------------------------------------
 

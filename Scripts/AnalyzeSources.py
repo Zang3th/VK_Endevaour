@@ -10,10 +10,14 @@ import yaml
 
 SOURCE_FILTER = r".*[\\/]Engine[\\/](Core|Debug|Graphics|Math|Platform)[\\/].*|.*[\\/]Applications[\\/].*"
 HEADER_FILTER = SOURCE_FILTER
+TIDY_FIXES_YAML = Paths.PROJECT_ROOT / "tidy-fixes.yaml"
 
 # ---------------------------------------------------------------------------
 
 def clang_tidy():
+    if TIDY_FIXES_YAML.exists():
+        TIDY_FIXES_YAML.unlink()
+
     cmd = [
         "python", str(Paths.SCRIPTS / "RunClangTidy.py"),
         "-p", str(Paths.DEBUG),
@@ -21,7 +25,7 @@ def clang_tidy():
         "-quiet",
         "-source-filter", SOURCE_FILTER,
         "-header-filter", HEADER_FILTER,
-        "-export-fixes", Paths.PROJECT_ROOT / "tidy-fixes.yaml",
+        "-export-fixes", TIDY_FIXES_YAML,
     ]
     return run(cmd, silent=True)
 
@@ -43,8 +47,8 @@ def offset_to_line(path: Path, offset: int) -> int:
 
 # ---------------------------------------------------------------------------
 
-def print_tidy_fixes(path: Path) -> None:
-    data = yaml.safe_load(path.read_text(encoding="utf-8"))
+def print_tidy_fixes() -> None:
+    data = yaml.safe_load(TIDY_FIXES_YAML.read_text(encoding="utf-8"))
 
     if not data or not data.get("Diagnostics"):
         print("No clang-tidy diagnostics found.")
@@ -64,8 +68,9 @@ def print_tidy_fixes(path: Path) -> None:
         if not file or offset is None:
             continue
 
-        # Last sanity check
-        if "vendor" or "msvc" in file.lower():
+        # Filter unwanted warnings
+        path_parts = file.lower().replace("\\", "/").split("/")
+        if "vendor" in path_parts or "msvc" in path_parts :
             continue
 
         validResults = True
@@ -81,29 +86,34 @@ def print_tidy_fixes(path: Path) -> None:
 
     # Print something if we had no valid results
     if not validResults:
-        print("Found no clang-tidy diagnostics outside of 'Vendor/' and the STL.")
+        print("Found no clang-tidy diagnostics outside of 'Vendor/' and the STL.\n")
 # ---------------------------------------------------------------------------
 
 def main():
     parser = argparse.ArgumentParser(description="[VK_Endeavour] clang-tidy helper")
     parser.add_argument("-t", "--tidy", action="store_true", help="Run clang-tidy")
+    parser.add_argument("-p", "--print", action="store_true", help="Print results")
     parser.add_argument("-v", "--verify", action="store_true", help="Verify config")
 
     args = parser.parse_args()
 
-    if not (args.tidy or args.verify):
+    if not (args.tidy or args.print or args.verify):
         print("> No action specified. Use '-h' or '--help' for usage information.")
         return
 
+    print("")
+
     if args.verify:
-        print("\n====== Verifying config ======")
+        print("============ Verifying config ============")
         verify_config()
 
     if args.tidy:
-        print("\n====== Running clang-tidy ======")
+        print("============ Running clang-tidy ============")
         clang_tidy()
-        print("====== Printing results ======\n")
-        print_tidy_fixes(Paths.PROJECT_ROOT / "tidy-fixes.yaml")
+
+    if args.print:
+        print("============ Printing results ============\n")
+        print_tidy_fixes()
 
 # ---------------------------------------------------------------------------
 
