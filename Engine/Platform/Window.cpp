@@ -6,7 +6,6 @@
 
 #include <vulkan/vulkan.hpp>
 
-#define GLFW_INCLUDE_NONE
 #include "Vendor/glfw/include/GLFW/glfw3.h"
 
 namespace Engine::Platform

@@ -32,6 +32,10 @@ if(TARGET fmt)
     )
 endif()
 
+# Important because I include everything myself
+# Needs to be defined here because Window and ImGui pull GLFW separately
+target_compile_definitions(Engine PRIVATE GLFW_INCLUDE_NONE)
+
 # Configure glfw
 set(BUILD_SHARED_LIBS OFF CACHE BOOL "" FORCE)
 set(GLFW_LIBRARY_TYPE STATIC CACHE STRING "" FORCE)
