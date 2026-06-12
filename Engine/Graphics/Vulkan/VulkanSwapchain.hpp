@@ -33,8 +33,6 @@ namespace Engine::Graphics
         void EndRendering(const SwapchainFrame& frame);
         void SubmitAndPresent(const SwapchainFrame& frame);
 
-        void SetResizeFlag() { m_Resized = true; };
-
     private:
         void CreateSwapchain();
         void RecreateSwapchain();
@@ -53,7 +51,6 @@ namespace Engine::Graphics
 
         // Properties
         SwapchainProperties m_Properties;
-        b8                  m_Resized = false;
 
         // Command pools
         vk::CommandPool m_GraphicsCommandPool;

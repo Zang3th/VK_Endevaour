@@ -1,7 +1,8 @@
+#include "VulkanPipeline.hpp"
+
 #include "Graphics/Resources/Mesh.hpp"
 
 #include "Graphics/Vulkan/VulkanAssert.hpp"
-#include "Graphics/Vulkan/VulkanPipeline.hpp"
 
 namespace Engine::Graphics
 {

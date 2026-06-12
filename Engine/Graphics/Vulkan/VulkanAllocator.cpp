@@ -1,6 +1,7 @@
+#include "VulkanAllocator.hpp"
+
 #include "Core/Utility.hpp"
 
-#include "Graphics/Vulkan/VulkanAllocator.hpp"
 #include "Graphics/Vulkan/VulkanAssert.hpp"
 
 // Deactivate clang extensions
@@ -95,9 +96,9 @@ namespace Engine::Graphics
 
         vmaDestroyBuffer(s_Allocator, (VkBuffer)buffer, allocation);
 
-        LOG_VERBOSE("Allocator freed {} of memory. Total memory consumption is {} ...",
-                    Core::Utility::BytesToString(allocationInfo.size),
-                    Core::Utility::BytesToString(s_totalMemory));
+        LOG_MEMORY("Allocator freed {} of memory. Total memory consumption is {} ...",
+                   Core::Utility::BytesToString(allocationInfo.size),
+                   Core::Utility::BytesToString(s_totalMemory));
     }
 
     void* VulkanAllocator::MapMemory(VmaAllocation allocation)
@@ -133,9 +134,9 @@ namespace Engine::Graphics
                                                &allocationInfo)));
         s_totalMemory += allocationInfo.size;
 
-        LOG_VERBOSE("Allocator allocated {} of memory. Total memory consumption is {} ...",
-                    Core::Utility::BytesToString(allocationInfo.size),
-                    Core::Utility::BytesToString(s_totalMemory));
+        LOG_MEMORY("Allocator allocated {} of memory. Total memory consumption is {} ...",
+                   Core::Utility::BytesToString(allocationInfo.size),
+                   Core::Utility::BytesToString(s_totalMemory));
 
         return allocation;
     }

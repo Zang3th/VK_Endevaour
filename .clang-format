@@ -52,35 +52,35 @@ MaxEmptyLinesToKeep: 1
 # Includes
 # =========================
 IncludeBlocks: Regroup
-IncludeIsMainRegex: '$^'
-IncludeIsMainSourceRegex: '$^'
+IncludeIsMainRegex: '$'
+# IncludeIsMainSourceRegex: '$^'
 SortIncludes: true
 
 IncludeCategories:
   - Regex: '^[<"]Core/.*[>"]'
-    Priority: 0
-  - Regex: '^[<"]Debug/.*[>"]'
     Priority: 1
-  - Regex: '^[<"]Graphics/Import/.*[>"]'
+  - Regex: '^[<"]Debug/.*[>"]'
     Priority: 2
-  - Regex: '^[<"]Graphics/Resources/.*[>"]'
+  - Regex: '^[<"]Graphics/Import/.*[>"]'
     Priority: 3
-  - Regex: '^[<"]Graphics/UI/.*[>"]'
+  - Regex: '^[<"]Graphics/Resources/.*[>"]'
     Priority: 4
-  - Regex: '^[<"]Graphics/Vulkan/.*[>"]'
+  - Regex: '^[<"]Graphics/UI/.*[>"]'
     Priority: 5
-  - Regex: '^[<"]Math/.*[>"]'
+  - Regex: '^[<"]Graphics/Vulkan/.*[>"]'
     Priority: 6
-  - Regex: '^[<"]Platform/.*[>"]'
+  - Regex: '^[<"]Math/.*[>"]'
     Priority: 7
-  - Regex: '^[<"]Vendor/.*[>"]'
+  - Regex: '^[<"]Platform/.*[>"]'
     Priority: 8
-  - Regex: '^<vulkan/.*>'
+  - Regex: '^[<"]Vendor/.*[>"]'
     Priority: 9
-  - Regex: '^<[^/]+>' # STL / libc++
+  - Regex: '^<vulkan/.*>'
     Priority: 10
-  - Regex: '.*'
+  - Regex: '^<[^/]+>' # STL / libc++
     Priority: 11
+  - Regex: '.*'
+    Priority: 12
 
 # =========================
 # Indentation & Access

@@ -1,8 +1,9 @@
+#include "VulkanContext.hpp"
+
 #include "Core/Memory.hpp"
 
 #include "Graphics/Vulkan/VulkanAllocator.hpp"
 #include "Graphics/Vulkan/VulkanAssert.hpp"
-#include "Graphics/Vulkan/VulkanContext.hpp"
 #include "Graphics/Vulkan/VulkanDebug.hpp"
 #include "Graphics/Vulkan/VulkanGlobals.hpp"
 
@@ -112,9 +113,7 @@ namespace Engine::Graphics
 
     void VulkanContext::CreateSurface()
     {
-        VK_VERIFY((vk::Result)(glfwCreateWindowSurface(
-            m_Instance, Platform::Window::GetHandle(), nullptr, (VkSurfaceKHR*)&m_Surface)));
-        LOG_INFO("Created window surface ...");
+        Platform::Window::CreateVulkanSurface(m_Instance, &m_Surface);
     }
 
     void VulkanContext::CreateDispatchLoader()

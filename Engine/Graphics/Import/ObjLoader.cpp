@@ -1,6 +1,6 @@
-#include "Debug/Log.hpp"
+#include "ObjLoader.hpp"
 
-#include "Graphics/Import/ObjLoader.hpp"
+#include "Debug/Log.hpp"
 
 #define TINYOBJLOADER_IMPLEMENTATION
 #include "Vendor/tinyobjloader/tiny_obj_loader.hpp"

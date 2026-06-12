@@ -1,6 +1,7 @@
+#include "VulkanDebug.hpp"
+
 #include "Debug/Log.hpp"
 
-#include "Graphics/Vulkan/VulkanDebug.hpp"
 #include "Graphics/Vulkan/VulkanGlobals.hpp"
 
 #include "Platform/Window.hpp"
@@ -74,10 +75,7 @@ namespace Engine::Graphics
 
     std::vector<const char*> VulkanDebug::GetInstanceExtensions()
     {
-        u32          glfwExtensionCount = 0;
-        const char** glfwExtensions     = glfwGetRequiredInstanceExtensions(&glfwExtensionCount);
-
-        std::vector<const char*> extensions(glfwExtensions, glfwExtensions + glfwExtensionCount);
+        std::vector<const char*> extensions = Platform::Window::GetInstanceExtensions();
 
         if (ENABLE_VALIDATION_LAYERS)
         {

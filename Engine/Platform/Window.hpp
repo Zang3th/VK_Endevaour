@@ -2,17 +2,29 @@
 
 #include "Core/Types.hpp"
 
-#include "Vendor/glfw/include/GLFW/glfw3.h"
+#include <string>
+#include <vector>
 
-#include <vulkan/vulkan.hpp> // This needs to be included before GLFW
+struct GLFWwindow;
+
+namespace vk
+{
+    class Instance;
+    class SurfaceKHR;
+}
+
+namespace Engine::Graphics
+{
+    class VulkanSwapchain;
+}
 
 namespace Engine::Platform
 {
     struct WindowSpecification
     {
         std::string Title  = "DefaultWindowTitle";
-        u32         Width  = 1080;
-        u32         Height = 1080;
+        u32         Width  = 0;
+        u32         Height = 0;
     };
 
     class Window
@@ -20,26 +32,36 @@ namespace Engine::Platform
     public:
         Window() = delete;
         static void Init(const WindowSpecification& spec);
+        static void CreateVulkanSurface(const vk::Instance& instance, vk::SurfaceKHR* surface);
         static void Shutdown();
 
         static void PollEvents();
         static void WaitEvents();
         static bool ShouldClose();
-        static void UpdateFramebufferSize();
+
+        [[nodiscard]] static std::vector<const char*> GetInstanceExtensions();
 
         [[nodiscard]] static GLFWwindow*        GetHandle() { return m_Window; }
         [[nodiscard]] static const std::string& GetTitle() { return m_Spec.Title; }
         [[nodiscard]] static u32                GetWidth() { return m_Spec.Width; }
         [[nodiscard]] static u32                GetHeight() { return m_Spec.Height; }
         [[nodiscard]] static b8                 IsMinimized() { return m_IsMinimized; }
-
-        static void SetWidth(u32 width) { m_Spec.Width = width; };
-        static void SetHeight(u32 height) { m_Spec.Height = height; };
-        static void SetMinimize(b8 flag) { m_IsMinimized = flag; };
+        [[nodiscard]] static b8                 GotResized() { return m_GotResized; }
 
     private:
+        friend class Engine::Graphics::VulkanSwapchain;
+
+        static void GLFW_ErrorCallback(Engine::i32 errorCode, const char* description);
+        static void GLFW_FramebufferResizeCallback(GLFWwindow* window, int width, int height);
+
+        static void SetMinimizeFlag(b8 flag);
+        static void SetResizeFlag(b8 flag);
+        static void SetWidth(u32 width) { m_Spec.Width = width; };
+        static void SetHeight(u32 height) { m_Spec.Height = height; };
+
         inline static GLFWwindow*         m_Window      = nullptr;
         inline static WindowSpecification m_Spec        = WindowSpecification();
         inline static b8                  m_IsMinimized = false;
+        inline static b8                  m_GotResized  = false;
     };
 }

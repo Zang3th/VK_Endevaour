@@ -9,6 +9,9 @@
 
 #define LOG_VERBOSE(msg, ...) fmt::print(stdout, "[VERBOSE] " msg "\n" __VA_OPT__(, ) __VA_ARGS__)
 
+#define LOG_MEMORY(msg, ...)                                                                                           \
+    fmt::print(stdout, fg(fmt::color::aquamarine), "[MEMORY] " msg "\n" __VA_OPT__(, ) __VA_ARGS__)
+
 #define LOG_INFO(msg, ...) fmt::print(stdout, fg(fmt::color::green), "[INFO] " msg "\n" __VA_OPT__(, ) __VA_ARGS__)
 
 #define LOG_WARN(msg, ...) fmt::print(stdout, fg(fmt::color::yellow), "[WARN] " msg "\n" __VA_OPT__(, ) __VA_ARGS__)

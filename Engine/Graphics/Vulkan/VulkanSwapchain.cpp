@@ -1,5 +1,6 @@
+#include "VulkanSwapchain.hpp"
+
 #include "Graphics/Vulkan/VulkanAssert.hpp"
-#include "Graphics/Vulkan/VulkanSwapchain.hpp"
 #include "Graphics/Vulkan/VulkanSwapchainUtils.hpp"
 
 #include "Platform/Window.hpp"
@@ -38,38 +39,6 @@ namespace
 
         return properties;
     }
-
-    void FramebufferResizeCallback(GLFWwindow* window, int width, int height)
-    {
-        // Only one window is supported
-        ASSERT(window == Engine::Platform::Window::GetHandle(),
-               "GLFW::FramebufferResizeCallback(): Received the wrong window ...");
-
-        auto* swapchain = (Engine::Graphics::VulkanSwapchain*)glfwGetWindowUserPointer(window);
-
-        if (width == 0 || height == 0)
-        {
-            Engine::Platform::Window::SetMinimize(true);
-            LOG_INFO("GLFW::FramebufferResizeCallback(): Window got minimized ...");
-            return;
-        }
-
-        if (Engine::Platform::Window::IsMinimized())
-        {
-            // Reset minimize
-            Engine::Platform::Window::SetMinimize(false);
-            LOG_INFO("GLFW::FramebufferResizeCallback(): Window no longer minimized ...");
-        }
-
-        if (swapchain->GetProperties().Extent.width != (Engine::u32)width
-            || swapchain->GetProperties().Extent.height != (Engine::u32)height)
-        {
-            LOG_WARN("GLFW::FramebufferResizeCallback: Window got resized ... ({}x{})", width, height);
-            Engine::Platform::Window::SetWidth((Engine::u32)width);
-            Engine::Platform::Window::SetHeight((Engine::u32)height);
-            swapchain->SetResizeFlag();
-        }
-    }
 }
 
 namespace Engine::Graphics
@@ -84,10 +53,6 @@ namespace Engine::Graphics
         InitializeFrames();
         CreateSwapchain();
         CreateImages();
-
-        // Set framebuffer resize callback
-        glfwSetWindowUserPointer(Platform::Window::GetHandle(), this);
-        glfwSetFramebufferSizeCallback(Platform::Window::GetHandle(), FramebufferResizeCallback);
     }
 
     VulkanSwapchain::~VulkanSwapchain()
@@ -274,11 +239,12 @@ namespace Engine::Graphics
 
         // Present
         const vk::Result res = m_Device->GetGraphicsQueue().presentKHR(&presentInfo);
-        if (res == vk::Result::eErrorOutOfDateKHR || res == vk::Result::eSuboptimalKHR || m_Resized)
+        if (res == vk::Result::eErrorOutOfDateKHR || res == vk::Result::eSuboptimalKHR
+            || Platform::Window::GotResized())
         {
             LOG_WARN("vkQueuePresentKHR initialized swapchain recreation ...");
-            m_Resized = false;
             RecreateSwapchain();
+            Platform::Window::SetResizeFlag(false);
             return;
         }
         ASSERT(res == vk::Result::eSuccess, "Failed to present swapchain image!");
@@ -306,7 +272,7 @@ namespace Engine::Graphics
 
         VK_VERIFY(m_Device->GetHandle().createSwapchainKHR(&swapchainCreate, nullptr, &m_CurrentSwapchain));
 
-        LOG_INFO("Created swapchain ... (Size: {}x{}, Format: {}, Color: {}, Mode: {})",
+        LOG_WARN("Created swapchain ... (Size: {}x{}, Format: {}, Color: {}, Mode: {})",
                  m_Properties.Extent.width,
                  m_Properties.Extent.height,
                  vk::to_string(m_Properties.SurfaceFormat.format),

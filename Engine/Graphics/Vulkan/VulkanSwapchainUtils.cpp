@@ -1,6 +1,6 @@
-#include "Debug/Log.hpp"
+#include "VulkanSwapchainUtils.hpp"
 
-#include "Graphics/Vulkan/VulkanSwapchainUtils.hpp"
+#include "Debug/Log.hpp"
 
 #include "Platform/Window.hpp"
 
@@ -11,11 +11,10 @@ namespace Engine::Graphics
         // Swapchain dimensions are fixed by the surface. Don't change anything
         if (capabilities.currentExtent.width != std::numeric_limits<u32>::max())
         {
-            LOG_WARN("Swapchain dimensions are fixed by the surface ...");
+            LOG_VERBOSE("Swapchain dimensions are set by the surface ...");
             return capabilities.currentExtent;
         }
 
-        Platform::Window::UpdateFramebufferSize();
         vk::Extent2D extent = { .width = Platform::Window::GetWidth(), .height = Platform::Window::GetHeight() };
 
         // Clamp width and height between allowed min and max values of the display manager implementation

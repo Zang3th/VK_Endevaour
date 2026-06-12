@@ -1,14 +1,14 @@
+#include "SandboxApp.hpp"
+
 #include <Graphics/Import/ObjLoader.hpp>
 
 #include <Graphics/Vulkan/VulkanRenderer.hpp>
 
 #include <Platform/Window.hpp>
 
-#include "SandboxApp.hpp"
-
 Sandbox::Sandbox()
 {
-    Engine::Platform::Window::Init({ .Title = "Sandbox" });
+    Engine::Platform::Window::Init({ .Title = "Sandbox", .Width = 1080, .Height = 1080 });
 }
 
 Sandbox::~Sandbox()
@@ -31,7 +31,8 @@ void Sandbox::Run()
     const Engine::u32 pipelineID = vkRenderer.CreatePipeline(vertexID, fragmentID);
 
     // Load mesh
-    Engine::Graphics::Mesh mesh = Engine::Graphics::ObjLoader::LoadMeshFromFile("Models/viking_room.obj");
+    Engine::Graphics::Mesh mesh =
+        Engine::Graphics::ObjLoader::LoadMeshFromFile("Applications/Sandbox/Models/viking_room.obj");
 
     // Create 'hello_world_triangle' mesh
     // Engine::Graphics::Mesh mesh;

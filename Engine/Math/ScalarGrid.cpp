@@ -1,6 +1,6 @@
-#include "Debug/Log.hpp"
+#include "ScalarGrid.hpp"
 
-#include "Math/ScalarGrid.hpp"
+#include "Debug/Log.hpp"
 
 namespace Engine::Math
 {
