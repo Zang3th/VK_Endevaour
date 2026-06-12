@@ -4,9 +4,9 @@
 
 #include "Graphics/Vulkan/VulkanAssert.hpp"
 
-#include <vulkan/vulkan.hpp>
-
 #include "Vendor/glfw/include/GLFW/glfw3.h"
+
+#include <vulkan/vulkan.hpp>
 
 namespace Engine::Platform
 {

@@ -33,22 +33,33 @@ namespace Engine::Graphics
         u32 MinImageCount = 0;
     };
 
-    // Per-swapchain-image resources. The swapchain owns a vector of these.
     struct SwapchainImage
     {
-        vk::Image     Image          = nullptr;
-        vk::ImageView View           = nullptr;
+        // Image handle owned by the swapchain implementation.
+        vk::Image Image = nullptr;
+
+        // Engine-owned view into the swapchain image.
+        // Used as the color attachment view for dynamic rendering.
+        vk::ImageView View = nullptr;
+
+        // Signaled by graphics queue when rendering into this image is complete.
+        // Waited by present queue before presentation.
         vk::Semaphore RenderFinished = nullptr;
     };
 
-    // Per-frame-in-flight CPU/GPU synchronization and command recording resources.
-    // This is independent from the acquired swapchain image.
-    // The actual swapchain image index is returned by vkAcquireNextImageKHR per frame.
     struct VulkanFrameResources
     {
-        vk::CommandBuffer CommandBuffer  = nullptr;
-        vk::Semaphore     ImageAvailable = nullptr;
-        vk::Fence         InFlight       = nullptr;
+        // Reused command buffer for this frame slot.
+        // It records commands for whichever swapchain image was acquired this frame.
+        vk::CommandBuffer CommandBuffer = nullptr;
+
+        // Synchronizes acquire -> render for this frame slot.
+        // Signaled by acquire, waited by graphics queue before rendering.
+        vk::Semaphore ImageAvailable = nullptr;
+
+        // CPU waits before reusing this frame slot.
+        // Signaled by graphics queue when submitted work for this frame is complete.
+        vk::Fence InFlight = nullptr;
     };
 
     // Transient frame context returned after acquiring a swapchain image.
