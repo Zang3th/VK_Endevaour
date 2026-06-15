@@ -1,6 +1,8 @@
-# VK_Endeavour — Roadmap
+# VK_Endeavour — Roadmap since 2026
 
-## v0.1 — Foundation & Stabilization
+## Foundation & Stabilization
+
+### v0.1.0
 
 - ~Windows Setup~
 - ~Vulkan SDK Integration~
@@ -15,19 +17,31 @@
 
 ---
 
-## v0.2 — UI & Debug Infrastructure
+## UI & Debug Infrastructure
+
+### v0.2.0
 
 - ~Testing Framework~
 - ~Internal Math Library:~
   - ~Scalar Grid~
+- ~Vulkan:~
+  - ~Descriptor Pools~
+- ~ImGui Integration~
+
+### v0.2.1
+
 - Vulkan:
-  - Descriptor Pools
-- ImGui Integration
+  - Descriptor Sets
+  - Depth-Buffering
+- Inputmanagement
+- Camera
 - Profiler
 
 ---
 
-## v0.3 — GPU Terrain Foundation
+## GPU Terrain Foundation
+
+### v0.3.0
 
 - Vulkan:
   - UniformBuffer
@@ -41,7 +55,9 @@
 
 ---
 
-## v0.4 — Procedural Heightfield Generation
+## Procedural Heightfield Generation
+
+### v0.4.0
 
 - GPU noise generation
 - Heightmap storage images
