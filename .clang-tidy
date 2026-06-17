@@ -12,6 +12,7 @@ Checks:
   modernize-*,
   -modernize-use-trailing-return-type,
   -modernize-use-integer-sign-comparison,
+  -modernize-avoid-c-style-cast,
 
   misc-*,
   -misc-non-private-member-variables-in-classes,
@@ -21,9 +22,11 @@ Checks:
   -cert-err58-cpp,
 
   portability-*,
+  -portability-avoid-pragma-once,
 
   bugprone-*,
   -bugprone-easily-swappable-parameters,
+  -bugprone-throwing-static-initialization,
 
   performance-*,
 

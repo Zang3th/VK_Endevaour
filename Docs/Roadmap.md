@@ -35,7 +35,7 @@
   - ~Descriptor Sets~
   - ~Global Uniform Buffer~
   - Depth-Buffering
-- Timing
+- ~Timer~
 - Inputmanagement
 - Camera
 - Profiler

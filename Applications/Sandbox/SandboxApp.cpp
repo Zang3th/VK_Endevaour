@@ -1,5 +1,9 @@
 #include "SandboxApp.hpp"
 
+#include <Core/Timer.hpp>
+
+#include <Debug/Log.hpp>
+
 #include <Graphics/Import/ObjLoader.hpp>
 
 #include <Graphics/Vulkan/VulkanRenderer.hpp>
@@ -18,6 +22,9 @@ Sandbox::~Sandbox()
 
 void Sandbox::Run()
 {
+    // Initialize timer
+    Engine::Core::Timer timer;
+
     // Initialize renderer
     Engine::Graphics::VulkanRenderer vkRenderer;
 
@@ -47,6 +54,10 @@ void Sandbox::Run()
     // Assign model to pipeline
     vkRenderer.AssignModelToPipeline(modelID, pipelineID);
 
+    // Log start up time and reset timer
+    LOG_VERBOSE("Engine start up took {} ms ...", timer.GetElapsedMilliseconds());
+    timer.Reset();
+
     while (!Engine::Platform::Window::ShouldClose())
     {
         Engine::Platform::Window::PollEvents();
@@ -54,11 +65,20 @@ void Sandbox::Run()
         if (Engine::Platform::Window::IsMinimized())
         {
             Engine::Platform::Window::WaitEvents();
+            timer.Sync();
             continue;
         }
 
-        // Draw
-        vkRenderer.DrawFrame(pipelineID);
+        // Check if frame can be rendered
+        if (!vkRenderer.BeginFrame())
+        {
+            timer.Sync();
+            continue;
+        }
+
+        // Tick and draw
+        timer.Tick();
+        vkRenderer.DrawFrame(pipelineID, timer.GetFrameTiming());
     }
 
     // Wait for device idle
