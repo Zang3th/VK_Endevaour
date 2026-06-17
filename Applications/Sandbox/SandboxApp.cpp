@@ -8,7 +8,7 @@
 
 Sandbox::Sandbox()
 {
-    Engine::Platform::Window::Init({ .Title = "Sandbox", .Width = 1080, .Height = 1080 });
+    Engine::Platform::Window::Init({ .Title = "Sandbox", .Width = 1920, .Height = 1080 });
 }
 
 Sandbox::~Sandbox()

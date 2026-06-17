@@ -1,7 +1,5 @@
 #include "VulkanDescriptorPool.hpp"
 
-#include "Debug/Log.hpp"
-
 #include "Graphics/Vulkan/VulkanAssert.hpp"
 
 namespace Engine::Graphics

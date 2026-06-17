@@ -31,8 +31,11 @@
 ### v0.2.1
 
 - Vulkan:
-  - Descriptor Sets
+  - ~Descriptor Set Layouts~
+  - ~Descriptor Sets~
+  - ~Global Uniform Buffer~
   - Depth-Buffering
+- Timing
 - Inputmanagement
 - Camera
 - Profiler
@@ -44,10 +47,9 @@
 ### v0.3.0
 
 - Vulkan:
-  - UniformBuffer
-  - StorageBuffer
-  - StorageImage
-  - SampledImage
+  - Storage Buffer
+  - Storage Image
+  - Sampled Image
 - CPU terrain metadata
 - GPU terrain resource model
 - Compute pipeline infrastructure
