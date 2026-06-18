@@ -54,9 +54,9 @@ void Sandbox::Run()
     // Assign model to pipeline
     vkRenderer.AssignModelToPipeline(modelID, pipelineID);
 
-    // Log start up time and reset timer
-    LOG_VERBOSE("Engine start up took {} ms ...", timer.GetElapsedMilliseconds());
-    timer.Reset();
+    // Log startup time
+    LOG_PERF("Engine startup time was {} ...", timer.GetEngineTotalRuntimeString());
+    timer.SyncFrame();
 
     while (!Engine::Platform::Window::ShouldClose())
     {
@@ -65,22 +65,29 @@ void Sandbox::Run()
         if (Engine::Platform::Window::IsMinimized())
         {
             Engine::Platform::Window::WaitEvents();
-            timer.Sync();
+            timer.SyncFrame();
             continue;
         }
 
-        // Check if frame can be rendered
-        if (!vkRenderer.BeginFrame())
+        auto frame = vkRenderer.BeginFrame(pipelineID);
+
+        // Check if frame can't be rendered
+        if (!frame.IsValid())
         {
-            timer.Sync();
+            timer.SyncFrame();
             continue;
         }
 
-        // Tick and draw
+        // If frame is valid, tick timer and draw it
         timer.Tick();
-        vkRenderer.DrawFrame(pipelineID, timer.GetFrameTiming());
+        vkRenderer.DrawFrame(frame, timer.GetFrameTiming());
     }
 
     // Wait for device idle
     vkRenderer.WaitForDevice();
+
+    // Log some stats
+    LOG_PERF("Engine runtime was {} with an average of {} ...",
+             timer.GetEngineTotalRuntimeString(),
+             timer.GetEngineFPSAverageString());
 }

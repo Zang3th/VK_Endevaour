@@ -36,9 +36,9 @@
   - ~Global Uniform Buffer~
   - Depth-Buffering
 - ~Timer~
+- ProfilerPanel
 - Inputmanagement
 - Camera
-- Profiler
 
 ---
 

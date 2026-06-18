@@ -44,4 +44,26 @@ namespace Engine::Core
 
         return fmt::format("{} bytes", bytes);
     }
+
+    std::string Utility::MillisecondsToString(f64 ms)
+    {
+        constexpr f64 Second = 1000.0;
+        constexpr f64 Minute = 60.0 * Second;
+
+        if (ms >= Minute)
+        {
+            return fmt::format("{:.2f} min", ms / Minute);
+        }
+        if (ms >= Second)
+        {
+            return fmt::format("{:.2f} sec", ms / Second);
+        }
+
+        return fmt::format("{:.2f} ms", ms);
+    }
+
+    std::string Utility::FPSToString(f64 fps)
+    {
+        return fmt::format("{:.2f} FPS", fps);
+    }
 }
