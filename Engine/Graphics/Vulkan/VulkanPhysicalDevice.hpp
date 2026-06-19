@@ -4,8 +4,6 @@
 
 #include "Graphics/Vulkan/VulkanSwapchainStructs.hpp"
 
-#include <vulkan/vulkan.hpp>
-
 namespace Engine::Graphics
 {
     struct QueueFamilyIndices

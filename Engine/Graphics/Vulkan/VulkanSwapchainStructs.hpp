@@ -28,9 +28,10 @@ namespace Engine::Graphics
         vk::PresentModeKHR              PresentMode   = vk::PresentModeKHR::eFifo;
         vk::SurfaceTransformFlagBitsKHR Transform     = vk::SurfaceTransformFlagBitsKHR::eIdentity;
 
-        static constexpr u32 ColorAttachmentCount = 1; // WARN: Hardcoded for now. Will break for values > 1
-
         u32 MinImageCount = 0;
+
+        // WARN: Hardcoded for now. Will break for values > 1
+        [[nodiscard]] constexpr u32 GetColorAttachmentCount() const { return 1; }
     };
 
     struct SwapchainImage
@@ -69,6 +70,7 @@ namespace Engine::Graphics
     {
         VulkanFrameResources* Resources  = nullptr;
         u32                   ImageIndex = 0;
+        u32                   FrameIndex = 0;
         vk::Extent2D          Extent     = { .width = 0, .height = 0 };
     };
 }

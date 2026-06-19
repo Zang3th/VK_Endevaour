@@ -6,8 +6,6 @@
 #include "Graphics/Vulkan/VulkanPhysicalDevice.hpp"
 #include "Graphics/Vulkan/VulkanSwapchain.hpp"
 
-#include <vulkan/vulkan_handles.hpp>
-
 namespace Engine::Graphics
 {
     class VulkanContext
@@ -19,14 +17,12 @@ namespace Engine::Graphics
         VulkanContext(const VulkanContext&)            = delete;
         VulkanContext& operator=(const VulkanContext&) = delete;
 
-        [[nodiscard]] u32 GetApiVersion() const { return m_ApiVersion; }
-
-        [[nodiscard]] const vk::Instance&    GetInstance() const { return m_Instance; }
-        [[nodiscard]] const vk::SurfaceKHR&  GetSurface() const { return m_Surface; }
-        [[nodiscard]] const VulkanDevice*    GetDevice() const { return m_Device.get(); }
-        [[nodiscard]] const VulkanSwapchain* GetSwapchain() const { return m_Swapchain.get(); }
-        [[nodiscard]] VulkanSwapchain*       GetSwapchain() { return m_Swapchain.get(); }
-
+        [[nodiscard]] u32                                      GetApiVersion() const { return m_ApiVersion; }
+        [[nodiscard]] const vk::Instance&                      GetInstance() const { return m_Instance; }
+        [[nodiscard]] const vk::SurfaceKHR&                    GetSurface() const { return m_Surface; }
+        [[nodiscard]] const VulkanDevice*                      GetDevice() const { return m_Device.get(); }
+        [[nodiscard]] const VulkanSwapchain*                   GetSwapchain() const { return m_Swapchain.get(); }
+        [[nodiscard]] VulkanSwapchain*                         GetSwapchain() { return m_Swapchain.get(); }
         [[nodiscard]] const vk::detail::DispatchLoaderDynamic& GetLoader() const { return m_DispatchLoader; }
 
         void CopyBuffer(vk::Buffer srcBuffer, vk::Buffer dstBuffer, vk::DeviceSize size);

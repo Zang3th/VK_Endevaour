@@ -10,9 +10,6 @@
 #include "Platform/Window.hpp"
 
 #include <vulkan/vulkan.hpp>
-#include <vulkan/vulkan_core.h>
-#include <vulkan/vulkan_handles.hpp>
-#include <vulkan/vulkan_structs.hpp>
 
 namespace Engine::Graphics
 {

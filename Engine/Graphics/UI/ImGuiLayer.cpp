@@ -91,7 +91,7 @@ namespace Engine::Graphics
         // Dynamic rendering specification
         const vk::Format                      format = m_Context->GetSwapchain()->GetProperties().SurfaceFormat.format;
         const vk::PipelineRenderingCreateInfo renderingInfo{
-            .colorAttachmentCount    = m_Context->GetSwapchain()->GetProperties().ColorAttachmentCount,
+            .colorAttachmentCount    = m_Context->GetSwapchain()->GetProperties().GetColorAttachmentCount(),
             .pColorAttachmentFormats = &format
         };
 

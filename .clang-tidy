@@ -8,6 +8,7 @@ Checks:
   -readability-implicit-bool-conversion,
   -readability-simplify-boolean-expr,
   -readability-function-cognitive-complexity,
+  -readability-convert-member-functions-to-static,
 
   modernize-*,
   -modernize-use-trailing-return-type,

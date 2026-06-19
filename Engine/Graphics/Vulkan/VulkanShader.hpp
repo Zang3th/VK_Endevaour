@@ -23,5 +23,6 @@ namespace Engine::Graphics
         vk::Device              m_Device = nullptr;
         vk::ShaderModule        m_Module = nullptr;
         vk::ShaderStageFlagBits m_Stage;
+        std::string             m_StageString;
     };
 }

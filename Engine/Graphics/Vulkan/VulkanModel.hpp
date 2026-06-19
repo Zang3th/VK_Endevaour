@@ -5,8 +5,6 @@
 #include "Graphics/Vulkan/VulkanAllocator.hpp"
 #include "Graphics/Vulkan/VulkanContext.hpp"
 
-#include <vulkan/vulkan.hpp>
-
 namespace Engine::Graphics
 {
     class VulkanModel

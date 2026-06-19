@@ -37,6 +37,9 @@
   - Depth-Buffering
 - ~Timer~
 - ProfilerPanel
+
+### v0.2.2
+
 - Inputmanagement
 - Camera
 

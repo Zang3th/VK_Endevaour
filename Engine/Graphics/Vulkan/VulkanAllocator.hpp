@@ -4,8 +4,6 @@
 
 #include "Graphics/Vulkan/VulkanDevice.hpp"
 
-#include <vulkan/vulkan.hpp>
-
 // Forward-Declaration
 using VmaAllocation = struct VmaAllocation_T*;
 

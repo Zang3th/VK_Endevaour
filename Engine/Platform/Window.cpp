@@ -6,8 +6,6 @@
 
 #include "Vendor/glfw/include/GLFW/glfw3.h"
 
-#include <vulkan/vulkan.hpp>
-
 namespace Engine::Platform
 {
     // ----- Public -----

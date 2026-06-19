@@ -1,8 +1,6 @@
 #include "Graphics/Vulkan/VulkanContext.hpp"
 #include "Graphics/Vulkan/VulkanDescriptorPool.hpp"
 
-#include <vulkan/vulkan.hpp>
-
 namespace Engine::Graphics
 {
     class ImGuiLayer
