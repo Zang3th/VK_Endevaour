@@ -60,14 +60,14 @@ namespace Engine::Graphics
                                     attrib.vertices[(3 * index.vertex_index) + 1],
                                     attrib.vertices[(3 * index.vertex_index) + 2] };
 
-                if (attrib.colors.size() > 0)
+                if (!attrib.colors.empty())
                 {
                     vertex.Color = { attrib.colors[(3 * index.vertex_index) + 0],
                                      attrib.colors[(3 * index.vertex_index) + 1],
                                      attrib.colors[(3 * index.vertex_index) + 2] };
                 }
 
-                if (attrib.texcoords.size() > 0)
+                if (!attrib.texcoords.empty())
                 {
                     vertex.TexCoord = {
                         attrib.texcoords[(2 * index.texcoord_index) + 0],

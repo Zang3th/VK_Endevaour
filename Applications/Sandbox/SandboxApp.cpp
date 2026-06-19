@@ -39,7 +39,7 @@ void Sandbox::Run()
 
     // Load mesh
     const Engine::Graphics::Mesh mesh =
-        Engine::Graphics::ObjLoader::LoadMeshFromFile("Applications/Sandbox/Models/viking_room.obj");
+        Engine::Graphics::ObjLoader::LoadMeshFromFile("Applications/Sandbox/Models/cow.obj");
 
     // Create 'hello_world_triangle' mesh
     // const Engine::Graphics::Mesh mesh;
