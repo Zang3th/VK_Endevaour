@@ -34,14 +34,14 @@
   - ~Descriptor Set Layouts~
   - ~Descriptor Sets~
   - ~Global Uniform Buffer~
-  - Depth-Buffering
 - ~Timer~
-- ProfilerPanel
 
 ### v0.2.2
 
+- ProfilerPanel
 - Inputmanagement
 - Camera
+- Depth-Buffering
 
 ---
 

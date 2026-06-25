@@ -14,8 +14,8 @@ Pipeline:
 VulkanGlobalUniforms:
   - ~Owns VulkanDescriptorSetLayout~
   - ~Owns VulkanDescriptorPool~
-  - Owns uniform buffers and allocations per frame-in-flight
-  - Owns descriptor sets per frame-in-flight
-  - Updates GlobalUniformData
+  - ~Owns uniform buffers and allocations per frame-in-flight~
+  - ~Owns descriptor sets per frame-in-flight~
+  - ~Updates GlobalUniformData~
   - ~Exposes descriptor set layout for pipeline creation~
   - ~Exposes descriptor set for rendering~

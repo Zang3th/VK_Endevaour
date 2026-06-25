@@ -30,5 +30,6 @@ namespace Engine::Graphics
     inline static constexpr u32 MAX_MODEL_COUNT    = 1;
     inline static constexpr u32 MAX_PIPELINE_COUNT = 1;
 
-    inline static constexpr u32 FRAMES_IN_FLIGHT = 3;
+    inline static constexpr u32 FRAMES_IN_FLIGHT     = 3;
+    inline static constexpr u32 DESCRIPTOR_SET_COUNT = 1; // Only one global descriptor set for now
 }

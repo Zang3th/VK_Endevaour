@@ -31,10 +31,12 @@ namespace Engine::Graphics
 
     void VulkanPipeline::CreatePipelineLayout()
     {
-        // TODO: Add descriptor sets for textures and uniform buffers (should come from shader)
-        const vk::PipelineLayoutCreateInfo pipelineLayoutInfo{
-            .setLayoutCount = 0, .pSetLayouts = nullptr, .pushConstantRangeCount = 0, .pPushConstantRanges = nullptr
-        };
+        ASSERT(m_Spec.DescriptorSetLayoutCount == 0 || m_Spec.DescriptorSetLayout, "Pipeline requires a valid layout!");
+
+        const vk::PipelineLayoutCreateInfo pipelineLayoutInfo{ .setLayoutCount = m_Spec.DescriptorSetLayoutCount,
+                                                               .pSetLayouts    = &m_Spec.DescriptorSetLayout,
+                                                               .pushConstantRangeCount = 0,
+                                                               .pPushConstantRanges    = nullptr };
 
         VK_VERIFY(m_Context->GetDevice()->GetHandle().createPipelineLayout(&pipelineLayoutInfo, nullptr, &m_Layout));
         LOG_INFO("Created pipeline layout ...");
@@ -46,7 +48,7 @@ namespace Engine::Graphics
 
         // Dynamic rendering specification
         const vk::Format format               = m_Context->GetSwapchain()->GetProperties().SurfaceFormat.format;
-        const u32        colorAttachmentCount = m_Context->GetSwapchain()->GetProperties().ColorAttachmentCount;
+        const u32        colorAttachmentCount = m_Context->GetSwapchain()->GetProperties().GetColorAttachmentCount();
         const vk::PipelineRenderingCreateInfo renderingInfo{ .colorAttachmentCount    = colorAttachmentCount,
                                                              .pColorAttachmentFormats = &format };
 

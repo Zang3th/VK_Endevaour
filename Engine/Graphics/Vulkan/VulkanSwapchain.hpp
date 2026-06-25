@@ -61,6 +61,8 @@ namespace Engine::Graphics
 
         // Frames
         std::array<VulkanFrameResources, FRAMES_IN_FLIGHT> m_FrameResources;
-        u32                                                m_CurrentFrame = 0;
+
+        // Index of current frame : 0 <-> frames-in-flight
+        u32 m_CurrentFrameIndex = 0;
     };
 }

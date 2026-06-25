@@ -18,8 +18,8 @@ namespace Engine::Graphics
 
         void Bind(vk::CommandBuffer commandBuffer) const;
 
-        [[nodiscard]] vk::Buffer GetVertexBuffer() const { return m_VertexBuffer; };
-        [[nodiscard]] vk::Buffer GetIndexBuffer() const { return m_IndexBuffer; };
+        [[nodiscard]] vk::Buffer GetVertexBuffer() const { return m_VertexBufferAlloc.Buffer; };
+        [[nodiscard]] vk::Buffer GetIndexBuffer() const { return m_IndexBufferAlloc.Buffer; };
         [[nodiscard]] u32        GetIndexCount() const { return m_Mesh->Indices.size(); };
         [[nodiscard]] u32        GetPipelineID() const { return m_PipelineID; };
 
@@ -29,12 +29,10 @@ namespace Engine::Graphics
         void CreateVertexBuffer();
         void CreateIndexBuffer();
 
-        VulkanContext* m_Context          = nullptr;
-        vk::Buffer     m_VertexBuffer     = nullptr;
-        VmaAllocation  m_VertexAllocation = nullptr;
-        vk::Buffer     m_IndexBuffer      = nullptr;
-        VmaAllocation  m_IndexAllocation  = nullptr;
-        const Mesh*    m_Mesh             = nullptr;
-        u32            m_PipelineID       = UINT32_MAX;
+        VulkanContext*   m_Context           = nullptr;
+        BufferAllocation m_VertexBufferAlloc = {};
+        BufferAllocation m_IndexBufferAlloc  = {};
+        const Mesh*      m_Mesh              = nullptr;
+        u32              m_PipelineID        = UINT32_MAX;
     };
 }

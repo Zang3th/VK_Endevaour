@@ -38,15 +38,21 @@ void Sandbox::Run()
     const Engine::u32 pipelineID = vkRenderer.CreatePipeline(vertexID, fragmentID);
 
     // Load mesh
-    const Engine::Graphics::Mesh mesh =
-        Engine::Graphics::ObjLoader::LoadMeshFromFile("Applications/Sandbox/Models/cow.obj");
+    // const Engine::Graphics::Mesh mesh =
+    //     Engine::Graphics::ObjLoader::LoadMeshFromFile("Applications/Sandbox/Models/cow.obj");
 
     // Create 'hello_world_triangle' mesh
-    // const Engine::Graphics::Mesh mesh;
-    // mesh.Vertices = { { .Position = { +0.0f, -0.5f, 0.0f }, .Color = { 1, 0, 0 }, .TexCoord = { 0, 0 } },
-    //                   { .Position = { +0.5f, +0.5f, 0.0f }, .Color = { 0, 1, 0 }, .TexCoord = { 1, 0 } },
-    //                   { .Position = { -0.5f, +0.5f, 0.0f }, .Color = { 0, 0, 1 }, .TexCoord = { 0, 1 } } };
-    // mesh.Indices  = { 0, 1, 2 };
+    const Engine::Graphics::Mesh mesh{
+        .Vertices = { { .Position = { +5.0f, +5.0f, 0.0f }, .Color = { 1, 0, 0 }, .TexCoord = { 0, 0 } },
+                      { .Position = { -5.0f, +5.0f, 0.0f }, .Color = { 0, 1, 0 }, .TexCoord = { 0, 0 } },
+                      { .Position = { +5.0f, -5.0f, 0.0f }, .Color = { 0, 0, 1 }, .TexCoord = { 0, 0 } },
+                      { .Position = { -5.0f, -5.0f, 0.0f }, .Color = { 1, 1, 1 }, .TexCoord = { 0, 0 } } },
+        // Project winding convention:
+        // Mesh indices are authored clockwise when viewed from the geometric front side in model space.
+        // The Vulkan projection flips clip-space Y (Projection[1][1] *= -1), which inverts the final
+        // screen-space winding. Therefore the rasterizer is configured with FrontFace = eCounterClockwise.
+        .Indices = { 0, 1, 2, 1, 3, 2 }
+    };
 
     // Create model from mesh
     const Engine::u32 modelID = vkRenderer.CreateModel(&mesh);

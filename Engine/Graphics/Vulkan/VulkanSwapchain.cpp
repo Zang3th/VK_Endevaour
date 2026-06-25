@@ -1,5 +1,7 @@
 #include "VulkanSwapchain.hpp"
 
+#include "Debug/LogTable.hpp"
+
 #include "Graphics/Vulkan/VulkanAssert.hpp"
 #include "Graphics/Vulkan/VulkanSwapchainUtils.hpp"
 
@@ -111,7 +113,7 @@ namespace Engine::Graphics
     [[nodiscard]] std::optional<SwapchainFrame> VulkanSwapchain::BeginFrame()
     {
         // Get current frame resources
-        VulkanFrameResources* currentFrameResources = &m_FrameResources.at(m_CurrentFrame);
+        VulkanFrameResources* currentFrameResources = &m_FrameResources.at(m_CurrentFrameIndex);
 
         // Wait for this frame-slot's previous submission to finish
         VK_VERIFY(m_Device->GetHandle().waitForFences(1, &currentFrameResources->InFlight, vk::True, UINT64_MAX));
@@ -140,6 +142,7 @@ namespace Engine::Graphics
 
         return SwapchainFrame{ .Resources  = currentFrameResources,
                                .ImageIndex = imageIndex,
+                               .FrameIndex = m_CurrentFrameIndex,
                                .Extent     = m_Properties.Extent };
     }
 
@@ -176,7 +179,7 @@ namespace Engine::Graphics
         // Begin rendering
         const vk::RenderingInfo renderingInfo{ .renderArea = { .offset = { .x = 0, .y = 0 }, .extent = frame.Extent },
                                                .layerCount = 1,
-                                               .colorAttachmentCount = m_Properties.ColorAttachmentCount,
+                                               .colorAttachmentCount = m_Properties.GetColorAttachmentCount(),
                                                .pColorAttachments    = &colorAttachment };
 
         cmdBuffer.beginRendering(&renderingInfo);
@@ -272,12 +275,16 @@ namespace Engine::Graphics
 
         VK_VERIFY(m_Device->GetHandle().createSwapchainKHR(&swapchainCreate, nullptr, &m_CurrentSwapchain));
 
-        LOG_WARN("Created swapchain ... (Size: {}x{}, Format: {}, Color: {}, Mode: {})",
-                 m_Properties.Extent.width,
-                 m_Properties.Extent.height,
-                 vk::to_string(m_Properties.SurfaceFormat.format),
-                 vk::to_string(m_Properties.SurfaceFormat.colorSpace),
-                 vk::to_string(m_Properties.PresentMode));
+        LOG_INFO("Created swapchain ...");
+        LOG_TABLE_BEGIN(7);
+        LOG_TABLE_COLUMN("Extent", "{}x{}", m_Properties.Extent.width, m_Properties.Extent.height);
+        LOG_TABLE_COLUMN("Images", "{}", m_Properties.MinImageCount);
+        LOG_TABLE_COLUMN("Format", "{}", vk::to_string(m_Properties.SurfaceFormat.format));
+        LOG_TABLE_COLUMN("ColorSpace", "{}", vk::to_string(m_Properties.SurfaceFormat.colorSpace));
+        LOG_TABLE_COLUMN("PresentMode", "{}", vk::to_string(m_Properties.PresentMode));
+        LOG_TABLE_COLUMN("Usage", "{}", vk::to_string(vk::ImageUsageFlagBits::eColorAttachment));
+        LOG_TABLE_COLUMN("Recreated", "{}", m_OldSwapchain ? "Yes" : "No");
+        LOG_TABLE_END();
 
         if (m_OldSwapchain != nullptr)
         {
@@ -403,6 +410,6 @@ namespace Engine::Graphics
 
     void VulkanSwapchain::AdvanceFrameCount()
     {
-        m_CurrentFrame = (m_CurrentFrame + 1) % FRAMES_IN_FLIGHT;
+        m_CurrentFrameIndex = (m_CurrentFrameIndex + 1) % FRAMES_IN_FLIGHT;
     }
 }

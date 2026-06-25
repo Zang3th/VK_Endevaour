@@ -15,15 +15,15 @@ namespace Engine::Graphics
     VulkanModel::~VulkanModel()
     {
         LOG_INFO("VulkanModel::Destructor() ...");
-        VulkanAllocator::DestroyBuffer(m_VertexBuffer, m_VertexAllocation);
-        VulkanAllocator::DestroyBuffer(m_IndexBuffer, m_IndexAllocation);
+        VulkanAllocator::DestroyBuffer(m_VertexBufferAlloc);
+        VulkanAllocator::DestroyBuffer(m_IndexBufferAlloc);
     }
 
     void VulkanModel::Bind(vk::CommandBuffer commandBuffer) const
     {
         const vk::DeviceSize offset = 0;
-        commandBuffer.bindVertexBuffers(0, 1, &m_VertexBuffer, &offset);
-        commandBuffer.bindIndexBuffer(m_IndexBuffer, 0, vk::IndexType::eUint32);
+        commandBuffer.bindVertexBuffers(0, 1, &m_VertexBufferAlloc.Buffer, &offset);
+        commandBuffer.bindIndexBuffer(m_IndexBufferAlloc.Buffer, 0, vk::IndexType::eUint32);
     }
 
     // ----- Private -----
@@ -33,27 +33,31 @@ namespace Engine::Graphics
         ASSERT(!m_Mesh->Vertices.empty(), "Model has no vertex data!");
 
         // Create vertex buffer
-        auto [vertexBuffer, vertexAllocation] = VulkanAllocator::AllocateBuffer(
-            m_Mesh->GetVerticeSize(),
-            vk::BufferUsageFlagBits::eVertexBuffer | vk::BufferUsageFlagBits::eTransferDst,
-            MemoryUsage::eGPUOnly);
-        m_VertexBuffer     = vertexBuffer;
-        m_VertexAllocation = vertexAllocation;
+        const BufferSpecification vboSpec{ .Size             = m_Mesh->GetVerticeSize(),
+                                           .BufferUsageFlags = vk::BufferUsageFlagBits::eVertexBuffer
+                                                               | vk::BufferUsageFlagBits::eTransferDst,
+                                           .MemoryUsage      = MemoryUsage::eGPUOnly,
+                                           .MemoryFlags      = vk::MemoryPropertyFlagBits::eDeviceLocal };
+        m_VertexBufferAlloc = VulkanAllocator::AllocateBuffer(vboSpec);
 
         // Create staging buffer
-        auto [stagingBuffer, stagingAllocation] = VulkanAllocator::AllocateBuffer(
-            m_Mesh->GetVerticeSize(), vk::BufferUsageFlagBits::eTransferSrc, MemoryUsage::eCPUOnly);
+        const BufferSpecification stagingSpec{ .Size             = m_Mesh->GetVerticeSize(),
+                                               .BufferUsageFlags = vk::BufferUsageFlagBits::eTransferSrc,
+                                               .MemoryUsage      = MemoryUsage::eCPUOnly,
+                                               .MemoryFlags      = vk::MemoryPropertyFlagBits::eHostVisible
+                                                                   | vk::MemoryPropertyFlagBits::eHostCoherent };
+        const BufferAllocation    stagingBufferAlloc = VulkanAllocator::AllocateBuffer(stagingSpec);
 
         // Fill out staging buffer
-        void* dataPtr = VulkanAllocator::MapMemory(stagingAllocation);
+        void* dataPtr = VulkanAllocator::MapMemory(stagingBufferAlloc.Allocation);
         std::memcpy(dataPtr, m_Mesh->Vertices.data(), m_Mesh->GetVerticeSize());
-        VulkanAllocator::UnmapMemory(stagingAllocation);
+        VulkanAllocator::UnmapMemory(stagingBufferAlloc.Allocation);
 
         // Transfer data from CPU to GPU
-        m_Context->CopyBuffer(stagingBuffer, m_VertexBuffer, m_Mesh->GetVerticeSize());
+        m_Context->CopyBuffer(stagingBufferAlloc.Buffer, m_VertexBufferAlloc.Buffer, m_Mesh->GetVerticeSize());
 
         // Destroy staging buffer
-        VulkanAllocator::DestroyBuffer(stagingBuffer, stagingAllocation);
+        VulkanAllocator::DestroyBuffer(stagingBufferAlloc);
 
         LOG_INFO("Created and uploaded vertex buffer ...");
     }
@@ -63,27 +67,31 @@ namespace Engine::Graphics
         ASSERT(!m_Mesh->Indices.empty(), "Model has no index data!");
 
         // Create index buffer
-        auto [indexBuffer, indexAllocation] = VulkanAllocator::AllocateBuffer(
-            m_Mesh->GetIndiceSize(),
-            vk::BufferUsageFlagBits::eIndexBuffer | vk::BufferUsageFlagBits::eTransferDst,
-            MemoryUsage::eGPUOnly);
-        m_IndexBuffer     = indexBuffer;
-        m_IndexAllocation = indexAllocation;
+        const BufferSpecification iboSpec{ .Size             = m_Mesh->GetIndiceSize(),
+                                           .BufferUsageFlags = vk::BufferUsageFlagBits::eIndexBuffer
+                                                               | vk::BufferUsageFlagBits::eTransferDst,
+                                           .MemoryUsage      = MemoryUsage::eGPUOnly,
+                                           .MemoryFlags      = vk::MemoryPropertyFlagBits::eDeviceLocal };
+        m_IndexBufferAlloc = VulkanAllocator::AllocateBuffer(iboSpec);
 
         // Create staging buffer
-        auto [stagingBuffer, stagingAllocation] = VulkanAllocator::AllocateBuffer(
-            m_Mesh->GetIndiceSize(), vk::BufferUsageFlagBits::eTransferSrc, MemoryUsage::eCPUOnly);
+        const BufferSpecification stagingSpec{ .Size             = m_Mesh->GetIndiceSize(),
+                                               .BufferUsageFlags = vk::BufferUsageFlagBits::eTransferSrc,
+                                               .MemoryUsage      = MemoryUsage::eCPUOnly,
+                                               .MemoryFlags      = vk::MemoryPropertyFlagBits::eHostVisible
+                                                                   | vk::MemoryPropertyFlagBits::eHostCoherent };
+        const BufferAllocation    stagingBufferAlloc = VulkanAllocator::AllocateBuffer(stagingSpec);
 
         // Fill out staging buffer
-        void* dataPtr = VulkanAllocator::MapMemory(stagingAllocation);
+        void* dataPtr = VulkanAllocator::MapMemory(stagingBufferAlloc.Allocation);
         std::memcpy(dataPtr, m_Mesh->Indices.data(), m_Mesh->GetIndiceSize());
-        VulkanAllocator::UnmapMemory(stagingAllocation);
+        VulkanAllocator::UnmapMemory(stagingBufferAlloc.Allocation);
 
         // Transfer data from CPU to GPU
-        m_Context->CopyBuffer(stagingBuffer, m_IndexBuffer, m_Mesh->GetIndiceSize());
+        m_Context->CopyBuffer(stagingBufferAlloc.Buffer, m_IndexBufferAlloc.Buffer, m_Mesh->GetIndiceSize());
 
         // Destroy staging buffer
-        VulkanAllocator::DestroyBuffer(stagingBuffer, stagingAllocation);
+        VulkanAllocator::DestroyBuffer(stagingBufferAlloc);
 
         LOG_INFO("Created and uploaded index buffer ...");
     }

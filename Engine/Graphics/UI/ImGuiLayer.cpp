@@ -128,6 +128,7 @@ namespace Engine::Graphics
         ASSERT(ImGui_ImplGlfw_InitForVulkan(Platform::Window::GetHandle(), true),
                "ImGui_ImplGlfw_InitForVulkan failed!");
         ASSERT(ImGui_ImplVulkan_Init(&initInfo), "ImGui_ImplVulkan_Init failed!");
-        LOG_INFO("Initialized ImGui!");
+
+        LOG_INFO("Initialized ImGui ...");
     }
 }

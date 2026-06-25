@@ -24,6 +24,20 @@ namespace Engine::Graphics
         eAutoPreferHost   = 9
     };
 
+    struct BufferAllocation
+    {
+        vk::Buffer    Buffer;
+        VmaAllocation Allocation;
+    };
+
+    struct BufferSpecification
+    {
+        vk::DeviceSize          Size;
+        vk::BufferUsageFlags    BufferUsageFlags;
+        MemoryUsage             MemoryUsage;
+        vk::MemoryPropertyFlags MemoryFlags;
+    };
+
     class VulkanAllocator
     {
     public:
@@ -32,17 +46,10 @@ namespace Engine::Graphics
         static void Init(const VulkanDevice* device, vk::Instance instance, u32 apiVersion);
         static void Shutdown();
 
-        static std::pair<vk::Buffer, VmaAllocation> AllocateBuffer(vk::DeviceSize       size,
-                                                                   vk::BufferUsageFlags usage,
-                                                                   MemoryUsage          memoryUsage);
-        static void                                 DestroyBuffer(vk::Buffer buffer, VmaAllocation allocation);
+        static BufferAllocation AllocateBuffer(const BufferSpecification& spec);
+        static void             DestroyBuffer(const BufferAllocation& bufferAlloc);
 
         static void* MapMemory(VmaAllocation allocation);
         static void  UnmapMemory(VmaAllocation allocation);
-
-    private:
-        static VmaAllocation InternalAllocateBuffer(const vk::BufferCreateInfo& bufferCreateInfo,
-                                                    MemoryUsage                 memoryUsage,
-                                                    vk::Buffer&                 outBuffer);
     };
 }

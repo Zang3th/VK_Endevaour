@@ -4,6 +4,8 @@
 
 #include "Graphics/Vulkan/VulkanAssert.hpp"
 
+#include <string_view>
+
 // Deactivate clang extensions
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wmissing-field-initializers"
@@ -51,6 +53,33 @@ namespace
             return VMA_MEMORY_USAGE_AUTO_PREFER_HOST;
         }
     };
+
+    inline std::string_view MemoryUsageToString(Engine::Graphics::MemoryUsage usage)
+    {
+        switch (usage)
+        {
+        case Engine::Graphics::MemoryUsage::eUnknown:
+            return "Unknown";
+        case Engine::Graphics::MemoryUsage::eGPUOnly:
+            return "GPUOnly";
+        case Engine::Graphics::MemoryUsage::eCPUOnly:
+            return "CPUOnly";
+        case Engine::Graphics::MemoryUsage::eCPUToGPU:
+            return "CPUToGPU";
+        case Engine::Graphics::MemoryUsage::eGPUToCPU:
+            return "GPUToCPU";
+        case Engine::Graphics::MemoryUsage::eCPUCopy:
+            return "CPUCopy";
+        case Engine::Graphics::MemoryUsage::eGPULazy:
+            return "GPULazy";
+        case Engine::Graphics::MemoryUsage::eAuto:
+            return "Auto";
+        case Engine::Graphics::MemoryUsage::eAutoPreferDevice:
+            return "AutoPreferDevice";
+        case Engine::Graphics::MemoryUsage::eAutoPreferHost:
+            return "AutoPreferHost";
+        }
+    };
 }
 
 namespace Engine::Graphics
@@ -69,18 +98,37 @@ namespace Engine::Graphics
         LOG_INFO("Created allocator with vma ...");
     }
 
-    std::pair<vk::Buffer, VmaAllocation> VulkanAllocator::AllocateBuffer(vk::DeviceSize       size,
-                                                                         vk::BufferUsageFlags usage,
-                                                                         MemoryUsage          memoryUsage)
+    BufferAllocation VulkanAllocator::AllocateBuffer(const BufferSpecification& spec)
     {
-        const vk::BufferCreateInfo bufferInfo{ .size        = size,
-                                               .usage       = usage,
+        ASSERT(spec.Size > 0, "Provided buffer size was less or equal to zero!");
+
+        const vk::BufferCreateInfo bufferInfo{ .size        = spec.Size,
+                                               .usage       = spec.BufferUsageFlags,
                                                .sharingMode = vk::SharingMode::eExclusive };
 
-        vk::Buffer    buffer;
-        VmaAllocation allocation = VulkanAllocator::InternalAllocateBuffer(bufferInfo, memoryUsage, buffer);
+        VmaAllocationCreateInfo allocCreateInfo{};
+        allocCreateInfo.requiredFlags = (VkMemoryPropertyFlags)spec.MemoryFlags;
+        allocCreateInfo.usage         = MapMemoryUsage(spec.MemoryUsage);
 
-        return { buffer, allocation };
+        vk::Buffer        buffer;
+        VmaAllocation     allocation{};
+        VmaAllocationInfo allocationInfo{};
+
+        VK_VERIFY((vk::Result)(vmaCreateBuffer(s_Allocator,
+                                               (const VkBufferCreateInfo*)&bufferInfo,
+                                               &allocCreateInfo,
+                                               (VkBuffer*)&buffer,
+                                               &allocation,
+                                               &allocationInfo)));
+        s_totalMemory += allocationInfo.size;
+
+        LOG_PERF("Allocated {} of '{}' memory as {}. Total: {} ...",
+                 Core::Utility::BytesToString(allocationInfo.size),
+                 MemoryUsageToString(spec.MemoryUsage),
+                 vk::to_string(spec.BufferUsageFlags),
+                 Core::Utility::BytesToString(s_totalMemory));
+
+        return { .Buffer = buffer, .Allocation = allocation };
     }
 
     void VulkanAllocator::Shutdown()
@@ -88,16 +136,20 @@ namespace Engine::Graphics
         vmaDestroyAllocator(s_Allocator);
     }
 
-    void VulkanAllocator::DestroyBuffer(vk::Buffer buffer, VmaAllocation allocation)
+    void VulkanAllocator::DestroyBuffer(const BufferAllocation& bufferAlloc)
     {
         VmaAllocationInfo allocationInfo{};
-        vmaGetAllocationInfo(s_Allocator, allocation, &allocationInfo);
+        vmaGetAllocationInfo(s_Allocator, bufferAlloc.Allocation, &allocationInfo);
+
+        VkMemoryPropertyFlags memoryFlags{};
+        vmaGetAllocationMemoryProperties(s_Allocator, bufferAlloc.Allocation, &memoryFlags);
+
         s_totalMemory -= allocationInfo.size;
+        vmaDestroyBuffer(s_Allocator, (VkBuffer)bufferAlloc.Buffer, bufferAlloc.Allocation);
 
-        vmaDestroyBuffer(s_Allocator, (VkBuffer)buffer, allocation);
-
-        LOG_PERF("Allocator freed {} of memory. Total memory consumption is {} ...",
+        LOG_PERF("Freed {} from {} memory. Total: {} ...",
                  Core::Utility::BytesToString(allocationInfo.size),
+                 vk::to_string((vk::MemoryPropertyFlags)memoryFlags),
                  Core::Utility::BytesToString(s_totalMemory));
     }
 
@@ -111,33 +163,5 @@ namespace Engine::Graphics
     void VulkanAllocator::UnmapMemory(VmaAllocation allocation)
     {
         vmaUnmapMemory(s_Allocator, allocation);
-    }
-
-    // ----- Private -----
-
-    VmaAllocation VulkanAllocator::InternalAllocateBuffer(const vk::BufferCreateInfo& bufferCreateInfo,
-                                                          MemoryUsage                 usage,
-                                                          vk::Buffer&                 outBuffer)
-    {
-        ASSERT(bufferCreateInfo.size > 0, "Provided buffer size was less or equal to zero!");
-
-        VmaAllocationCreateInfo allocCreateInfo = {};
-        allocCreateInfo.usage                   = MapMemoryUsage(usage);
-
-        VmaAllocation     allocation;
-        VmaAllocationInfo allocationInfo{};
-        VK_VERIFY((vk::Result)(vmaCreateBuffer(s_Allocator,
-                                               (const VkBufferCreateInfo*)&bufferCreateInfo,
-                                               &allocCreateInfo,
-                                               (VkBuffer*)&outBuffer,
-                                               &allocation,
-                                               &allocationInfo)));
-        s_totalMemory += allocationInfo.size;
-
-        LOG_PERF("Allocator allocated {} of memory. Total memory consumption is {} ...",
-                 Core::Utility::BytesToString(allocationInfo.size),
-                 Core::Utility::BytesToString(s_totalMemory));
-
-        return allocation;
     }
 }
