@@ -48,6 +48,19 @@ namespace Engine::Core
         ASSERT(m_FrameTiming.DeltaMilliseconds >= 0, "Clock provided negative delta time ...");
         m_FrameTiming.DeltaSeconds = m_FrameTiming.DeltaMilliseconds * 0.001f;
 
+        // Update benchmark
+        if (m_FrameTiming.DeltaMilliseconds > m_FrameTiming.Benchmark.HighestDeltaMilliseconds)
+        {
+            m_FrameTiming.Benchmark.HighestDeltaMilliseconds = m_FrameTiming.DeltaMilliseconds;
+            m_FrameTiming.Benchmark.HighestDeltaFrame        = m_FrameTiming.FrameCounter;
+        }
+        if (m_FrameTiming.DeltaMilliseconds > 0
+            && m_FrameTiming.DeltaMilliseconds < m_FrameTiming.Benchmark.LowestDeltaMilliseconds)
+        {
+            m_FrameTiming.Benchmark.LowestDeltaMilliseconds = m_FrameTiming.DeltaMilliseconds;
+            m_FrameTiming.Benchmark.LowestDeltaFrame        = m_FrameTiming.FrameCounter;
+        }
+
         // Add up total time
         m_FrameTiming.TotalMilliseconds += m_FrameTiming.DeltaMilliseconds;
         m_FrameTiming.TotalSeconds = m_FrameTiming.TotalMilliseconds * 0.001f;

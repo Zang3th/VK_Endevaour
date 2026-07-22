@@ -3,6 +3,7 @@
 #include "Core/Timer.hpp"
 
 #include "Graphics/UI/ImGuiLayer.hpp"
+#include "Graphics/UI/ProfilerPanel.hpp"
 
 #include "Graphics/Vulkan/VulkanContext.hpp"
 #include "Graphics/Vulkan/VulkanGlobalUniforms.hpp"
@@ -50,6 +51,7 @@ namespace Engine::Graphics
         // Vulkan context, UI and swapchain shortcut for quick access
         Scope<VulkanContext> m_Context;
         Scope<ImGuiLayer>    m_ImGuiLayer;
+        Scope<ProfilerPanel> m_ProfilerPanel;
         VulkanSwapchain*     m_Swapchain = nullptr;
 
         // Uniform stuff

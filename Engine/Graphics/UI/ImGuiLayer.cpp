@@ -44,8 +44,6 @@ namespace Engine::Graphics
         ImGui_ImplVulkan_NewFrame();
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
-
-        ImGui::ShowDemoWindow();
     }
 
     void ImGuiLayer::RenderFrame(vk::CommandBuffer commandBuffer)

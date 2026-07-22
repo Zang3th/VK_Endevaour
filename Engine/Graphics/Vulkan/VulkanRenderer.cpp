@@ -10,8 +10,10 @@ namespace Engine::Graphics
     {
         m_Context              = MakeScope<VulkanContext>();
         m_ImGuiLayer           = MakeScope<ImGuiLayer>(m_Context.get());
+        m_ProfilerPanel        = MakeScope<ProfilerPanel>();
         m_VulkanGlobalUniforms = MakeScope<VulkanGlobalUniforms>(m_Context.get());
-        m_Swapchain            = m_Context->GetSwapchain();
+
+        m_Swapchain = m_Context->GetSwapchain();
     }
 
     VulkanRenderer::~VulkanRenderer()
@@ -155,13 +157,11 @@ namespace Engine::Graphics
         }
     }
 
-    void VulkanRenderer::RenderUI(vk::CommandBuffer cmdBuffer, [[maybe_unused]] const Core::FrameTiming& frameTiming)
+    void VulkanRenderer::RenderUI(vk::CommandBuffer cmdBuffer, const Core::FrameTiming& frameTiming)
     {
         m_ImGuiLayer->BeginFrame();
 
-        // TODO: Render ProfilerPanel
-
-        // TODO: Visualize frame timing
+        m_ProfilerPanel->Render(frameTiming);
 
         m_ImGuiLayer->RenderFrame(cmdBuffer);
     }

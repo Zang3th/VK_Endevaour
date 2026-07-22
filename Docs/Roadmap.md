@@ -30,7 +30,7 @@
 
 ### v0.2.1
 
-- Vulkan:
+- ~Vulkan:~
   - ~Descriptor Set Layouts~
   - ~Descriptor Sets~
   - ~Global Uniform Buffer~

@@ -3,9 +3,19 @@
 #include "Core/Types.hpp"
 
 #include <chrono>
+#include <limits>
 
 namespace Engine::Core
 {
+    struct FrameBenchmark
+    {
+        f64 HighestDeltaMilliseconds = 0.0;
+        f64 LowestDeltaMilliseconds  = std::numeric_limits<f64>::max();
+
+        u64 HighestDeltaFrame = 0;
+        u64 LowestDeltaFrame  = 0;
+    };
+
     struct FrameTiming
     {
         f64 DeltaSeconds      = 0.0;
@@ -18,6 +28,8 @@ namespace Engine::Core
 
         // Amount of frames that got rendered
         u64 FrameCounter = 0;
+
+        FrameBenchmark Benchmark;
     };
 
     class Timer
