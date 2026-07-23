@@ -74,8 +74,8 @@ namespace Engine::Graphics
         ASSERT(renderPacket.Frame.has_value(), "Application should only commit valid frames!");
         const SwapchainFrame frame = *renderPacket.Frame;
 
-        // Reset drawcall counter
-        m_DrawcallCount = 0;
+        // Reset draw stats
+        m_RenderStats = {};
 
         m_Swapchain->BeginRendering(frame, glm::vec4(1.0, 0.0, 1.0, 1.0));
 
@@ -149,10 +149,15 @@ namespace Engine::Graphics
             // Check for pipeline
             if (model->GetPipelineID() == pipelineID)
             {
-                // Bind, draw, increment
+                // Bind and draw
                 model->Bind(cmdBuffer);
                 cmdBuffer.drawIndexed(model->GetIndexCount(), 1, 0, 0, 0);
-                m_DrawcallCount++;
+
+                // Save stats
+                m_RenderStats.DrawCalls++;
+                m_RenderStats.Models++;
+                m_RenderStats.Vertices += model->GetVerticeCount();
+                m_RenderStats.Indices += model->GetIndexCount();
             }
         }
     }
@@ -161,7 +166,7 @@ namespace Engine::Graphics
     {
         m_ImGuiLayer->BeginFrame();
 
-        m_ProfilerPanel->Render(frameTiming);
+        m_ProfilerPanel->Render(frameTiming, m_RenderStats);
 
         m_ImGuiLayer->RenderFrame(cmdBuffer);
     }

@@ -10,18 +10,11 @@
 #include "Graphics/Vulkan/VulkanGlobals.hpp"
 #include "Graphics/Vulkan/VulkanModel.hpp"
 #include "Graphics/Vulkan/VulkanPipeline.hpp"
+#include "Graphics/Vulkan/VulkanRendererStructs.hpp"
 #include "Graphics/Vulkan/VulkanShader.hpp"
 
 namespace Engine::Graphics
 {
-    struct RenderPacket
-    {
-        std::optional<SwapchainFrame> Frame;
-        u32                           PipelineID = 0;
-
-        [[nodiscard]] bool IsValid() const { return Frame.has_value(); }
-    };
-
     class VulkanRenderer
     {
     public:
@@ -66,6 +59,7 @@ namespace Engine::Graphics
         u32 m_ShaderIndex   = 0;
         u32 m_ModelIndex    = 0;
         u32 m_PipelineIndex = 0;
-        u32 m_DrawcallCount = 0;
+
+        RenderStats m_RenderStats;
     };
 }

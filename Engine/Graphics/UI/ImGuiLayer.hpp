@@ -18,6 +18,7 @@ namespace Engine::Graphics
     private:
         void CreateDescriptorPool();
         void Init();
+        void ConfigureStyle();
 
         VulkanContext*              m_Context;
         Scope<VulkanDescriptorPool> m_DescriptorPool;

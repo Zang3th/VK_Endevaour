@@ -38,9 +38,9 @@
 
 ### v0.2.2
 
-- ProfilerPanel
-- Inputmanagement
+- ~ProfilerPanel~
 - Camera
+- CameraController
 - Depth-Buffering
 
 ---

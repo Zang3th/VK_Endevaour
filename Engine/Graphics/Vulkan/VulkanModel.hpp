@@ -20,6 +20,7 @@ namespace Engine::Graphics
 
         [[nodiscard]] vk::Buffer GetVertexBuffer() const { return m_VertexBufferAlloc.Buffer; };
         [[nodiscard]] vk::Buffer GetIndexBuffer() const { return m_IndexBufferAlloc.Buffer; };
+        [[nodiscard]] u32        GetVerticeCount() const { return m_Mesh->Vertices.size(); };
         [[nodiscard]] u32        GetIndexCount() const { return m_Mesh->Indices.size(); };
         [[nodiscard]] u32        GetPipelineID() const { return m_PipelineID; };
 
