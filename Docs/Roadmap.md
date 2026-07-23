@@ -10,7 +10,6 @@
 - ~Scripts:~
   - ~CheckDependencies~
   - ~BuildEngine~
-  - ...
 - ~Frame System Refactor:~
   - ~Synchronization Cleanup~
   - ~Swapchain Stability~
@@ -21,27 +20,31 @@
 
 ### v0.2.0
 
-- ~Testing Framework~
-- ~Internal Math Library:~
-  - ~Scalar Grid~
+- ~Testing framework~
+- ~Internal math library:~
+  - ~ScalarGrid~
 - ~Vulkan:~
-  - ~Descriptor Pools~
-- ~ImGui Integration~
+  - ~DescriptorPool~
+- ~ImGui integration~
 
 ### v0.2.1
 
 - ~Vulkan:~
-  - ~Descriptor Set Layouts~
-  - ~Descriptor Sets~
-  - ~Global Uniform Buffer~
+  - ~DescriptorSetLayout~
+  - ~DescriptorSets~
+  - ~GlobalUniformBuffer~
 - ~Timer~
 
 ### v0.2.2
 
 - ~ProfilerPanel~
+- Vulkan:
+  - Depth-Buffering
+
+### v0.2.3
+
 - Camera
 - CameraController
-- Depth-Buffering
 
 ---
 
