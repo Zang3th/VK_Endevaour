@@ -77,7 +77,7 @@ namespace Engine::Graphics
         // Reset draw stats
         m_RenderStats = {};
 
-        m_Swapchain->BeginRendering(frame, glm::vec4(1.0, 0.0, 1.0, 1.0));
+        m_Swapchain->BeginRendering(frame, glm::vec4(0.5, 0.5, 0.5, 1.0));
 
         SetDynamicStates(frame.Resources->CommandBuffer, frame.Extent);
         UpdateGlobalUniforms(frame.Extent, frame.FrameIndex, frameTiming);
@@ -135,7 +135,7 @@ namespace Engine::Graphics
         cmdBuffer.bindDescriptorSets(vk::PipelineBindPoint::eGraphics,
                                      m_Pipelines.at(pipelineID)->GetLayout(),
                                      0,
-                                     DESCRIPTOR_SET_COUNT,
+                                     GLOBAL_DESCRIPTOR_SET_LAYOUT_COUNT,
                                      m_VulkanGlobalUniforms->GetDescriptorSet(frameIndex),
                                      0,
                                      nullptr);

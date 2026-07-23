@@ -179,7 +179,7 @@ namespace Engine::Graphics
         // Begin rendering
         const vk::RenderingInfo renderingInfo{ .renderArea = { .offset = { .x = 0, .y = 0 }, .extent = frame.Extent },
                                                .layerCount = 1,
-                                               .colorAttachmentCount = m_Properties.GetColorAttachmentCount(),
+                                               .colorAttachmentCount = GLOBAL_COLOR_ATTACHMENT_COUNT,
                                                .pColorAttachments    = &colorAttachment };
 
         cmdBuffer.beginRendering(&renderingInfo);

@@ -10,7 +10,7 @@ namespace Engine::Graphics
         VulkanShader*           VertexShader             = nullptr;
         VulkanShader*           FragmentShader           = nullptr;
         vk::DescriptorSetLayout DescriptorSetLayout      = nullptr;
-        u32                     DescriptorSetLayoutCount = DESCRIPTOR_SET_COUNT;
+        u32                     DescriptorSetLayoutCount = GLOBAL_DESCRIPTOR_SET_LAYOUT_COUNT;
         vk::Bool32              DepthTest                = vk::False;
         vk::Bool32              DepthWrite               = vk::False;
         vk::CompareOp           DepthOperator            = vk::CompareOp::eLessOrEqual;

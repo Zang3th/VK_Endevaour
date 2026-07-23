@@ -29,9 +29,6 @@ namespace Engine::Graphics
         vk::SurfaceTransformFlagBitsKHR Transform     = vk::SurfaceTransformFlagBitsKHR::eIdentity;
 
         u32 MinImageCount = 0;
-
-        // WARN: Hardcoded for now. Will break for values > 1
-        [[nodiscard]] constexpr u32 GetColorAttachmentCount() const { return 1; }
     };
 
     struct SwapchainImage

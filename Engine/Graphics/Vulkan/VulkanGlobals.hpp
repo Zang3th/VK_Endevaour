@@ -27,9 +27,20 @@ namespace Engine::Graphics
     // clang-format on
 
     inline static constexpr u32 MAX_SHADER_COUNT   = 2;
-    inline static constexpr u32 MAX_MODEL_COUNT    = 1;
+    inline static constexpr u32 MAX_MODEL_COUNT    = 2;
     inline static constexpr u32 MAX_PIPELINE_COUNT = 1;
 
-    inline static constexpr u32 FRAMES_IN_FLIGHT     = 3;
-    inline static constexpr u32 DESCRIPTOR_SET_COUNT = 1; // Only one global descriptor set for now
+    inline static constexpr u32 FRAMES_IN_FLIGHT = 3;
+
+    // Number of color attachments written by the graphics pipeline during dynamic rendering.
+    // Currently only the swapchain color image at attachment location 0 is used.
+    inline static constexpr u32 GLOBAL_COLOR_ATTACHMENT_COUNT = 1;
+
+    // Number of descriptor set layouts used by the pipeline layout.
+    // Currently only set 0, containing global frame uniforms, is defined.
+    inline static constexpr u32 GLOBAL_DESCRIPTOR_SET_LAYOUT_COUNT = 1;
+
+    // Number of uniform buffer descriptors at set 0, binding 0.
+    // One descriptor references the complete GlobalUniformData buffer for the current frame.
+    inline static constexpr u32 GLOBAL_UNIFORM_BINDING_DESCRIPTOR_COUNT = 1;
 }

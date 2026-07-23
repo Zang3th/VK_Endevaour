@@ -88,10 +88,8 @@ namespace Engine::Graphics
 
         // Dynamic rendering specification
         const vk::Format                      format = m_Context->GetSwapchain()->GetProperties().SurfaceFormat.format;
-        const vk::PipelineRenderingCreateInfo renderingInfo{
-            .colorAttachmentCount    = m_Context->GetSwapchain()->GetProperties().GetColorAttachmentCount(),
-            .pColorAttachmentFormats = &format
-        };
+        const vk::PipelineRenderingCreateInfo renderingInfo{ .colorAttachmentCount    = GLOBAL_COLOR_ATTACHMENT_COUNT,
+                                                             .pColorAttachmentFormats = &format };
 
         const ImGui_ImplVulkan_PipelineInfo pipelineInfo{
             .RenderPass                  = nullptr,

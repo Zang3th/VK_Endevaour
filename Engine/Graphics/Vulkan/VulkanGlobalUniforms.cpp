@@ -55,7 +55,7 @@ namespace Engine::Graphics
     {
         const vk::DescriptorSetLayoutBinding binding{ .binding            = 0,
                                                       .descriptorType     = vk::DescriptorType::eUniformBuffer,
-                                                      .descriptorCount    = 1,
+                                                      .descriptorCount    = GLOBAL_UNIFORM_BINDING_DESCRIPTOR_COUNT,
                                                       .stageFlags         = vk::ShaderStageFlagBits::eVertex,
                                                       .pImmutableSamplers = nullptr };
 
