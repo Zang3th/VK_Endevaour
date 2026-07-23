@@ -38,15 +38,15 @@ void Sandbox::Run()
     const Engine::u32 pipelineID = vkRenderer.CreatePipeline(vertexID, fragmentID);
 
     // Load mesh
-    // const Engine::Graphics::Mesh mesh =
-    //     Engine::Graphics::ObjLoader::LoadMeshFromFile("Applications/Sandbox/Models/cow.obj");
+    const Engine::Graphics::Mesh cowMesh = Engine::Graphics::ObjLoader::LoadMeshFromFile(
+        "Applications/Sandbox/Models/cow.obj", Engine::Graphics::Color::RANDOMIZE);
 
     // Create 'hello_world_triangle' mesh
-    const Engine::Graphics::Mesh mesh{
-        .Vertices = { { .Position = { +5.0f, +5.0f, 0.0f }, .Color = { 1, 0, 0 }, .TexCoord = { 0, 0 } },
-                      { .Position = { -5.0f, +5.0f, 0.0f }, .Color = { 0, 1, 0 }, .TexCoord = { 0, 0 } },
-                      { .Position = { +5.0f, -5.0f, 0.0f }, .Color = { 0, 0, 1 }, .TexCoord = { 0, 0 } },
-                      { .Position = { -5.0f, -5.0f, 0.0f }, .Color = { 1, 1, 1 }, .TexCoord = { 0, 0 } } },
+    const Engine::Graphics::Mesh triangleMesh{
+        .Vertices = { { .Position = { +10.0f, +10.0f, -10.0f }, .Color = { 1, 0, 0 }, .TexCoord = { 0, 0 } },
+                      { .Position = { -10.0f, +10.0f, -10.0f }, .Color = { 0, 1, 0 }, .TexCoord = { 0, 0 } },
+                      { .Position = { +10.0f, -10.0f, -10.0f }, .Color = { 0, 0, 1 }, .TexCoord = { 0, 0 } },
+                      { .Position = { -10.0f, -10.0f, -10.0f }, .Color = { 1, 1, 1 }, .TexCoord = { 0, 0 } } },
         // Project winding convention:
         // Mesh indices are authored clockwise when viewed from the geometric front side in model space.
         // The Vulkan projection flips clip-space Y (Projection[1][1] *= -1), which inverts the final
@@ -54,11 +54,13 @@ void Sandbox::Run()
         .Indices = { 0, 1, 2, 1, 3, 2 }
     };
 
-    // Create model from mesh
-    const Engine::u32 modelID = vkRenderer.CreateModel(&mesh);
+    // Create models from meshes
+    const Engine::u32 cowModel      = vkRenderer.CreateModel(&cowMesh);
+    const Engine::u32 triangleModel = vkRenderer.CreateModel(&triangleMesh);
 
-    // Assign model to pipeline
-    vkRenderer.AssignModelToPipeline(modelID, pipelineID);
+    // Assign models to pipeline
+    vkRenderer.AssignModelToPipeline(cowModel, pipelineID);
+    vkRenderer.AssignModelToPipeline(triangleModel, pipelineID);
 
     // Log startup time
     LOG_PERF("Engine startup time was {} ...", timer.GetEngineTotalRuntimeString());

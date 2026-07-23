@@ -74,10 +74,10 @@ namespace Engine::Graphics
 
         // Draw Stats
         ImGui::SeparatorText("Draw Stats");
-        ImGui::Text("%-8s %2d", "Draws", renderStats.DrawCalls);
-        ImGui::Text("%-8s %2d", "Models", renderStats.Models);
-        ImGui::Text("%-8s %2d", "Vertices", renderStats.Vertices);
-        ImGui::Text("%-8s %2d", "Indices", renderStats.Indices);
+        ImGui::Text("%-9s %d", "Draws", renderStats.DrawCalls);
+        ImGui::Text("%-9s %d", "Models", renderStats.Models);
+        ImGui::Text("%-9s %d", "Vertices", renderStats.Vertices);
+        ImGui::Text("%-9s %d", "Indices", renderStats.Indices);
 
         ImGui::End();
     }

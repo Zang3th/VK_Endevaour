@@ -4,11 +4,13 @@
 #include "Debug/LogTable.hpp"
 
 #define TINYOBJLOADER_IMPLEMENTATION
+#include "Core/Utility.hpp"
+
 #include "Vendor/tinyobjloader/tiny_obj_loader.hpp"
 
 namespace Engine::Graphics
 {
-    Mesh ObjLoader::LoadMeshFromFile(const std::filesystem::path& path)
+    Mesh ObjLoader::LoadMeshFromFile(const std::filesystem::path& path, Color color)
     {
         tinyobj::attrib_t                attrib;
         std::vector<tinyobj::shape_t>    shapes;
@@ -65,6 +67,10 @@ namespace Engine::Graphics
                     vertex.Color = { attrib.colors[(3 * index.vertex_index) + 0],
                                      attrib.colors[(3 * index.vertex_index) + 1],
                                      attrib.colors[(3 * index.vertex_index) + 2] };
+                }
+                else if (color == Color::RANDOMIZE)
+                {
+                    vertex.Color = Core::Utility::GetRandomVec3();
                 }
 
                 if (!attrib.texcoords.empty())

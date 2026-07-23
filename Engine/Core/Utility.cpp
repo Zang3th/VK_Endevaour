@@ -3,6 +3,7 @@
 #include "Debug/Log.hpp"
 
 #include <fstream>
+#include <random>
 
 namespace Engine::Core
 {
@@ -65,5 +66,13 @@ namespace Engine::Core
     std::string Utility::FPSToString(f64 fps)
     {
         return fmt::format("{:.2f} FPS", fps);
+    }
+
+    glm::vec3 Utility::GetRandomVec3()
+    {
+        static std::mt19937                        generator(std::random_device{}());
+        static std::uniform_real_distribution<f32> distribution(0.0f, 1.0f);
+
+        return { distribution(generator), distribution(generator), distribution(generator) };
     }
 }
