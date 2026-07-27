@@ -1,3 +1,0 @@
-# VK_Endeavour — Architecture
-
-...
