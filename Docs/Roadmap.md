@@ -10,15 +10,15 @@
 - 25.09.24 - 15.11.24
 
 #Info
-- Learning Resources durcharbeiten
+- Learning-Resources durcharbeiten
   - Begleitendes Git-Repo
   - Nebenbei Dokument mit Learnings pflegen
 - Library mit Code aufbauen
   - Arbeite mit Asserts
 - Arbeite am Anfang nur mit den allernotwendigsten Libraries
-- Schaue auch kontinuierlich bei Hazel und EDBR rein um dir Orientierung zu verschaffen
+- Schaue auch kontinuierlich bei Hazel und EDBR rein, um dir Orientierung zu verschaffen
 - Ergänze dann Libraries nach und nach
-- Projekt 1 : HelloCube (Drehendes 3D-Objekt mit ImGui-Anzeige)
+- Projekt 1: HelloCube (drehendes 3D-Objekt mit ImGui-Anzeige)
 
 ### Allgemeines
 
@@ -29,28 +29,28 @@
 ### Blogpost: Elias Daler
 
 - [x] ~Durcharbeiten (100%)~
-- [x] ~Dokument pflegen wo alle Erkenntnisse und offenen Fragen hinterlegt werden~
+- [x] ~Dokument pflegen, in dem alle Erkenntnisse und offenen Fragen hinterlegt werden~
 
 ### Tutorial: Vulkan-Tutorial.com
 
 #Warn
 - Wayland: Window wird erst nach Commit eines Buffers sichtbar
 
-**ToDo's**
+**ToDo**
 - [x] ~0. Introduction~
 - [x] ~1. Overview~
 - [x] ~2. Development environment~
 - [x] ~3.1.0 Drawing a Triangle / Setup / Base code~
 - [x] ~3.1.1 Drawing a Triangle / Setup / Instance~
 - [x] ~3.1.2 Drawing a Triangle / Setup / Validation layers~
-- [x] ~Problem: Validation layer: loader_add_layer_properties: 'layers' tag not supported until file version 1.0.1 => .json manuell editiert~
-- [x] ~Für die restlichen Probleme habe ich keinen Fix... Ich hab alles probiert: GLFW 3.4, Vulkan SDK 1.3.290, SDL2, Nvidia Treiber neu installiert, VkBootstrap - hat alles nix gebracht...~
+- [x] ~Problem: Validation Layer: loader_add_layer_properties: 'layers' tag not supported until file version 1.0.1 => .json manuell editiert~
+- [x] ~Für die restlichen Probleme habe ich keinen Fix ... Ich habe alles probiert: GLFW 3.4, Vulkan SDK 1.3.290, SDL2, Nvidia-Treiber neu installiert, VkBootstrap – hat alles nichts gebracht ...~
 - [x] ~Hole dir Access zu Hazel~
 - [x] ~Füge SEVERITY_INFO_BIT_EXT hinzu~
 - [x] ~Passe Logging entsprechend des Severity-Levels an~
-- [x] ~Schaue dir Asserts an (Bestpractices bspw. in Hazel), ergänze Assert.hpp und passe die Applikation entsprechend an~
+- [x] ~Schaue dir Asserts an (Best Practices bspw. in Hazel), ergänze Assert.hpp und passe die Applikation entsprechend an~
 - [x] ~3.1.3 Drawing a Triangle / Setup / Physical devices and queue families~
-- [x] ~Lookup code aus dem Header raushauen~
+- [x] ~Lookup-Code aus dem Header raushauen~
 - [x] ~3.1.4 Drawing a Triangle / Setup / Logical device and queues~
 - [x] ~3.2.0 Drawing a Triangle / Presentation / Window surface~
 - [x] ~3.2.1 Drawing a Triangle / Presentation / Swap chain~
@@ -71,7 +71,7 @@
 - [x] ~4.4 Vertex buffers / Index buffer~
 - [x] ~5.1 Uniform buffers / Descriptor layout and buffer~
 - [x] ~5.2 Uniform buffers / Descriptor pool and sets~
-- [x] ~Fix diesen weirden swap chain recreation bug => Lag daran, dass ich nicht immer die neuesten swap chain properties gefetched habe~
+- [x] ~Diesen seltsamen Swapchain-Recreation-Bug fixen => Lag daran, dass ich nicht immer die neuesten Swapchain-Properties abgerufen habe~
 - [x] ~6.1 Texture mapping / Images~
 - [x] ~6.2 Texture mapping / Image view and sampler~
 - [x] ~6.3 Texture mapping / Combined image sampler~
@@ -80,7 +80,7 @@
 - [x] ~9. Generating Mipmaps~
 - [x] ~10. Multisampling~
 - [x] ~ImGui integrieren (das ist die Baseline für das Projekt)~
-- [x] ~Static-Analyisis über das Projekt laufen lassen~
+- [x] ~Static Analysis über das Projekt laufen lassen~
 - [x] ~Ausdruck in den Asserts in Klammern setzen (Auswertungsreihenfolge!)~
 
 ### Tutorial: TU Wien
@@ -103,18 +103,18 @@
 
 - [x] ~Projekt erstellen (initiales Git-Repo)~
 - [x] ~README.md schreiben~
-- [x] ~CMake-Konfiguration aufsetzen (3 separare Files, Engine als Static-Library etc.)~
+- [x] ~CMake-Konfiguration aufsetzen (3 separate Files, Engine als Static Library etc.)~
 - [x] ~fmt inkludieren (als CMake-Subdirectory)~
 - [x] ~Dünnen Logging-Wrapper mittels Defines bauen (Ergänzung von Levels via Farben und Uhrzeit)~
 - [x] ~LSP funktioniert (CMake_EXPORT_COMPILE_COMMANDS)~
-- [x] ~Vulkan SDK ans laufen kriegen~
-- [x] ~GLFW ans laufen kriegen~
+- [x] ~Vulkan SDK zum Laufen bringen~
+- [x] ~GLFW zum Laufen bringen~
 - [x] ~ChatGPT-Projekt aufsetzen~
-- [x] ~Altes Projekt ans laufen kriegen~
+- [x] ~Altes Projekt zum Laufen bringen~
 - [x] ~Projekt aufräumen~
-- [x] ~Vulkan Base Applikation erstellen (ordentlich, modular, verständlich) => API: https://x.com/SebAaltonen/status/1848311998376738892~
+- [x] ~Vulkan-Basisapplikation erstellen (ordentlich, modular, verständlich) => API: https://x.com/SebAaltonen/status/1848311998376738892~
 - [x] ~Designated struct initializers + structured bindings verwenden~
-- [x] ~Imgui updaten~
+- [x] ~ImGui updaten~
 - [x] ~VulkanMemoryAllocator integrieren~
 - [x] ~VulkanSamples klonen~
 
@@ -122,7 +122,7 @@
 
 - [x] ~Richtige Types in Utility.cpp verwenden~
 - [x] ~Das Device an den Allocator durchreichen~
-- [x] ~Surface per const& an die Swapchain~
+- [x] ~Surface per const& an die Swapchain übergeben~
 - [x] ~Grep nach uint32_t, int32_t, float und double~
 
 ### Core
@@ -145,7 +145,7 @@
 - [x] ~vk::Image + vk::ImageView (=> VulkanSwapchain)~
 - [x] ~VulkanShader~
 - [x] ~VulkanModel~
-- [x] ~vk:Buffer und VmaAllocation (VulkanModel)~
+- [x] ~vk::Buffer und VmaAllocation (VulkanModel)~
 - [x] ~vk::CommandPool~
 - [x] ~vk::CommandBuffer~
 - [x] ~VulkanPipeline~
@@ -153,8 +153,8 @@
 - [x] ~Shutdown-Prozess ordentlich tracken/loggen + fixen~
 - [x] ~Swapchain refactoren~
 - [x] ~Resize fixen~
-- [x] ~Engine crashed wenn FRAMES_IN_FLIGHT =! 3~
-- [x] ~Engine allokiert jeden Frame mehr Speicher => Fixen (Passiert bei mir bei allen Vulkan-Programmen. Scheint am GLFW Wayland-Layer zu liegen)~
+- [x] ~Engine crasht, wenn FRAMES_IN_FLIGHT != 3~
+- [x] ~Engine allokiert mit jedem Frame mehr Speicher => Fixen (Passiert bei mir bei allen Vulkan-Programmen. Scheint am GLFW-Wayland-Layer zu liegen)~
 
 ### Graphics
 
@@ -197,16 +197,16 @@
 
 **Project**
 - [x] ~Vulkan SDK installieren (Winget)~
-- [x] ~CheckDependencies.py schreiben (VulkanSDK, GLSLC, CMake, Clang++/Linker, Ninja) + alle Tools welche andere Skripte verwenden~
+- [x] ~CheckDependencies.py schreiben (Vulkan SDK, GLSLC, CMake, Clang++/Linker, Ninja) + alle Tools, die andere Skripte verwenden~
 - [x] ~Einmal pro Woche das Projekt auf dem Laptop bauen~
 - [x] ~LogStats.py schreiben~
 - [x] ~BuildEngine.py schreiben (--debug, --release, --all, --clean)~
 - [x] ~AnalyzeSources.py schreiben (--tidy, --verify)~
 - [x] ~FormatFiles.py schreiben~
 
-**Github**
-- [x] ~README überarbeiten (u.A. mit Projektstruktur). Orientierung an SalinityGL~
-- [x] ~Minimale build instructions für Windows und Linux hinzufügen (Voraussetzungen erläutern)~
+**GitHub**
+- [x] ~README überarbeiten (u. a. mit Projektstruktur). Orientierung an SalinityGL~
+- [x] ~Minimale Build Instructions für Windows und Linux hinzufügen (Voraussetzungen erläutern)~
 - [x] ~Tags zum Repo hinzufügen~
 
 ### Improvements
@@ -214,20 +214,20 @@
 - [x] ~Typo im Objloader.cpp~
 - [x] ~Typo in README (Punkt fehlt bei vorletzter Zeile)~
 - [x] ~std::source_location im Logging ergänzen~
-- [x] ~Aufruf der Skripte ohne Params fixen~
+- [x] ~Aufruf der Skripte ohne Parameter fixen~
 - [x] ~Richtige Namespaces wie Engine::Core, Engine::Graphics etc. überall ergänzen~
 - [x] ~Skript-Output besser formatieren~
 - [x] ~RAD_Debugger Skript bauen~
 
 #Info
 - Kann ich das Logging verbessern oder muss alles zwangsläufig durch stderr laufen? => Läuft eh unter Windows nicht
-- Wie spiele ich clangd Vorschläge ("fixes available") in Neovim ein? => code_action (ga)
+- Wie spiele ich clangd-Vorschläge ("fixes available") in Neovim ein? => code_action (ga)
 
 ### Bugs
 
-- [x] ~Validation_Layer laufen auf 1.4.328 während die SDK schon auf 1.4.350 läuft => Alte SDKs müssen deinstalliert werden und man auch immer den neuesten Vulkan Configurator launchen~
+- [x] ~Validation Layer laufen auf 1.4.328, während das SDK schon auf 1.4.350 läuft => Alte SDKs müssen deinstalliert und immer der neueste Vulkan Configurator gestartet werden~
 - [x] ~Minimieren reparieren~
-- [x] ~vkQueueSubmit(): Swapchain image 0 was presented but was not re-acquired => Unterschiedliche Plattformen erstellen unterschiedliche Menge an Bildern => WSI Image-Acquisition von VulkanFrame::Sync trennen~
+- [x] ~vkQueueSubmit(): Swapchain image 0 was presented but was not re-acquired => Unterschiedliche Plattformen erstellen unterschiedliche Mengen an Bildern => WSI-Image-Acquisition von VulkanFrame::Sync trennen~
 
 ## ImGui
 
@@ -245,31 +245,31 @@
 **Project**
 - [x] ~ImGui auf v1.92.8 upgraden => README.md anpassen~
 - [x] ~VMA auf v3.4.0 upgraden => README.md anpassen~
-- [x] ~Nächste App auf prozedurale Terraingenerierung auf der GPU ändern~
+- [x] ~Nächste App auf prozedurale Terrain-Generierung auf der GPU ändern~
 
 ### Improvements
 
 - [x] ~Logging: Shader-Creation verbessern (Typ von Shader)~
 - [x] ~Logging: Shader-Destruction verbessern (Typ von Shader)~
-- [x] ~.clang-format nochmal stärker an Firma anpassen~
+- [x] ~.clang-format noch stärker an die Firma anpassen~
 - [x] ~Codex: VulkanRenderer::DrawFrame runterstampfen => Was kann man noch besser abstrahieren oder zusammenfassen?~
 - [x] ~Codex: VulkanFrame anschauen => Ist das wirklich optimal so?~
 
 #Info
-- [x] Wie kann das LSP alles in Vendor/ und in externem Vulkan/STL Code ignorieren? => .clangd anpassen ... Funktioniert mehr schlecht als recht
-- [x] Wie kann ich dieses lästige Einsetzen von Funktionskörpern optimieren? Vim-Makro oder nen neues LSP-Binding? => Neues Keybinding auf <Tab> gelegt
+- [x] Wie kann das LSP alles in Vendor/ und in externem Vulkan-/STL-Code ignorieren? => .clangd anpassen ... Funktioniert mehr schlecht als recht
+- [x] Wie kann ich dieses lästige Einsetzen von Funktionskörpern optimieren? Vim-Makro oder ein neues LSP-Binding? => Neues Keybinding auf <Tab> gelegt
 
 ### Bugs
 
-- [x] ~Codex Code-Review: In allen Klassen welche interne Vulkan-Handles (owning) halten den Copy-Konstruktor und Assignment-Operator löschen, da ansonsten Double-Destroys passieren können~
-- [x] ~Codex Code-Review: Nicht-einheitliche Code-Abschnitte (welche stilistisch oder architektonisch nicht zum Rest passen)~
-- [x] ~Codex Code-Review: Riskante, unsichere Code-Abschnitte und fehlendes const~
-- [x] ~Fast-Compile Option einfügen (ohne cleanes Full-Rebuild)~
-- [x] ~GLFW Error Callback anlegen~
-- [x] ~ImGui Error Callback anlegen~
+- [x] ~Codex-Code-Review: In allen Klassen, die interne Vulkan-Handles (owning) halten, den Copy-Konstruktor und Assignment-Operator löschen, da ansonsten Double-Destroys passieren können~
+- [x] ~Codex-Code-Review: Uneinheitliche Codeabschnitte (die stilistisch oder architektonisch nicht zum Rest passen)~
+- [x] ~Codex-Code-Review: Riskante, unsichere Codeabschnitte und fehlendes const~
+- [x] ~Fast-Compile-Option einfügen (ohne sauberen Full Rebuild)~
+- [x] ~GLFW-Error-Callback anlegen~
+- [x] ~ImGui-Error-Callback anlegen~
 - [x] ~API_VERSION überall korrekt ersetzen~
-- [x] ~Codex Code-Review: ImGui Integration~
-- [x] ~GLFW nur noch in Window.cpp inkludieren (denk ans Define) und Window zur einzigen Schnittstelle umbauen (danach auch auf Linux testen) + Swapchain fragt Resize/Minimize State beim Window ab (Callback sollte auch dort liegen)~
+- [x] ~Codex-Code-Review: ImGui-Integration~
+- [x] ~GLFW nur noch in Window.cpp inkludieren (denk an das Define) und Window zur einzigen Schnittstelle umbauen (danach auch unter Linux testen) + Swapchain fragt Resize-/Minimize-State beim Window ab (Callback sollte auch dort liegen)~
 
 ### VulkanDescriptorPool
 
@@ -278,7 +278,7 @@
 
 ### ImGuiLayer
 
-- [x] ~Grundlegende API und ImGui Integration überlegen~
+- [x] ~Grundlegende API und ImGui-Integration überlegen~
 - [x] ~ImGui Backend integrieren~
 
 ## Descriptor Sets
@@ -295,12 +295,12 @@
 - [x] ~Logging: Swapchain-Creation verbessern~
 - [x] ~Logging: Memory-Allocations verbessern~
 - [x] ~Alle Header-Includes von vulkan.hpp prüfen~
-- [x] ~Neue .obj Dateien besorgen~
+- [x] ~Neue .obj-Dateien besorgen~
 
 ### Bugs
 
-- [x] ~tinyrunner warnings fixen~
-- [x] ~CullMode / Clockwise Vertice Drawing fixen + vereinheitlichen~
+- [x] ~Tinyrunner-Warnings fixen~
+- [x] ~CullMode / Clockwise Vertex Drawing fixen + vereinheitlichen~
 
 ### VulkanDescriptorSetLayout
 
@@ -334,12 +334,12 @@
 
 - [x] ~Szene mit .obj und Debugdreieck bauen~
 - [x] ~Konstanten = 1 aus VulkanGlobalUniforms in VulkanGlobal auslagern~
-- [x] ~ObjLoader ein RandomizeColor Flag für die Vertices mitgeben~
+- [x] ~ObjLoader ein RandomizeColor-Flag für die Vertices mitgeben~
 
 ### Bugs
 
 - [ ] Profiling für Move + Resize vom Window fixen
-- [ ] Lag-Spikes inspiziieren
+- [ ] Lag-Spikes inspizieren
 
 ### ProfilerPanel
 
@@ -351,9 +351,9 @@
 ### Depth-Buffering
 
 #Info
-- Wie läuft die Integration in RenderPass und Framebuffer beim Dynamic Rendering?
+- Wie läuft die Integration in Render Pass und Framebuffer beim Dynamic Rendering?
 
-**ToDo's**
+**ToDo**
 - [ ] DepthImage implementieren
 - [ ] DepthImageView implementieren
 
@@ -370,11 +370,11 @@
 - TBD
 
 #Info
-Die Kamera wird von der Anwendung verwaltet, dort mit Input aktualisiert und per Frame an den Renderer übergeben.
+Die Kamera wird von der Anwendung verwaltet, dort mittels Input aktualisiert und pro Frame an den Renderer übergeben.
 
-Zusätzlich werden die Kamera-Parameter im ProfilerPanel dargestellt.
+Zusätzlich werden die Kameraparameter im ProfilerPanel dargestellt.
 
-Projektion soll Z-up rechtshändig sein (entspricht Blender):
+Die Projektion soll rechtshändig mit Z-up sein (entspricht Blender):
 
 - +X = rechts
 - -Y = vorwärts
@@ -398,7 +398,7 @@ Optionen via UI steuern:
 - Polygon Mode
 - Cull Mode
 
-**ToDo's**
+**ToDo**
 - [ ] Interaktion / Schnittstelle mit dem Renderer überlegen
 - [ ] UI implementieren
 
@@ -419,16 +419,16 @@ Optionen via UI steuern:
 #Info
 Besteht aus einem Mesh-Handle (u32) und einem Transform-Struct
 
-**ToDo's**
+**ToDo**
 - [ ] Implementieren
 
 ### VulkanRenderer
 
 #Info
-- Bekommt Models submitted und pflegt damit eine RenderQueue bestehend aus RenderCommands
-- Erzeugt und speichert VulkanMeshes, aus denen mittels "CPU-Meshes", non-owning Handles returned werden
+- Bekommt Models übergeben und pflegt damit eine RenderQueue, bestehend aus RenderCommands
+- Erzeugt und speichert VulkanMeshes, aus denen mittels "CPU-Meshes" Non-owning Handles zurückgegeben werden
 
-**ToDo's**
+**ToDo**
 - [ ] Implementieren
 
 ## WorldGrid
@@ -467,15 +467,15 @@ Besteht aus einem Mesh-Handle (u32) und einem Transform-Struct
 ### Ray-Tracing Projekt
 
 #Info
-Raytracer in Vulkan
+Raytracer mit Vulkan
 
 **Vorgehensweise**
-- [ ] Raytracing Buch 1 durcharbeiten
-- [ ] Raytracing Buch 2 durcharbeiten
-- [ ] Raytracing Buch 3 durcharbeiten
-- [ ] Vulkan Base Applikation erstellen
-- [ ] Raytracing <=> Vulkan Schnittstellen rausarbeiten und Projektplan erstellen
-- [ ] Building und Static Analysis via Github-Actions aktivieren
+- [ ] Raytracing-Buch 1 durcharbeiten
+- [ ] Raytracing-Buch 2 durcharbeiten
+- [ ] Raytracing-Buch 3 durcharbeiten
+- [ ] Vulkan-Basisapplikation erstellen
+- [ ] Schnittstellen zwischen Raytracing und Vulkan herausarbeiten und Projektplan erstellen
+- [ ] Build und Static Analysis via GitHub Actions aktivieren
 - [ ] Code-Badges hinzufügen (neue Farben)
 - [ ] Projektstruktur innerhalb der README ergänzen
 
