@@ -36,7 +36,7 @@
 #Warn
 - Wayland: Window wird erst nach Commit eines Buffers sichtbar
 
-**ToDo**
+#### ToDo
 - [x] ~0. Introduction~
 - [x] ~1. Overview~
 - [x] ~2. Development environment~
@@ -190,12 +190,12 @@
 
 ### Allgemeines
 
-**Software & Tooling**
+#### Software & Tooling
 - [x] ~RenderDoc~
 - [x] ~Blender~
 - [x] ~F3D~
 
-**Project**
+#### Project
 - [x] ~Vulkan SDK installieren (Winget)~
 - [x] ~CheckDependencies.py schreiben (Vulkan SDK, GLSLC, CMake, Clang++/Linker, Ninja) + alle Tools, die andere Skripte verwenden~
 - [x] ~Einmal pro Woche das Projekt auf dem Laptop bauen~
@@ -204,7 +204,7 @@
 - [x] ~AnalyzeSources.py schreiben (--tidy, --verify)~
 - [x] ~FormatFiles.py schreiben~
 
-**GitHub**
+#### GitHub
 - [x] ~README überarbeiten (u. a. mit Projektstruktur). Orientierung an SalinityGL~
 - [x] ~Minimale Build Instructions für Windows und Linux hinzufügen (Voraussetzungen erläutern)~
 - [x] ~Tags zum Repo hinzufügen~
@@ -239,10 +239,10 @@
 
 ### Allgemeines
 
-**Software & Tooling**
+#### Software & Tooling
 - [x] ~Codex installieren und AGENTS.md erstellen~
 
-**Project**
+#### Project
 - [x] ~ImGui auf v1.92.8 upgraden => README.md anpassen~
 - [x] ~VMA auf v3.4.0 upgraden => README.md anpassen~
 - [x] ~Nächste App auf prozedurale Terrain-Generierung auf der GPU ändern~
@@ -353,7 +353,7 @@
 #Info
 - Wie läuft die Integration in Render Pass und Framebuffer beim Dynamic Rendering?
 
-**ToDo**
+#### ToDo
 - [ ] DepthImage implementieren
 - [ ] DepthImageView implementieren
 
@@ -398,7 +398,7 @@ Optionen via UI steuern:
 - Polygon Mode
 - Cull Mode
 
-**ToDo**
+#### ToDo
 - [ ] Interaktion / Schnittstelle mit dem Renderer überlegen
 - [ ] UI implementieren
 
@@ -419,7 +419,7 @@ Optionen via UI steuern:
 #Info
 Besteht aus einem Mesh-Handle (u32) und einem Transform-Struct
 
-**ToDo**
+#### ToDo
 - [ ] Implementieren
 
 ### VulkanRenderer
@@ -428,7 +428,7 @@ Besteht aus einem Mesh-Handle (u32) und einem Transform-Struct
 - Bekommt Models übergeben und pflegt damit eine RenderQueue, bestehend aus RenderCommands
 - Erzeugt und speichert VulkanMeshes, aus denen mittels "CPU-Meshes" Non-owning Handles zurückgegeben werden
 
-**ToDo**
+#### ToDo
 - [ ] Implementieren
 
 ## WorldGrid
@@ -469,7 +469,7 @@ Besteht aus einem Mesh-Handle (u32) und einem Transform-Struct
 #Info
 Raytracer mit Vulkan
 
-**Vorgehensweise**
+#### Vorgehensweise
 - [ ] Raytracing-Buch 1 durcharbeiten
 - [ ] Raytracing-Buch 2 durcharbeiten
 - [ ] Raytracing-Buch 3 durcharbeiten
@@ -479,7 +479,7 @@ Raytracer mit Vulkan
 - [ ] Code-Badges hinzufügen (neue Farben)
 - [ ] Projektstruktur innerhalb der README ergänzen
 
-**Book 1: Ray Tracing in One Weekend**
+#### Book 1: Ray Tracing in One Weekend
 - [ ] 1. Overview
 - [ ] 2. Output an Image
 - [ ] 3. The vec3 Class
