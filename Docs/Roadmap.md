@@ -1,5 +1,325 @@
 # VK_Endevaour
 
+## Windows
+
+#Version
+- 0.1.0
+
+#Date
+- 09.12.25 - 06.01.26
+- 21.05.26 - 05.06.26
+
+### Allgemeines
+
+#### Software & Tooling
+- [x] ~RenderDoc~
+- [x] ~Blender~
+- [x] ~F3D~
+
+#### Project
+- [x] ~Vulkan SDK installieren (Winget)~
+- [x] ~CheckDependencies.py schreiben (Vulkan SDK, GLSLC, CMake, Clang++/Linker, Ninja) + alle Tools, die andere Skripte verwenden~
+- [x] ~Einmal pro Woche das Projekt auf dem Laptop bauen~
+- [x] ~LogStats.py schreiben~
+- [x] ~BuildEngine.py schreiben (--debug, --release, --all, --clean)~
+- [x] ~AnalyzeSources.py schreiben (--tidy, --verify)~
+- [x] ~FormatFiles.py schreiben~
+
+#### GitHub
+- [x] ~README überarbeiten (u. a. mit Projektstruktur). Orientierung an SalinityGL~
+- [x] ~Minimale Build Instructions für Windows und Linux hinzufügen (Voraussetzungen erläutern)~
+- [x] ~Tags zum Repo hinzufügen~
+
+### Improvements
+
+#Info
+- Kann ich das Logging verbessern oder muss alles zwangsläufig durch stderr laufen? => Läuft eh unter Windows nicht
+- Wie spiele ich clangd-Vorschläge ("fixes available") in Neovim ein? => code_action (ga)
+
+- [x] ~Typo im Objloader.cpp~
+- [x] ~Typo in README (Punkt fehlt bei vorletzter Zeile)~
+- [x] ~std::source_location im Logging ergänzen~
+- [x] ~Aufruf der Skripte ohne Parameter fixen~
+- [x] ~Richtige Namespaces wie Engine::Core, Engine::Graphics etc. überall ergänzen~
+- [x] ~Skript-Output besser formatieren~
+- [x] ~RAD_Debugger Skript bauen~
+
+### Bugs
+
+- [x] ~Validation Layer laufen auf 1.4.328, während das SDK schon auf 1.4.350 läuft => Alte SDKs müssen deinstalliert und immer der neueste Vulkan Configurator gestartet werden~
+- [x] ~Minimieren reparieren~
+- [x] ~vkQueueSubmit(): Swapchain image 0 was presented but was not re-acquired => Unterschiedliche Plattformen erstellen unterschiedliche Mengen an Bildern => WSI-Image-Acquisition von VulkanFrame::Sync trennen~
+
+## ImGui
+
+#Version
+- 0.2.0
+
+#Date
+- 08.06.26 - 13.06.26
+
+### Allgemeines
+
+#### Software & Tooling
+- [x] ~Codex installieren und AGENTS.md erstellen~
+
+#### Project
+- [x] ~ImGui auf v1.92.8 upgraden => README.md anpassen~
+- [x] ~VMA auf v3.4.0 upgraden => README.md anpassen~
+- [x] ~Nächste App auf prozedurale Terrain-Generierung auf der GPU ändern~
+
+### Improvements
+
+#Info
+- [x] Wie kann das LSP alles in Vendor/ und in externem Vulkan-/STL-Code ignorieren? => .clangd anpassen ... Funktioniert mehr schlecht als recht
+- [x] Wie kann ich dieses lästige Einsetzen von Funktionskörpern optimieren? Vim-Makro oder ein neues LSP-Binding? => Neues Keybinding auf <Tab> gelegt
+
+- [x] ~Logging: Shader-Creation verbessern (Typ von Shader)~
+- [x] ~Logging: Shader-Destruction verbessern (Typ von Shader)~
+- [x] ~.clang-format noch stärker an die Firma anpassen~
+- [x] ~Codex: VulkanRenderer::DrawFrame runterstampfen => Was kann man noch besser abstrahieren oder zusammenfassen?~
+- [x] ~Codex: VulkanFrame anschauen => Ist das wirklich optimal so?~
+
+### Bugs
+
+- [x] ~Codex-Code-Review: In allen Klassen, die interne Vulkan-Handles (owning) halten, den Copy-Konstruktor und Assignment-Operator löschen, da ansonsten Double-Destroys passieren können~
+- [x] ~Codex-Code-Review: Uneinheitliche Codeabschnitte (die stilistisch oder architektonisch nicht zum Rest passen)~
+- [x] ~Codex-Code-Review: Riskante, unsichere Codeabschnitte und fehlendes const~
+- [x] ~Fast-Compile-Option einfügen (ohne sauberen Full Rebuild)~
+- [x] ~GLFW-Error-Callback anlegen~
+- [x] ~ImGui-Error-Callback anlegen~
+- [x] ~API_VERSION überall korrekt ersetzen~
+- [x] ~Codex-Code-Review: ImGui-Integration~
+- [x] ~GLFW nur noch in Window.cpp inkludieren (denk an das Define) und Window zur einzigen Schnittstelle umbauen (danach auch unter Linux testen) + Swapchain fragt Resize-/Minimize-State beim Window ab (Callback sollte auch dort liegen)~
+
+### VulkanDescriptorPool
+
+- [x] ~Minimale API überlegen~
+- [x] ~Implementieren~
+
+### ImGuiLayer
+
+- [x] ~Grundlegende API und ImGui-Integration überlegen~
+- [x] ~ImGui Backend integrieren~
+
+## Descriptor Sets
+
+#Version
+- 0.2.1
+
+#Date
+- 15.06.26 - 25.06.26
+
+### Improvements
+
+- [x] ~Logging: .obj-Loading verbessern~
+- [x] ~Logging: Swapchain-Creation verbessern~
+- [x] ~Logging: Memory-Allocations verbessern~
+- [x] ~Alle Header-Includes von vulkan.hpp prüfen~
+- [x] ~Neue .obj-Dateien besorgen~
+
+### Bugs
+
+- [x] ~Tinyrunner-Warnings fixen~
+- [x] ~CullMode / Clockwise Vertex Drawing fixen + vereinheitlichen~
+
+### VulkanDescriptorSetLayout
+
+- [x] ~Minimale API überlegen~
+- [x] ~Implementieren~
+
+### VulkanGlobalUniforms
+
+- [x] ~Minimale API überlegen~
+- [x] ~Implementieren~
+
+### Timer
+
+- [x] ~Minimale API entwerfen~
+- [x] ~Implementieren~
+
+### Kofi Game Engine Series
+
+- [x] ~Video 29~
+- [x] ~Video 30~
+
+#Pin
+## ProfilerPanel
+
+#Version
+- 0.2.2
+
+#Date
+- Ab dem 22.07.26
+
+### Improvements
+
+- [x] ~Szene mit .obj und Debugdreieck bauen~
+- [x] ~Konstanten = 1 aus VulkanGlobalUniforms in VulkanGlobal auslagern~
+- [x] ~ObjLoader ein RandomizeColor-Flag für die Vertices mitgeben~
+
+### Bugs
+
+- [ ] Profiling für Move + Resize vom Window fixen
+- [ ] Lag-Spikes inspizieren
+
+### ProfilerPanel
+
+- [x] ~Erste einfache API überlegen~
+- [x] ~Implementieren~
+- [x] ~DrawStats pflegen~
+- [x] ~UI für das Panel finalisieren~
+
+### Depth-Buffering
+
+#Info
+- Wie läuft die Integration in Render Pass und Framebuffer beim Dynamic Rendering?
+
+#### ToDo
+- [ ] DepthImage implementieren
+- [ ] DepthImageView implementieren
+
+### Kofi Game Engine Series
+
+- [ ] Video 31
+
+## Camera
+
+#Version
+- 0.2.3
+
+#Date
+- TBD
+
+#Info
+Die Kamera wird von der Anwendung verwaltet, dort mittels Input aktualisiert und pro Frame an den Renderer übergeben.
+
+Zusätzlich werden die Kameraparameter im ProfilerPanel dargestellt.
+
+Die Projektion soll rechtshändig mit Z-up sein (entspricht Blender):
+
+- +X = rechts
+- -Y = vorwärts
+- +Z = oben
+
+### Camera
+
+- [ ] Minimale API überlegen
+- [ ] Implementieren
+
+### CameraController
+
+- [ ] Minimale API überlegen
+- [ ] Implementieren
+
+### RenderControls
+
+#Info
+Optionen via UI steuern:
+
+- [ ] Polygon Mode
+- [ ] Cull Mode
+
+#### ToDo
+- [ ] Interaktion / Schnittstelle mit dem Renderer überlegen
+- [ ] UI implementieren
+
+## Model
+
+#Version
+- 0.2.4
+
+#Date
+- TBD
+
+### VulkanMesh
+
+- [ ] VulkanModel in VulkanMesh umbenennen
+
+### Model
+
+#Info
+Besteht aus einem Mesh-Handle (u32) und einem Transform-Struct
+
+#### ToDo
+- [ ] Implementieren
+
+### VulkanRenderer
+
+#Info
+- Bekommt Models übergeben und pflegt damit eine RenderQueue, bestehend aus RenderCommands
+- Erzeugt und speichert VulkanMeshes, aus denen mittels "CPU-Meshes" Non-owning Handles zurückgegeben werden
+
+#### ToDo
+- [ ] Implementieren
+
+## WorldGrid
+
+#Version
+- 0.2.5
+
+#Date
+- TBD
+
+### WorldGrid
+
+### WorldAxes
+
+#Backlog
+## Backlog
+
+### Improvements
+
+- [ ] RenderFrame, RenderItem und RenderRequest einführen
+
+### StorageBuffer
+
+### StorageImage
+
+### SampledImage
+
+### TileManager
+
+### TileGenerator
+
+### TileSelector
+
+### PixelRenderer
+
+### Ray-Tracing Projekt
+
+#Info
+Raytracer mit Vulkan
+
+#### Vorgehensweise
+- [ ] Raytracing-Buch 1 durcharbeiten
+- [ ] Raytracing-Buch 2 durcharbeiten
+- [ ] Raytracing-Buch 3 durcharbeiten
+- [ ] Vulkan-Basisapplikation erstellen
+- [ ] Schnittstellen zwischen Raytracing und Vulkan herausarbeiten und Projektplan erstellen
+- [ ] Build und Static Analysis via GitHub Actions aktivieren
+- [ ] Code-Badges hinzufügen (neue Farben)
+- [ ] Projektstruktur innerhalb der README ergänzen
+
+#### Book 1: Ray Tracing in One Weekend
+- [ ] 1. Overview
+- [ ] 2. Output an Image
+- [ ] 3. The vec3 Class
+- [ ] 4. Rays, a simple Camera, and Background
+- [ ] 5. Adding a sphere
+- [ ] 6. Surface Normals and Multiple Objects
+- [ ] 7. Moving Camera Code Into Its Own Class
+- [ ] 8. Antialiasing
+- [ ] 9. Diffuse Materials
+- [ ] 10. Metal
+- [ ] 11. Dielectrics
+- [ ] 12. Positionable Camera
+- [ ] 13. Defocus Blur
+- [ ] 14. Where Next
+
+#Archive
+# Archive
+
 ## Learn Vulkan basics
 
 #Version
@@ -178,319 +498,3 @@
 - [x] ~Video 15~
 - [x] ~Video 16~
 - [x] ~Video 17~
-
-## Windows
-
-#Version
-- 0.1.0
-
-#Date
-- 09.12.25 - 06.01.26
-- 21.05.26 - 05.06.26
-
-### Allgemeines
-
-#### Software & Tooling
-- [x] ~RenderDoc~
-- [x] ~Blender~
-- [x] ~F3D~
-
-#### Project
-- [x] ~Vulkan SDK installieren (Winget)~
-- [x] ~CheckDependencies.py schreiben (Vulkan SDK, GLSLC, CMake, Clang++/Linker, Ninja) + alle Tools, die andere Skripte verwenden~
-- [x] ~Einmal pro Woche das Projekt auf dem Laptop bauen~
-- [x] ~LogStats.py schreiben~
-- [x] ~BuildEngine.py schreiben (--debug, --release, --all, --clean)~
-- [x] ~AnalyzeSources.py schreiben (--tidy, --verify)~
-- [x] ~FormatFiles.py schreiben~
-
-#### GitHub
-- [x] ~README überarbeiten (u. a. mit Projektstruktur). Orientierung an SalinityGL~
-- [x] ~Minimale Build Instructions für Windows und Linux hinzufügen (Voraussetzungen erläutern)~
-- [x] ~Tags zum Repo hinzufügen~
-
-### Improvements
-
-- [x] ~Typo im Objloader.cpp~
-- [x] ~Typo in README (Punkt fehlt bei vorletzter Zeile)~
-- [x] ~std::source_location im Logging ergänzen~
-- [x] ~Aufruf der Skripte ohne Parameter fixen~
-- [x] ~Richtige Namespaces wie Engine::Core, Engine::Graphics etc. überall ergänzen~
-- [x] ~Skript-Output besser formatieren~
-- [x] ~RAD_Debugger Skript bauen~
-
-#Info
-- Kann ich das Logging verbessern oder muss alles zwangsläufig durch stderr laufen? => Läuft eh unter Windows nicht
-- Wie spiele ich clangd-Vorschläge ("fixes available") in Neovim ein? => code_action (ga)
-
-### Bugs
-
-- [x] ~Validation Layer laufen auf 1.4.328, während das SDK schon auf 1.4.350 läuft => Alte SDKs müssen deinstalliert und immer der neueste Vulkan Configurator gestartet werden~
-- [x] ~Minimieren reparieren~
-- [x] ~vkQueueSubmit(): Swapchain image 0 was presented but was not re-acquired => Unterschiedliche Plattformen erstellen unterschiedliche Mengen an Bildern => WSI-Image-Acquisition von VulkanFrame::Sync trennen~
-
-## ImGui
-
-#Version
-- 0.2.0
-
-#Date
-- 08.06.26 - 13.06.26
-
-### Allgemeines
-
-#### Software & Tooling
-- [x] ~Codex installieren und AGENTS.md erstellen~
-
-#### Project
-- [x] ~ImGui auf v1.92.8 upgraden => README.md anpassen~
-- [x] ~VMA auf v3.4.0 upgraden => README.md anpassen~
-- [x] ~Nächste App auf prozedurale Terrain-Generierung auf der GPU ändern~
-
-### Improvements
-
-- [x] ~Logging: Shader-Creation verbessern (Typ von Shader)~
-- [x] ~Logging: Shader-Destruction verbessern (Typ von Shader)~
-- [x] ~.clang-format noch stärker an die Firma anpassen~
-- [x] ~Codex: VulkanRenderer::DrawFrame runterstampfen => Was kann man noch besser abstrahieren oder zusammenfassen?~
-- [x] ~Codex: VulkanFrame anschauen => Ist das wirklich optimal so?~
-
-#Info
-- [x] Wie kann das LSP alles in Vendor/ und in externem Vulkan-/STL-Code ignorieren? => .clangd anpassen ... Funktioniert mehr schlecht als recht
-- [x] Wie kann ich dieses lästige Einsetzen von Funktionskörpern optimieren? Vim-Makro oder ein neues LSP-Binding? => Neues Keybinding auf <Tab> gelegt
-
-### Bugs
-
-- [x] ~Codex-Code-Review: In allen Klassen, die interne Vulkan-Handles (owning) halten, den Copy-Konstruktor und Assignment-Operator löschen, da ansonsten Double-Destroys passieren können~
-- [x] ~Codex-Code-Review: Uneinheitliche Codeabschnitte (die stilistisch oder architektonisch nicht zum Rest passen)~
-- [x] ~Codex-Code-Review: Riskante, unsichere Codeabschnitte und fehlendes const~
-- [x] ~Fast-Compile-Option einfügen (ohne sauberen Full Rebuild)~
-- [x] ~GLFW-Error-Callback anlegen~
-- [x] ~ImGui-Error-Callback anlegen~
-- [x] ~API_VERSION überall korrekt ersetzen~
-- [x] ~Codex-Code-Review: ImGui-Integration~
-- [x] ~GLFW nur noch in Window.cpp inkludieren (denk an das Define) und Window zur einzigen Schnittstelle umbauen (danach auch unter Linux testen) + Swapchain fragt Resize-/Minimize-State beim Window ab (Callback sollte auch dort liegen)~
-
-### VulkanDescriptorPool
-
-- [x] ~Minimale API überlegen~
-- [x] ~Implementieren~
-
-### ImGuiLayer
-
-- [x] ~Grundlegende API und ImGui-Integration überlegen~
-- [x] ~ImGui Backend integrieren~
-
-## Descriptor Sets
-
-#Version
-- 0.2.1
-
-#Date
-- 15.06.26 - 25.06.26
-
-### Improvements
-
-- [x] ~Logging: .obj-Loading verbessern~
-- [x] ~Logging: Swapchain-Creation verbessern~
-- [x] ~Logging: Memory-Allocations verbessern~
-- [x] ~Alle Header-Includes von vulkan.hpp prüfen~
-- [x] ~Neue .obj-Dateien besorgen~
-
-### Bugs
-
-- [x] ~Tinyrunner-Warnings fixen~
-- [x] ~CullMode / Clockwise Vertex Drawing fixen + vereinheitlichen~
-
-### VulkanDescriptorSetLayout
-
-- [x] ~Minimale API überlegen~
-- [x] ~Implementieren~
-
-### VulkanGlobalUniforms
-
-- [x] ~Minimale API überlegen~
-- [x] ~Implementieren~
-
-### Timer
-
-- [x] ~Minimale API entwerfen~
-- [x] ~Implementieren~
-
-### Kofi Game Engine Series
-
-- [x] ~Video 29~
-- [x] ~Video 30~
-
-## ProfilerPanel
-
-#Version
-- 0.2.2
-
-#Date
-- Ab dem 22.07.26
-
-### Improvements
-
-- [x] ~Szene mit .obj und Debugdreieck bauen~
-- [x] ~Konstanten = 1 aus VulkanGlobalUniforms in VulkanGlobal auslagern~
-- [x] ~ObjLoader ein RandomizeColor-Flag für die Vertices mitgeben~
-
-### Bugs
-
-- [ ] Profiling für Move + Resize vom Window fixen
-- [ ] Lag-Spikes inspizieren
-
-### ProfilerPanel
-
-- [x] ~Erste einfache API überlegen~
-- [x] ~Implementieren~
-- [x] ~DrawStats pflegen~
-- [x] ~UI für das Panel finalisieren~
-
-### Depth-Buffering
-
-#Info
-- Wie läuft die Integration in Render Pass und Framebuffer beim Dynamic Rendering?
-
-#### ToDo
-- [ ] DepthImage implementieren
-- [ ] DepthImageView implementieren
-
-### Kofi Game Engine Series
-
-- [ ] Video 31
-
-## Camera
-
-#Version
-- 0.2.3
-
-#Date
-- TBD
-
-#Info
-Die Kamera wird von der Anwendung verwaltet, dort mittels Input aktualisiert und pro Frame an den Renderer übergeben.
-
-Zusätzlich werden die Kameraparameter im ProfilerPanel dargestellt.
-
-Die Projektion soll rechtshändig mit Z-up sein (entspricht Blender):
-
-- +X = rechts
-- -Y = vorwärts
-- +Z = oben
-
-### Camera
-
-- [ ] Minimale API überlegen
-- [ ] Implementieren
-
-### CameraController
-
-- [ ] Minimale API überlegen
-- [ ] Implementieren
-
-### RenderControls
-
-#Info
-Optionen via UI steuern:
-
-- Polygon Mode
-- Cull Mode
-
-#### ToDo
-- [ ] Interaktion / Schnittstelle mit dem Renderer überlegen
-- [ ] UI implementieren
-
-## Model
-
-#Version
-- 0.2.4
-
-#Date
-- TBD
-
-### VulkanMesh
-
-- [ ] VulkanModel in VulkanMesh umbenennen
-
-### Model
-
-#Info
-Besteht aus einem Mesh-Handle (u32) und einem Transform-Struct
-
-#### ToDo
-- [ ] Implementieren
-
-### VulkanRenderer
-
-#Info
-- Bekommt Models übergeben und pflegt damit eine RenderQueue, bestehend aus RenderCommands
-- Erzeugt und speichert VulkanMeshes, aus denen mittels "CPU-Meshes" Non-owning Handles zurückgegeben werden
-
-#### ToDo
-- [ ] Implementieren
-
-## WorldGrid
-
-#Version
-- 0.2.5
-
-#Date
-- TBD
-
-### WorldGrid
-
-### WorldAxes
-
-#Backlog
-## Backlog
-
-### Improvements
-
-- [ ] RenderFrame, RenderItem und RenderRequest einführen
-
-### StorageBuffer
-
-### StorageImage
-
-### SampledImage
-
-### TileManager
-
-### TileGenerator
-
-### TileSelector
-
-### PixelRenderer
-
-### Ray-Tracing Projekt
-
-#Info
-Raytracer mit Vulkan
-
-#### Vorgehensweise
-- [ ] Raytracing-Buch 1 durcharbeiten
-- [ ] Raytracing-Buch 2 durcharbeiten
-- [ ] Raytracing-Buch 3 durcharbeiten
-- [ ] Vulkan-Basisapplikation erstellen
-- [ ] Schnittstellen zwischen Raytracing und Vulkan herausarbeiten und Projektplan erstellen
-- [ ] Build und Static Analysis via GitHub Actions aktivieren
-- [ ] Code-Badges hinzufügen (neue Farben)
-- [ ] Projektstruktur innerhalb der README ergänzen
-
-#### Book 1: Ray Tracing in One Weekend
-- [ ] 1. Overview
-- [ ] 2. Output an Image
-- [ ] 3. The vec3 Class
-- [ ] 4. Rays, a simple Camera, and Background
-- [ ] 5. Adding a sphere
-- [ ] 6. Surface Normals and Multiple Objects
-- [ ] 7. Moving Camera Code Into Its Own Class
-- [ ] 8. Antialiasing
-- [ ] 9. Diffuse Materials
-- [ ] 10. Metal
-- [ ] 11. Dielectrics
-- [ ] 12. Positionable Camera
-- [ ] 13. Defocus Blur
-- [ ] 14. Where Next
