@@ -150,7 +150,14 @@
 - 0.2.2
 
 #Date
-- Ab dem 22.07.26
+- 22.07.26 - 23.07.26
+- TBD
+
+### Allgemeines
+
+- [x] ~AGENTS.md anpassen~
+- [ ] GLFW auf v3.5.1 upgraden
+- [ ] Mehr Tests ergänzen
 
 ### Improvements
 
@@ -173,7 +180,7 @@
 ### Depth-Buffering
 
 #Info
-- Wie läuft die Integration in Render Pass und Framebuffer beim Dynamic Rendering?
+- Wie läuft die Integration in Render Pass und Framebuffer beim Dynamic Rendering ab?
 
 #### ToDo
 - [ ] DepthImage implementieren
