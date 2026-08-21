@@ -20,18 +20,18 @@ Use and assume:
 * GLFW
 * Validation Layers enabled in debug builds
 * Static engine library + application executables
-* Cross platform development environment
+* Cross-platform development environment
 * Python script workflow for build/run/test/format
 * Neovim / clangd-compatible codebase
 
 Do not introduce:
 
 * Render Pass or Framebuffer based architecture
-* exception-based error handling
-* hidden global engine state
-* unrelated third-party abstractions
-* broad ECS/game-engine abstractions
-* unnecessary template metaprogramming
+* Exception-based error handling
+* Hidden global engine state
+* Unrelated third-party abstractions
+* Broad ECS/game-engine abstractions
+* Unnecessary template metaprogramming
 
 ---
 
@@ -72,19 +72,19 @@ Allowed by default: inspect project-owned files and `Scripts/`, explain architec
 
 Not allowed unless explicitly requested:
 
-* patch, reformat, rename, or move files
-* generate implementation-heavy code
-* execute destructive commands
-* change CMake targets or `.clang-format`
-* add dependencies
-* rewrite large subsystems
+* Patch, reformat, rename, or move files
+* Generate implementation-heavy code
+* Execute destructive commands
+* Change CMake targets or `.clang-format`
+* Add dependencies
+* Rewrite large subsystems
 
 When file edits are requested:
 
-* keep edits minimal and prefer one focused patch
-* show intent before touching multiple files
-* preserve existing style
-* do not mix formatting-only changes with logic changes
+* Keep edits minimal and prefer one focused patch
+* Show intent before touching multiple files
+* Preserve existing style
+* Do not mix formatting-only changes with logic changes
 
 ---
 
@@ -94,10 +94,10 @@ Respect the repository `.clang-format` and do not introduce formatting churn. Ne
 
 General style:
 
-* explicit ownership, clear lifetime boundaries, RAII where appropriate
-* avoid hidden side effects, macro-heavy design, excessive abstraction, premature generalization
-* prefer simple structs for specifications and aggregate initialization where practical
-* prefer strongly typed IDs / handles where useful
+* Explicit ownership, clear lifetime boundaries, RAII where appropriate
+* Avoid hidden side effects, macro-heavy design, excessive abstraction, premature generalization
+* Prefer simple structs for specifications and aggregate initialization where practical
+* Prefer strongly typed IDs / handles where useful
 
 ```cpp
 // Preferred
@@ -115,6 +115,20 @@ Error handling:
 * No exceptions. Assertions for fatal programmer/configuration errors.
 * Check runtime Vulkan errors explicitly; never silently ignore `vk::Result`.
 * Keep failure modes visible.
+
+---
+
+## Testing
+
+Tests live in `Tests/`, use doctest, and are run through a Python script. All tests are black-box: they call public APIs and assert observable results.
+
+* Respect the code and general formatting style of the project when writing tests
+* No skipped or disabled tests
+* Use `static_assert` for everything decidable at compile time
+* Accumulate inside loops and assert once, so large inputs do not produce thousands of assertions
+* Comments are appropriate for non-trivial code. Keep them short and precise, no prose. Add section separators
+* Valid input that crashes the engine is a bug, never a reason to soften the test
+* Table-driven cases with a row struct, `SUBCASE` for variants of one statement, no duplicate coverage
 
 ---
 

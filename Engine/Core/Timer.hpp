@@ -65,7 +65,7 @@ namespace Engine::Core
         // Loop counter to calculate fps
         u64 m_FPSLoopCounter = 0;
 
-        // Discard frames with delta times >= than this threshhold
+        // Discard frames with delta times greater than this threshhold
         static constexpr f64 MAX_DELTA_MILLISECONDS = 333.0;
 
         // Struct with main rendering timings (for animation, visualization etc.)

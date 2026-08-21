@@ -61,7 +61,6 @@ class Paths:
     ENGINE_CORE = ENGINE / "Core"
     ENGINE_DEBUG = ENGINE / "Debug"
     ENGINE_GRAPHICS = ENGINE / "Graphics"
-    ENGINE_MATH = ENGINE / "Math"
     ENGINE_PLATFORM = ENGINE / "Platform"
     ENGINE_VENDOR = ENGINE / "Vendor"
 
@@ -110,10 +109,6 @@ GRAPHICS_DIRS = [
     Paths.ENGINE_GRAPHICS_VULKAN,
 ]
 
-MATH_DIRS = [
-    Paths.ENGINE_MATH,
-]
-
 PLATFORM_DIRS = [
     Paths.ENGINE_PLATFORM,
 ]
@@ -142,7 +137,6 @@ STANDARD_DIRS = [
     *CORE_DIRS,
     *DEBUG_DIRS,
     *GRAPHICS_DIRS,
-    *MATH_DIRS,
     *PLATFORM_DIRS,
 ]
 
@@ -156,7 +150,6 @@ EXPANDED_DIR_GROUPS = [
     ("Core", CORE_DIRS),
     ("Debug", DEBUG_DIRS),
     ("Graphics", GRAPHICS_DIRS),
-    ("Math", MATH_DIRS),
     ("Platform", PLATFORM_DIRS),
     ("Vendor", VENDOR_DIRS),
     ("Scripts", SCRIPT_DIRS),

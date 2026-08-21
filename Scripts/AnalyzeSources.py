@@ -8,7 +8,7 @@ import yaml
 
 # ---------------------------------------------------------------------------
 
-SOURCE_FILTER = r".*[\\/]Engine[\\/](Core|Debug|Graphics|Math|Platform)[\\/].*|.*[\\/]Applications[\\/].*"
+SOURCE_FILTER = r".*[\\/]Engine[\\/](Core|Debug|Graphics|Platform)[\\/].*|.*[\\/]Applications[\\/].*"
 HEADER_FILTER = SOURCE_FILTER
 TIDY_FIXES_YAML = Paths.PROJECT_ROOT / "tidy-fixes.yaml"
 

@@ -156,8 +156,8 @@
 ### Allgemeines
 
 - [x] ~AGENTS.md anpassen~
+- [x] ~Mehr Tests ergänzen~
 - [ ] GLFW auf v3.5.1 upgraden
-- [ ] Mehr Tests ergänzen
 
 ### Improvements
 
