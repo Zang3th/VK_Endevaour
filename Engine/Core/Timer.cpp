@@ -34,9 +34,7 @@ namespace Engine::Core
 
     void Timer::Tick()
     {
-        // Increment counters
         m_FrameTiming.FrameCounter++;
-        m_FPSLoopCounter++;
 
         // Get current clock and calculate delta clock
         const auto currentClock = Clock::now();
@@ -46,7 +44,19 @@ namespace Engine::Core
         // Get delta time from clock in ms and secs
         m_FrameTiming.DeltaMilliseconds = std::chrono::duration<f64, std::milli>(deltaClock).count();
         ASSERT(m_FrameTiming.DeltaMilliseconds >= 0, "Clock provided negative delta time ...");
-        m_FrameTiming.DeltaSeconds = m_FrameTiming.DeltaMilliseconds * 0.001f;
+        m_FrameTiming.DeltaSeconds = m_FrameTiming.DeltaMilliseconds * 0.001;
+
+        // Duration is probably not real (because of move, resize, interaction, ...)
+        // Don't advance time and contribute to no statistic
+        if (m_FrameTiming.DeltaMilliseconds >= MAX_DELTA_MILLISECONDS)
+        {
+            m_FrameTiming.DeltaMilliseconds = 0.0;
+            m_FrameTiming.DeltaSeconds      = 0.0;
+            return;
+        }
+
+        // Only increment loop counter if times for this frame were valid
+        m_FPSLoopCounter++;
 
         // Update benchmark
         if (m_FrameTiming.DeltaMilliseconds > m_FrameTiming.Benchmark.HighestDeltaMilliseconds)
@@ -63,7 +73,7 @@ namespace Engine::Core
 
         // Add up total time
         m_FrameTiming.TotalMilliseconds += m_FrameTiming.DeltaMilliseconds;
-        m_FrameTiming.TotalSeconds = m_FrameTiming.TotalMilliseconds * 0.001f;
+        m_FrameTiming.TotalSeconds = m_FrameTiming.TotalMilliseconds * 0.001;
         m_FPSAccumulatedMilliseconds += m_FrameTiming.DeltaMilliseconds;
 
         // Updates every 1000 ms

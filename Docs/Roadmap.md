@@ -167,7 +167,7 @@
 
 ### Bugs
 
-- [ ] Profiling für Move + Resize vom Window fixen
+- [x] ~Profiling für Move/Resize vom Window fixen~
 - [ ] Lag-Spikes inspizieren
 
 ### ProfilerPanel

@@ -58,7 +58,7 @@ namespace Engine::Graphics
         Scope<VulkanDescriptorPool>      m_DescriptorPool;
         Scope<VulkanDescriptorSetLayout> m_DescriptorLayout;
 
-        [[maybe_unused]] std::array<BufferAllocation, FRAMES_IN_FLIGHT>  m_BufferAllocs;
-        [[maybe_unused]] std::array<vk::DescriptorSet, FRAMES_IN_FLIGHT> m_DescriptorSets;
+        std::array<BufferAllocation, FRAMES_IN_FLIGHT>  m_BufferAllocs;
+        std::array<vk::DescriptorSet, FRAMES_IN_FLIGHT> m_DescriptorSets;
     };
 }
