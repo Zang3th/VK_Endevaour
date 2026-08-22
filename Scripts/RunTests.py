@@ -28,7 +28,7 @@ def results_path(build_dir: Path) -> Path:
 
 # ---------------------------------------------------------------------------
 
-def run_tests(build_dir: Path):
+def run_tests(build_dir: Path, verbose: bool):
     executable = executable_path(build_dir)
 
     if not executable.exists():
@@ -49,17 +49,23 @@ def run_tests(build_dir: Path):
     print("\n> " + format_command(cmd) + "\n")
 
     # The engine logs to stdout and would bury the report, so its output is captured instead of inherited.
-    process = subprocess.run(
-        cmd,
-        cwd=build_dir,
-        capture_output=True,
-        encoding="utf-8",
-        errors="replace",
-    )
+    # In verbose mode the streams are inherited, which keeps the output live and colored.
+    if verbose:
+        process = subprocess.run(cmd, cwd=build_dir)
+    else:
+        process = subprocess.run(
+            cmd,
+            cwd=build_dir,
+            capture_output=True,
+            encoding="utf-8",
+            errors="replace",
+        )
 
     if not results.exists():
-        print(process.stdout, end="")
-        print(process.stderr, end="")
+        if not verbose:
+            print(process.stdout, end="")
+            print(process.stderr, end="")
+
         print(f"> Test run produced no report (exit code {process.returncode}), aborting!\n")
         sys.exit(1)
 
@@ -150,6 +156,7 @@ def main():
     parser.add_argument("-d", "--debug", action="store_true", help="Target the Debug build")
     parser.add_argument("-r", "--release", action="store_true", help="Target the Release build")
     parser.add_argument("-p", "--print", action="store_true", help="Print results")
+    parser.add_argument("-v", "--verbose", action="store_true", help="Show the full engine output")
 
     args = parser.parse_args()
 
@@ -173,7 +180,7 @@ def main():
             continue
 
         print(f"============ Running tests ({build_dir.name}) ============")
-        run_tests(build_dir)
+        run_tests(build_dir, args.verbose)
 
         if args.print:
             print(f"\n============ Printing results ({build_dir.name}) ============\n")

@@ -164,6 +164,7 @@
 - [x] ~Szene mit .obj und Debugdreieck bauen~
 - [x] ~Konstanten = 1 aus VulkanGlobalUniforms in VulkanGlobal auslagern~
 - [x] ~ObjLoader ein RandomizeColor-Flag für die Vertices mitgeben~
+- [x] ~Tests für den ObjLoader fixen~
 
 ### Bugs
 

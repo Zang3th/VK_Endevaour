@@ -6,10 +6,10 @@
 
 namespace Engine::Graphics
 {
-    enum class Color : u8
+    enum class ImportMode : u8
     {
-        DEFAULT   = 0u,
-        RANDOMIZE = 1u
+        OPTIMIZED      = 0u,
+        TOPOLOGY_DEBUG = 1u
     };
 
     class ObjLoader
@@ -17,6 +17,6 @@ namespace Engine::Graphics
     public:
         ObjLoader() = delete;
 
-        static Mesh LoadMeshFromFile(const std::filesystem::path& path, Color color = Color::DEFAULT);
+        static Mesh LoadMeshFromFile(const std::filesystem::path& path, ImportMode mode = ImportMode::OPTIMIZED);
     };
 }

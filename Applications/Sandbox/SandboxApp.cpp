@@ -39,7 +39,7 @@ void Sandbox::Run()
 
     // Load mesh
     const Engine::Graphics::Mesh cowMesh = Engine::Graphics::ObjLoader::LoadMeshFromFile(
-        "Applications/Sandbox/Models/cow.obj", Engine::Graphics::Color::RANDOMIZE);
+        "Applications/Sandbox/Models/cow.obj", Engine::Graphics::ImportMode::TOPOLOGY_DEBUG);
 
     // Create 'hello_world_triangle' mesh
     const Engine::Graphics::Mesh triangleMesh{

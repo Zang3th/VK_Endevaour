@@ -14,7 +14,7 @@
 
 namespace
 {
-    using Engine::Graphics::Color;
+    using Engine::Graphics::ImportMode;
     using Engine::Graphics::Mesh;
     using Engine::Graphics::ObjLoader;
     using Engine::Graphics::Vertex;
@@ -51,11 +51,13 @@ namespace
     };
 
     // Temp directory, because the working directory is the build directory
-    [[nodiscard]] Mesh Load(const std::string& content, const std::string& name, Color color = Color::DEFAULT)
+    [[nodiscard]] Mesh Load(const std::string& content,
+                            const std::string& name,
+                            ImportMode         mode = ImportMode::OPTIMIZED)
     {
         const TempObjFile file(content, name);
 
-        return ObjLoader::LoadMeshFromFile(file.Path(), color);
+        return ObjLoader::LoadMeshFromFile(file.Path(), mode);
     }
 
     // Accumulated, so a large mesh does not produce one assertion per index
@@ -85,6 +87,13 @@ namespace
         Engine::f32 V = 0.0f;
     };
 
+    struct ExpectedColor
+    {
+        Engine::f32 R = 0.0f;
+        Engine::f32 G = 0.0f;
+        Engine::f32 B = 0.0f;
+    };
+
     void CheckPosition(const Vertex& vertex, ExpectedPosition expected)
     {
         CHECK(vertex.Position.x == doctest::Approx(expected.X));
@@ -96,6 +105,13 @@ namespace
     {
         CHECK(vertex.TexCoord.x == doctest::Approx(expected.U));
         CHECK(vertex.TexCoord.y == doctest::Approx(expected.V));
+    }
+
+    void CheckColor(const Vertex& vertex, ExpectedColor expected)
+    {
+        CHECK(vertex.Color.r == doctest::Approx(expected.R));
+        CHECK(vertex.Color.g == doctest::Approx(expected.G));
+        CHECK(vertex.Color.b == doctest::Approx(expected.B));
     }
 
     // ----- Geometry -----
@@ -344,66 +360,117 @@ namespace
         CHECK(mesh.Indices.at(0) != mesh.Indices.at(3));
     }
 
-    // ----- Colors -----
+    // ----- Import modes -----
 
-    TEST_CASE("File vertex colors win over the randomize flag")
+    // A quad built from two triangles sharing the edge 1-3, every corner in its own color.
+    // Corner order is v1 v2 v3, v1 v3 v4 - so v1 and v3 each show up twice.
+    const std::string SHARED_EDGE_QUAD = "v 0.0 0.0 0.0 1.0 0.0 0.0\n"
+                                         "v 1.0 0.0 0.0 0.0 1.0 0.0\n"
+                                         "v 1.0 1.0 0.0 0.0 0.0 1.0\n"
+                                         "v 0.0 1.0 0.0 1.0 1.0 0.0\n"
+                                         "f 1 2 3\n"
+                                         "f 1 3 4\n";
+
+    const std::array<ExpectedPosition, 6> CORNER_POSITIONS = {
+        ExpectedPosition{ .X = 0.0f, .Y = 0.0f, .Z = 0.0f }, ExpectedPosition{ .X = 1.0f, .Y = 0.0f, .Z = 0.0f },
+        ExpectedPosition{ .X = 1.0f, .Y = 1.0f, .Z = 0.0f }, ExpectedPosition{ .X = 0.0f, .Y = 0.0f, .Z = 0.0f },
+        ExpectedPosition{ .X = 1.0f, .Y = 1.0f, .Z = 0.0f }, ExpectedPosition{ .X = 0.0f, .Y = 1.0f, .Z = 0.0f }
+    };
+
+    TEST_CASE("The import mode decides vertex sharing and where the colors come from")
     {
-        const Mesh mesh = Load("v 0.0 0.0 0.0 1.0 0.0 0.0\n"
-                               "v 1.0 0.0 0.0 0.0 1.0 0.0\n"
-                               "v 0.0 1.0 0.0 0.0 0.0 1.0\n"
-                               "f 1 2 3\n",
-                               "vke_colors_beat_randomize.obj",
-                               Color::RANDOMIZE);
-
-        REQUIRE(mesh.Vertices.size() == 3u);
-
-        const Vertex& red = mesh.Vertices.at(mesh.Indices.at(0));
-        CHECK(red.Color.r == doctest::Approx(1.0f));
-        CHECK(red.Color.g == doctest::Approx(0.0f));
-        CHECK(red.Color.b == doctest::Approx(0.0f));
-
-        CHECK(mesh.Vertices.at(mesh.Indices.at(1)).Color.g == doctest::Approx(1.0f));
-        CHECK(mesh.Vertices.at(mesh.Indices.at(2)).Color.b == doctest::Approx(1.0f));
-    }
-
-    TEST_CASE("Randomized colors stay inside the unit range")
-    {
-        const Mesh mesh = Load("v 0.0 0.0 0.0\n"
-                               "v 1.0 0.0 0.0\n"
-                               "v 0.0 1.0 0.0\n"
-                               "f 1 2 3\n",
-                               "vke_random_color_range.obj",
-                               Color::RANDOMIZE);
-
-        REQUIRE_FALSE(mesh.Vertices.empty());
-
-        Engine::b8 allInRange = true;
-        for (const Vertex& vertex : mesh.Vertices)
+        SUBCASE("OPTIMIZED shares the corners and takes the colors from the file")
         {
-            allInRange = allInRange && (vertex.Color.r >= 0.0f) && (vertex.Color.r <= 1.0f) && (vertex.Color.g >= 0.0f)
-                         && (vertex.Color.g <= 1.0f) && (vertex.Color.b >= 0.0f) && (vertex.Color.b <= 1.0f);
+            const Mesh mesh = Load(SHARED_EDGE_QUAD, "vke_mode_optimized.obj", ImportMode::OPTIMIZED);
+
+            CheckMeshIsWellFormed(mesh);
+
+            // The two shared corners collapse, so four vertices carry six indices
+            REQUIRE(mesh.Vertices.size() == 4u);
+            REQUIRE(mesh.Indices.size() == 6u);
+
+            const std::vector<Engine::u32> expectedIndices = { 0, 1, 2, 0, 2, 3 };
+            CHECK(mesh.Indices == expectedIndices);
+
+            for (Engine::u32 i = 0; i < CORNER_POSITIONS.size(); i++)
+            {
+                CheckPosition(mesh.Vertices.at(mesh.Indices.at(i)), CORNER_POSITIONS.at(i));
+            }
+
+            CheckColor(mesh.Vertices.at(0), { .R = 1.0f, .G = 0.0f, .B = 0.0f });
+            CheckColor(mesh.Vertices.at(1), { .R = 0.0f, .G = 1.0f, .B = 0.0f });
+            CheckColor(mesh.Vertices.at(2), { .R = 0.0f, .G = 0.0f, .B = 1.0f });
+            CheckColor(mesh.Vertices.at(3), { .R = 1.0f, .G = 1.0f, .B = 0.0f });
         }
 
-        CHECK(allInRange);
-    }
+        SUBCASE("OPTIMIZED falls back to white when the file carries no colors")
+        {
+            const Mesh mesh = Load("v 0.0 0.0 0.0\n"
+                                   "v 1.0 0.0 0.0\n"
+                                   "v 0.0 1.0 0.0\n"
+                                   "f 1 2 3\n",
+                                   "vke_mode_optimized_white.obj",
+                                   ImportMode::OPTIMIZED);
 
-    TEST_CASE("The color flag must not change mesh topology")
-    {
-        const std::string content = "v 0.0 0.0 0.0\n"
-                                    "v 1.0 0.0 0.0\n"
-                                    "v 1.0 1.0 0.0\n"
-                                    "v 0.0 1.0 0.0\n"
-                                    "f 1 2 3\n"
-                                    "f 1 3 4\n";
+            CheckMeshIsWellFormed(mesh);
+            REQUIRE(mesh.Vertices.size() == 3u);
 
-        const Mesh plain      = Load(content, "vke_topology_plain.obj", Color::DEFAULT);
-        const Mesh randomized = Load(content, "vke_topology_random.obj", Color::RANDOMIZE);
+            for (const Vertex& vertex : mesh.Vertices)
+            {
+                CheckColor(vertex, { .R = 1.0f, .G = 1.0f, .B = 1.0f });
+            }
+        }
 
-        CheckMeshIsWellFormed(randomized);
-        REQUIRE(plain.Vertices.size() == 4u);
+        SUBCASE("TOPOLOGY_DEBUG splits every corner off and randomizes its color")
+        {
+            const Mesh mesh = Load(SHARED_EDGE_QUAD, "vke_mode_topology_debug.obj", ImportMode::TOPOLOGY_DEBUG);
 
-        CHECK(randomized.Vertices.size() == plain.Vertices.size());
-        CHECK(randomized.Indices == plain.Indices);
+            CheckMeshIsWellFormed(mesh);
+
+            // Nothing is shared, so every face corner keeps its own vertex and the indices are a plain run
+            REQUIRE(mesh.Vertices.size() == 6u);
+            REQUIRE(mesh.Indices.size() == 6u);
+
+            const std::vector<Engine::u32> expectedIndices = { 0, 1, 2, 3, 4, 5 };
+            CHECK(mesh.Indices == expectedIndices);
+
+            // Same geometry as OPTIMIZED, just without the sharing
+            for (Engine::u32 i = 0; i < CORNER_POSITIONS.size(); i++)
+            {
+                CheckPosition(mesh.Vertices.at(i), CORNER_POSITIONS.at(i));
+            }
+
+            Engine::b8 allInRange   = true;
+            Engine::b8 anyFileColor = false;
+            Engine::b8 allSameColor = true;
+
+            for (const Vertex& vertex : mesh.Vertices)
+            {
+                allInRange = allInRange && (vertex.Color.r >= 0.0f) && (vertex.Color.r <= 1.0f)
+                             && (vertex.Color.g >= 0.0f) && (vertex.Color.g <= 1.0f) && (vertex.Color.b >= 0.0f)
+                             && (vertex.Color.b <= 1.0f);
+
+                anyFileColor = anyFileColor || (vertex.Color == glm::vec3(1.0f, 0.0f, 0.0f))
+                               || (vertex.Color == glm::vec3(0.0f, 1.0f, 0.0f))
+                               || (vertex.Color == glm::vec3(0.0f, 0.0f, 1.0f))
+                               || (vertex.Color == glm::vec3(1.0f, 1.0f, 0.0f));
+
+                allSameColor = allSameColor && (vertex.Color == mesh.Vertices.at(0).Color);
+            }
+
+            CHECK(allInRange);
+            CHECK_FALSE(anyFileColor);
+
+            // A constant value would satisfy both checks above
+            CHECK_FALSE(allSameColor);
+
+            // The point of the mode: the corners that OPTIMIZED merged are now told apart
+            // by their color, which is what makes the topology visible in the first place
+            const Engine::b8 sharedCornersDiffer = (mesh.Vertices.at(0).Color != mesh.Vertices.at(3).Color)
+                                                   && (mesh.Vertices.at(2).Color != mesh.Vertices.at(4).Color);
+
+            CHECK(sharedCornersDiffer);
+        }
     }
 
     // ----- Scale -----

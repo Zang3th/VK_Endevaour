@@ -1,16 +1,16 @@
 #include "ObjLoader.hpp"
 
+#include "Core/Utility.hpp"
+
 #include "Debug/Log.hpp"
 #include "Debug/LogTable.hpp"
 
 #define TINYOBJLOADER_IMPLEMENTATION
-#include "Core/Utility.hpp"
-
 #include "Vendor/tinyobjloader/tiny_obj_loader.hpp"
 
 namespace Engine::Graphics
 {
-    Mesh ObjLoader::LoadMeshFromFile(const std::filesystem::path& path, Color color)
+    Mesh ObjLoader::LoadMeshFromFile(const std::filesystem::path& path, ImportMode mode)
     {
         tinyobj::attrib_t                attrib;
         std::vector<tinyobj::shape_t>    shapes;
@@ -47,9 +47,14 @@ namespace Engine::Graphics
 
         // Hash map to store and reuse vertices (needs a hashing function and an overloaded comparison operator)
         std::unordered_map<Vertex, u32> uniqueVertices{};
+        if (mode == ImportMode::OPTIMIZED)
+        {
+            uniqueVertices.reserve(attrib.vertices.size());
+        }
 
-        Mesh mesh;
-        b8   gotCompressed = false;
+        Mesh     mesh;
+        const b8 hasColors    = !attrib.colors.empty();
+        const b8 hasTexCoords = !attrib.texcoords.empty();
 
         // Combine all faces into a single mesh by iterating over all shapes
         for (const auto& shape : shapes)
@@ -58,46 +63,67 @@ namespace Engine::Graphics
             {
                 Vertex vertex{};
 
-                vertex.Position = { attrib.vertices[(3 * index.vertex_index) + 0],
-                                    attrib.vertices[(3 * index.vertex_index) + 1],
-                                    attrib.vertices[(3 * index.vertex_index) + 2] };
+                // Positions
+                vertex.Position = { attrib.vertices.at((3 * index.vertex_index) + 0),
+                                    attrib.vertices.at((3 * index.vertex_index) + 1),
+                                    attrib.vertices.at((3 * index.vertex_index) + 2) };
 
-                if (!attrib.colors.empty())
+                // Colors
+                if (mode == ImportMode::TOPOLOGY_DEBUG)
                 {
-                    vertex.Color = { attrib.colors[(3 * index.vertex_index) + 0],
-                                     attrib.colors[(3 * index.vertex_index) + 1],
-                                     attrib.colors[(3 * index.vertex_index) + 2] };
-                }
-                else if (color == Color::RANDOMIZE)
-                {
+                    // Even without a dedicated debug mode, assigning a random color to each corner eliminates any
+                    // possibility of compressing the mesh. A vertex cannot hold two different colors, so the hashing
+                    // function will never merge such vertices.
                     vertex.Color = Core::Utility::GetRandomVec3();
                 }
-
-                if (!attrib.texcoords.empty())
+                else if (hasColors)
                 {
-                    vertex.TexCoord = {
-                        attrib.texcoords[(2 * index.texcoord_index) + 0],
-                        1.0f - attrib.texcoords[(2 * index.texcoord_index) + 1] // Flip v-axis
-                    };
-                }
-
-                // Check for duplicate vertex
-                if (!uniqueVertices.contains(vertex))
-                {
-                    uniqueVertices[vertex] = (u32)(mesh.Vertices.size());
-                    mesh.Vertices.push_back(vertex);
+                    vertex.Color = { attrib.colors.at((3 * index.vertex_index) + 0),
+                                     attrib.colors.at((3 * index.vertex_index) + 1),
+                                     attrib.colors.at((3 * index.vertex_index) + 2) };
                 }
                 else
                 {
-                    gotCompressed = true;
+                    vertex.Color = { 1.0f, 1.0f, 1.0f };
                 }
 
-                // Save index
-                mesh.Indices.push_back(uniqueVertices[vertex]);
+                // Texture coordinates
+                if (hasTexCoords && index.texcoord_index != -1)
+                {
+                    vertex.TexCoord = {
+                        attrib.texcoords.at((2 * index.texcoord_index) + 0),
+                        1.0f - attrib.texcoords.at((2 * index.texcoord_index) + 1) // Flip v-axis
+                    };
+                }
+
+                if (mode == ImportMode::TOPOLOGY_DEBUG)
+                {
+                    mesh.Indices.push_back((u32)mesh.Vertices.size());
+                    mesh.Vertices.push_back(vertex);
+                }
+                // Only compress meshes outside of debug mode
+                else
+                {
+                    // Try to emplace vertex in hash map
+                    const auto [it, inserted] = uniqueVertices.try_emplace(vertex, (u32)mesh.Vertices.size());
+
+                    // Success => New, unique vertex
+                    if (inserted)
+                    {
+                        mesh.Vertices.push_back(vertex);
+                    }
+
+                    // Save index
+                    mesh.Indices.push_back(it->second);
+                }
             }
         }
 
-        if (gotCompressed)
+        if (mode == ImportMode::TOPOLOGY_DEBUG)
+        {
+            LOG_VERBOSE("Mesh compression is deactivated in ImportMode::TOPOLOGY_DEBUG ...");
+        }
+        else if (mesh.Vertices.size() < mesh.Indices.size())
         {
             LOG_INFO("Compressed and reduced mesh vertices ... (Raw: {}, Unique: {})",
                      mesh.Indices.size(),
