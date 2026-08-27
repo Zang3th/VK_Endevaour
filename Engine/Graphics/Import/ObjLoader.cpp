@@ -47,7 +47,7 @@ namespace Engine::Graphics
 
         // Hash map to store and reuse vertices (needs a hashing function and an overloaded comparison operator)
         std::unordered_map<Vertex, u32> uniqueVertices{};
-        if (mode == ImportMode::OPTIMIZED)
+        if (mode == ImportMode::eOptimized)
         {
             uniqueVertices.reserve(attrib.vertices.size());
         }
@@ -69,7 +69,7 @@ namespace Engine::Graphics
                                     attrib.vertices.at((3 * index.vertex_index) + 2) };
 
                 // Colors
-                if (mode == ImportMode::TOPOLOGY_DEBUG)
+                if (mode == ImportMode::eTopologyDebug)
                 {
                     // Even without a dedicated debug mode, assigning a random color to each corner eliminates any
                     // possibility of compressing the mesh. A vertex cannot hold two different colors, so the hashing
@@ -96,7 +96,7 @@ namespace Engine::Graphics
                     };
                 }
 
-                if (mode == ImportMode::TOPOLOGY_DEBUG)
+                if (mode == ImportMode::eTopologyDebug)
                 {
                     mesh.Indices.push_back((u32)mesh.Vertices.size());
                     mesh.Vertices.push_back(vertex);
@@ -119,7 +119,7 @@ namespace Engine::Graphics
             }
         }
 
-        if (mode == ImportMode::TOPOLOGY_DEBUG)
+        if (mode == ImportMode::eTopologyDebug)
         {
             LOG_VERBOSE("Mesh compression is deactivated in ImportMode::TOPOLOGY_DEBUG ...");
         }

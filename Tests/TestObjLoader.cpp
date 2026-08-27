@@ -53,7 +53,7 @@ namespace
     // Temp directory, because the working directory is the build directory
     [[nodiscard]] Mesh Load(const std::string& content,
                             const std::string& name,
-                            ImportMode         mode = ImportMode::OPTIMIZED)
+                            ImportMode         mode = ImportMode::eOptimized)
     {
         const TempObjFile file(content, name);
 
@@ -381,7 +381,7 @@ namespace
     {
         SUBCASE("OPTIMIZED shares the corners and takes the colors from the file")
         {
-            const Mesh mesh = Load(SHARED_EDGE_QUAD, "vke_mode_optimized.obj", ImportMode::OPTIMIZED);
+            const Mesh mesh = Load(SHARED_EDGE_QUAD, "vke_mode_optimized.obj", ImportMode::eOptimized);
 
             CheckMeshIsWellFormed(mesh);
 
@@ -410,7 +410,7 @@ namespace
                                    "v 0.0 1.0 0.0\n"
                                    "f 1 2 3\n",
                                    "vke_mode_optimized_white.obj",
-                                   ImportMode::OPTIMIZED);
+                                   ImportMode::eOptimized);
 
             CheckMeshIsWellFormed(mesh);
             REQUIRE(mesh.Vertices.size() == 3u);
@@ -423,7 +423,7 @@ namespace
 
         SUBCASE("TOPOLOGY_DEBUG splits every corner off and randomizes its color")
         {
-            const Mesh mesh = Load(SHARED_EDGE_QUAD, "vke_mode_topology_debug.obj", ImportMode::TOPOLOGY_DEBUG);
+            const Mesh mesh = Load(SHARED_EDGE_QUAD, "vke_mode_topology_debug.obj", ImportMode::eTopologyDebug);
 
             CheckMeshIsWellFormed(mesh);
 

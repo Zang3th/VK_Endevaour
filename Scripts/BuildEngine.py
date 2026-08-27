@@ -9,11 +9,11 @@ from ProjectDefines import Paths, run
 
 def configure_and_build(build_dir: Path, build_type: str, clean_build: bool):
     if clean_build:
-        print("Clean rebuild ...")
+        print("Clean build ...")
         # Delete specific build subdirectory if it exists
         if build_dir.exists():
             shutil.rmtree(build_dir)
-            print(f"Removed directory '{build_dir}'...")
+            print(f"Removed directory '{build_dir}' ...")
 
         build_dir.mkdir(parents=True, exist_ok=True)
         print(f"Created directory '{build_dir}' ...")
