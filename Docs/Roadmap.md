@@ -157,7 +157,7 @@
 
 - [x] ~AGENTS.md anpassen~
 - [x] ~Mehr Tests ergänzen~
-- [ ] GLFW auf v3.5.1 upgraden
+- [x] ~GLFW auf v3.5.1 upgraden~
 
 ### Improvements
 
@@ -209,6 +209,10 @@ Die Projektion soll rechtshändig mit Z-up sein (entspricht Blender):
 - +X = rechts
 - -Y = vorwärts
 - +Z = oben
+
+### Improvements
+
+- [ ] RenderFrame, RenderItem und RenderRequest einführen
 
 ### Camera
 
@@ -275,10 +279,6 @@ Besteht aus einem Mesh-Handle (u32) und einem Transform-Struct
 
 #Backlog
 ## Backlog
-
-### Improvements
-
-- [ ] RenderFrame, RenderItem und RenderRequest einführen
 
 ### StorageBuffer
 
