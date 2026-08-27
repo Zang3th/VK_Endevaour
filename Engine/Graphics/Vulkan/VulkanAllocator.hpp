@@ -4,30 +4,27 @@
 
 #include "Graphics/Vulkan/VulkanDevice.hpp"
 
-// Forward-Declaration
-using VmaAllocation = struct VmaAllocation_T*;
-
 // Gets internally mapped to the corresponding vma enums
 namespace Engine::Graphics
 {
     enum class MemoryUsage : u8
     {
-        eUnknown          = 0,
-        eGPUOnly          = 1,
-        eCPUOnly          = 2,
-        eCPUToGPU         = 3,
-        eGPUToCPU         = 4,
-        eCPUCopy          = 5,
-        eGPULazy          = 6,
-        eAuto             = 7,
-        eAutoPreferDevice = 8,
-        eAutoPreferHost   = 9
+        eUnknown          = 0u,
+        eGPUOnly          = 1u,
+        eCPUOnly          = 2u,
+        eCPUToGPU         = 3u,
+        eGPUToCPU         = 4u,
+        eCPUCopy          = 5u,
+        eGPULazy          = 6u,
+        eAuto             = 7u,
+        eAutoPreferDevice = 8u,
+        eAutoPreferHost   = 9u
     };
 
     struct BufferAllocation
     {
-        vk::Buffer    Buffer;
-        VmaAllocation Allocation;
+        vk::Buffer Buffer = nullptr;
+        void*      Handle = nullptr;
     };
 
     struct BufferSpecification
@@ -46,10 +43,13 @@ namespace Engine::Graphics
         static void Init(const VulkanDevice* device, vk::Instance instance, u32 apiVersion);
         static void Shutdown();
 
-        static BufferAllocation AllocateBuffer(const BufferSpecification& spec);
-        static void             DestroyBuffer(const BufferAllocation& bufferAlloc);
+        [[nodiscard]] static BufferAllocation AllocateBuffer(const BufferSpecification& spec);
+        static void                           DestroyBuffer(const BufferAllocation& bufferAlloc);
 
-        static void* MapMemory(VmaAllocation allocation);
-        static void  UnmapMemory(VmaAllocation allocation);
+        [[nodiscard]] static void* AllocateImage(const vk::ImageCreateInfo* imageCreateInfo, vk::Image* image);
+        static void                DestroyImage(vk::Image image, void* allocationHandle);
+
+        [[nodiscard]] static void* MapMemory(void* allocationHandle);
+        static void                UnmapMemory(void* allocationHandle);
     };
 }

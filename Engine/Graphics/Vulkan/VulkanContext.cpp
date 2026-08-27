@@ -27,9 +27,9 @@ namespace Engine::Graphics
 
         m_PhysicalDevice = MakeScope<VulkanPhysicalDevice>(m_Instance, m_Surface);
         m_Device         = MakeScope<VulkanDevice>(m_PhysicalDevice.get());
-        m_Swapchain      = MakeScope<VulkanSwapchain>(m_Device.get(), m_Surface);
 
         VulkanAllocator::Init(m_Device.get(), m_Instance, m_ApiVersion);
+        m_Swapchain = MakeScope<VulkanSwapchain>(m_Device.get(), m_Surface);
 
         CreateDispatchLoader(); // For later use in extension functions
     }
@@ -38,9 +38,9 @@ namespace Engine::Graphics
     {
         LOG_INFO("VulkanContext::Destructor() ...");
 
+        m_Swapchain.reset();
         VulkanAllocator::Shutdown();
 
-        m_Swapchain.reset();
         m_Device.reset();
         m_PhysicalDevice.reset();
 

@@ -2,6 +2,8 @@
 
 #include "Core/Types.hpp"
 
+#include "Graphics/Vulkan/VulkanRenderTarget.hpp"
+
 #include <vulkan/vulkan.hpp>
 
 #include <vector>
@@ -33,12 +35,18 @@ namespace Engine::Graphics
 
     struct SwapchainImage
     {
+        // Holds image, view and allocation for the color render target.
+        VulkanRenderTarget ColorTarget;
+
+        // "..." but for the depth target.
+        VulkanRenderTarget DepthTarget;
+
         // Image handle owned by the swapchain implementation.
-        vk::Image Image = nullptr;
+        vk::Image InternalImage = nullptr;
 
         // Engine-owned view into the swapchain image.
         // Used as the color attachment view for dynamic rendering.
-        vk::ImageView View = nullptr;
+        vk::ImageView InternalView = nullptr;
 
         // Signaled by graphics queue when rendering into this image is complete.
         // Waited by present queue before presentation.

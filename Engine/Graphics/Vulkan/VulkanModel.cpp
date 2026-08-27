@@ -49,9 +49,9 @@ namespace Engine::Graphics
         const BufferAllocation    stagingBufferAlloc = VulkanAllocator::AllocateBuffer(stagingSpec);
 
         // Fill out staging buffer
-        void* dataPtr = VulkanAllocator::MapMemory(stagingBufferAlloc.Allocation);
+        void* dataPtr = VulkanAllocator::MapMemory(stagingBufferAlloc.Handle);
         std::memcpy(dataPtr, m_Mesh->Vertices.data(), m_Mesh->GetVerticeSize());
-        VulkanAllocator::UnmapMemory(stagingBufferAlloc.Allocation);
+        VulkanAllocator::UnmapMemory(stagingBufferAlloc.Handle);
 
         // Transfer data from CPU to GPU
         m_Context->CopyBuffer(stagingBufferAlloc.Buffer, m_VertexBufferAlloc.Buffer, m_Mesh->GetVerticeSize());
@@ -83,9 +83,9 @@ namespace Engine::Graphics
         const BufferAllocation    stagingBufferAlloc = VulkanAllocator::AllocateBuffer(stagingSpec);
 
         // Fill out staging buffer
-        void* dataPtr = VulkanAllocator::MapMemory(stagingBufferAlloc.Allocation);
+        void* dataPtr = VulkanAllocator::MapMemory(stagingBufferAlloc.Handle);
         std::memcpy(dataPtr, m_Mesh->Indices.data(), m_Mesh->GetIndiceSize());
-        VulkanAllocator::UnmapMemory(stagingBufferAlloc.Allocation);
+        VulkanAllocator::UnmapMemory(stagingBufferAlloc.Handle);
 
         // Transfer data from CPU to GPU
         m_Context->CopyBuffer(stagingBufferAlloc.Buffer, m_IndexBufferAlloc.Buffer, m_Mesh->GetIndiceSize());

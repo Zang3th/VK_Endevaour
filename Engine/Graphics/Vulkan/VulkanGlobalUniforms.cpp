@@ -30,9 +30,9 @@ namespace Engine::Graphics
         ASSERT(frameIndex < FRAMES_IN_FLIGHT, "Given frame index surpasses FRAMES_IN_FLIGHT!");
         ASSERT(data != nullptr, "GlobalUniformData pointer was invalid!");
 
-        auto* dataPtr = VulkanAllocator::MapMemory(m_BufferAllocs.at(frameIndex).Allocation);
+        auto* dataPtr = VulkanAllocator::MapMemory(m_BufferAllocs.at(frameIndex).Handle);
         std::memcpy(dataPtr, data, sizeof(GlobalUniformData));
-        VulkanAllocator::UnmapMemory(m_BufferAllocs.at(frameIndex).Allocation);
+        VulkanAllocator::UnmapMemory(m_BufferAllocs.at(frameIndex).Handle);
     }
 
     // ----- Private -----

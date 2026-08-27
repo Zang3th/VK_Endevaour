@@ -98,8 +98,14 @@ namespace Engine::Graphics
         LOG_INFO("Created allocator with vma ...");
     }
 
+    void VulkanAllocator::Shutdown()
+    {
+        vmaDestroyAllocator(s_Allocator);
+    }
+
     BufferAllocation VulkanAllocator::AllocateBuffer(const BufferSpecification& spec)
     {
+        ASSERT(s_Allocator != VK_NULL_HANDLE, "VulkanAllocator wasn't initialized yet!");
         ASSERT(spec.Size > 0, "Provided buffer size was less or equal to zero!");
 
         const vk::BufferCreateInfo bufferInfo{ .size        = spec.Size,
@@ -128,24 +134,19 @@ namespace Engine::Graphics
                  vk::to_string(spec.BufferUsageFlags),
                  Core::Utility::BytesToString(s_totalMemory));
 
-        return { .Buffer = buffer, .Allocation = allocation };
-    }
-
-    void VulkanAllocator::Shutdown()
-    {
-        vmaDestroyAllocator(s_Allocator);
+        return { .Buffer = buffer, .Handle = (void*)allocation };
     }
 
     void VulkanAllocator::DestroyBuffer(const BufferAllocation& bufferAlloc)
     {
         VmaAllocationInfo allocationInfo{};
-        vmaGetAllocationInfo(s_Allocator, bufferAlloc.Allocation, &allocationInfo);
+        vmaGetAllocationInfo(s_Allocator, (VmaAllocation)bufferAlloc.Handle, &allocationInfo);
 
         VkMemoryPropertyFlags memoryFlags{};
-        vmaGetAllocationMemoryProperties(s_Allocator, bufferAlloc.Allocation, &memoryFlags);
+        vmaGetAllocationMemoryProperties(s_Allocator, (VmaAllocation)bufferAlloc.Handle, &memoryFlags);
 
         s_totalMemory -= allocationInfo.size;
-        vmaDestroyBuffer(s_Allocator, (VkBuffer)bufferAlloc.Buffer, bufferAlloc.Allocation);
+        vmaDestroyBuffer(s_Allocator, (VkBuffer)bufferAlloc.Buffer, (VmaAllocation)bufferAlloc.Handle);
 
         LOG_PERF("Freed {} from {} memory. Total: {} ...",
                  Core::Utility::BytesToString(allocationInfo.size),
@@ -153,15 +154,59 @@ namespace Engine::Graphics
                  Core::Utility::BytesToString(s_totalMemory));
     }
 
-    void* VulkanAllocator::MapMemory(VmaAllocation allocation)
+    void* VulkanAllocator::AllocateImage(const vk::ImageCreateInfo* imageCreateInfo, vk::Image* image)
+    {
+        ASSERT(s_Allocator != VK_NULL_HANDLE, "VulkanAllocator wasn't initialized yet!");
+
+        VmaAllocationCreateInfo allocationCreateInfo{};
+        allocationCreateInfo.usage = VMA_MEMORY_USAGE_AUTO_PREFER_DEVICE;
+
+        VmaAllocation     allocation{};
+        VmaAllocationInfo allocationInfo{};
+
+        VK_VERIFY((vk::Result)(vmaCreateImage(s_Allocator,
+                                              (const VkImageCreateInfo*)imageCreateInfo,
+                                              &allocationCreateInfo,
+                                              (VkImage*)image,
+                                              &allocation,
+                                              &allocationInfo)));
+        s_totalMemory += allocationInfo.size;
+
+        LOG_PERF("Allocated {} of '{}' memory as {}. Total: {} ...",
+                 Core::Utility::BytesToString(allocationInfo.size),
+                 MemoryUsageToString(MemoryUsage::eAutoPreferDevice),
+                 vk::to_string(imageCreateInfo->usage),
+                 Core::Utility::BytesToString(s_totalMemory));
+
+        return (void*)allocation;
+    }
+
+    void VulkanAllocator::DestroyImage(vk::Image image, void* allocationHandle)
+    {
+        VmaAllocationInfo allocationInfo{};
+        vmaGetAllocationInfo(s_Allocator, (VmaAllocation)allocationHandle, &allocationInfo);
+
+        VkMemoryPropertyFlags memoryFlags{};
+        vmaGetAllocationMemoryProperties(s_Allocator, (VmaAllocation)allocationHandle, &memoryFlags);
+
+        s_totalMemory -= allocationInfo.size;
+        vmaDestroyImage(s_Allocator, image, (VmaAllocation)allocationHandle);
+
+        LOG_PERF("Freed {} from {} memory. Total: {} ...",
+                 Core::Utility::BytesToString(allocationInfo.size),
+                 vk::to_string((vk::MemoryPropertyFlags)memoryFlags),
+                 Core::Utility::BytesToString(s_totalMemory));
+    }
+
+    void* VulkanAllocator::MapMemory(void* allocationHandle)
     {
         void* dataPtr = nullptr;
-        VK_VERIFY((vk::Result)vmaMapMemory(s_Allocator, allocation, &dataPtr));
+        VK_VERIFY((vk::Result)vmaMapMemory(s_Allocator, (VmaAllocation)allocationHandle, &dataPtr));
         return dataPtr;
     }
 
-    void VulkanAllocator::UnmapMemory(VmaAllocation allocation)
+    void VulkanAllocator::UnmapMemory(void* allocationHandle)
     {
-        vmaUnmapMemory(s_Allocator, allocation);
+        vmaUnmapMemory(s_Allocator, (VmaAllocation)allocationHandle);
     }
 }

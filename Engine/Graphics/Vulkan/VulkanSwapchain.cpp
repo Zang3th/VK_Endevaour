@@ -16,7 +16,7 @@ namespace
     {
         Engine::Graphics::SwapchainProperties properties{};
 
-        // Get swapchain capabilites from the physical device
+        // Get swapchain capabilities from the physical device
         const Engine::Graphics::SwapchainSupport swapchainSupport = physicalDevice->GetSwapchainSupport();
 
         // Choose most optimal swapchain properties
@@ -148,9 +148,7 @@ namespace Engine::Graphics
 
     void VulkanSwapchain::BeginRendering(const SwapchainFrame& frame, glm::vec4 clearColor)
     {
-        // Grab shortcut handles to current frame data
         const vk::CommandBuffer cmdBuffer = frame.Resources->CommandBuffer;
-        const SwapchainImage    image     = m_Images.at(frame.ImageIndex);
 
         // Start command buffer recording
         const vk::CommandBufferBeginInfo cmdBeginInfo{};
@@ -158,7 +156,7 @@ namespace Engine::Graphics
 
         // Transition image layout from undefined to color
         VulkanSwapchainUtils::TransitionImageLayout(cmdBuffer,
-                                                    image.Image,
+                                                    m_Images.at(frame.ImageIndex).InternalImage,
                                                     vk::ImageLayout::eUndefined,
                                                     vk::ImageLayout::eColorAttachmentOptimal,
                                                     vk::AccessFlagBits2::eNone,
@@ -170,7 +168,7 @@ namespace Engine::Graphics
         const vk::ClearValue clearValue{ .color = { { { clearColor.x, clearColor.y, clearColor.z, clearColor.a } } } };
 
         // Set up rendering attachment info
-        const vk::RenderingAttachmentInfo colorAttachment{ .imageView   = image.View,
+        const vk::RenderingAttachmentInfo colorAttachment{ .imageView   = m_Images.at(frame.ImageIndex).InternalView,
                                                            .imageLayout = vk::ImageLayout::eColorAttachmentOptimal,
                                                            .loadOp      = vk::AttachmentLoadOp::eClear,
                                                            .storeOp     = vk::AttachmentStoreOp::eStore,
@@ -187,16 +185,14 @@ namespace Engine::Graphics
 
     void VulkanSwapchain::EndRendering(const SwapchainFrame& frame)
     {
-        // Grab shortcut handles to current frame data
         const vk::CommandBuffer cmdBuffer = frame.Resources->CommandBuffer;
-        const SwapchainImage    image     = m_Images.at(frame.ImageIndex);
 
         // Finish up rendering
         cmdBuffer.endRendering();
 
         // Transition image layout from color to present
         VulkanSwapchainUtils::TransitionImageLayout(cmdBuffer,
-                                                    image.Image,
+                                                    m_Images.at(frame.ImageIndex).InternalImage,
                                                     vk::ImageLayout::eColorAttachmentOptimal,
                                                     vk::ImageLayout::ePresentSrcKHR,
                                                     vk::AccessFlagBits2::eColorAttachmentWrite,
@@ -210,9 +206,7 @@ namespace Engine::Graphics
 
     void VulkanSwapchain::SubmitAndPresent(const SwapchainFrame& frame)
     {
-        // Grab shortcut handles to current frame data
         const vk::CommandBuffer cmdBuffer = frame.Resources->CommandBuffer;
-        const SwapchainImage    image     = m_Images.at(frame.ImageIndex);
 
         const vk::PipelineStageFlags waitStage{ vk::PipelineStageFlagBits::eColorAttachmentOutput };
 
@@ -224,7 +218,7 @@ namespace Engine::Graphics
             .commandBufferCount   = 1,
             .pCommandBuffers      = &cmdBuffer,
             .signalSemaphoreCount = 1,
-            .pSignalSemaphores    = &image.RenderFinished // Which semaphore to signal after
+            .pSignalSemaphores    = &(m_Images.at(frame.ImageIndex).RenderFinished) // Which semaphore to signal after
         };
 
         // Submit frame to queue
@@ -235,7 +229,7 @@ namespace Engine::Graphics
 
         // Create present info
         const vk::PresentInfoKHR presentInfo{ .waitSemaphoreCount = 1,
-                                              .pWaitSemaphores    = &image.RenderFinished,
+                                              .pWaitSemaphores    = &(m_Images.at(frame.ImageIndex).RenderFinished),
                                               .swapchainCount     = 1,
                                               .pSwapchains        = &m_CurrentSwapchain,
                                               .pImageIndices      = &frame.ImageIndex };
@@ -298,7 +292,7 @@ namespace Engine::Graphics
         // Destroy image views
         for (auto& image : m_Images)
         {
-            m_Device->GetHandle().destroyImageView(image.View);
+            m_Device->GetHandle().destroyImageView(image.InternalView);
             m_Device->GetHandle().destroySemaphore(image.RenderFinished);
         }
         m_Images.clear();
@@ -323,9 +317,9 @@ namespace Engine::Graphics
         // Reserve space
         m_Images.reserve(images.size());
 
-        // Create an image view for every image in the swapchain
         for (const auto& image : images)
         {
+            // Create an image view for every internal image in the swapchain
             const vk::ImageViewCreateInfo viewCreateInfo = { .image            = image,
                                                              .viewType         = vk::ImageViewType::e2D,
                                                              .format           = m_Properties.SurfaceFormat.format,
@@ -343,10 +337,25 @@ namespace Engine::Graphics
             auto [semaphoreResult, renderFinished] = m_Device->GetHandle().createSemaphore(semaphoreInfo);
             VK_VERIFY(semaphoreResult);
 
-            m_Images.emplace_back(SwapchainImage{ .Image = image, .View = view, .RenderFinished = renderFinished });
+            // TODO: Check hardware for capabilities
+
+            m_Images.emplace_back(SwapchainImage{
+                .ColorTarget    = VulkanRenderTarget({ .Format      = m_Properties.SurfaceFormat.format,
+                                                       .Extent      = m_Properties.Extent,
+                                                       .UsageFlags  = vk::ImageUsageFlagBits::eColorAttachment,
+                                                       .AspectFlags = vk::ImageAspectFlagBits::eColor },
+                                                     m_Device->GetHandle()),
+                .DepthTarget    = VulkanRenderTarget({ .Format      = vk::Format::eD32Sfloat,
+                                                       .Extent      = m_Properties.Extent,
+                                                       .UsageFlags  = vk::ImageUsageFlagBits::eDepthStencilAttachment,
+                                                       .AspectFlags = vk::ImageAspectFlagBits::eDepth },
+                                                     m_Device->GetHandle()),
+                .InternalImage  = image,
+                .InternalView   = view,
+                .RenderFinished = renderFinished });
         }
 
-        LOG_INFO("Created {} swapchain image view(s) with render-finished semaphore(s) ...", m_Images.size());
+        LOG_INFO("Created {} image(s) with view(s) and render-finished semaphore(s) ...", m_Images.size());
     }
 
     void VulkanSwapchain::CreateCommandPools()

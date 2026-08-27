@@ -178,14 +178,25 @@
 - [x] ~DrawStats pflegen~
 - [x] ~UI für das Panel finalisieren~
 
-### Depth-Buffering
+### MSAA + Depth-Buffering
 
 #Info
 - Wie läuft die Integration in Render Pass und Framebuffer beim Dynamic Rendering ab?
 
-#### ToDo
-- [ ] DepthImage implementieren
-- [ ] DepthImageView implementieren
+#### VulkanRenderTarget
+- [x] ~vk::Image~
+- [x] ~vk::ImageView~
+- [x] ~Memory-Allocation~
+- [x] ~ColorTarget + DepthTarget initialisieren~
+
+#### Render-Konfiguration
+- [ ] SampleCount + DepthFormat merken
+- [ ] Hardware-Capabilities abfragen
+- [ ] DepthAttachment ergänzen
+- [ ] ColorAttachment anpassen
+- [ ] Pipeline und Dynamic Rendering anpassen
+- [ ] ImGui anpassen
+- [ ] Vulkan-Depth-Range bei GLM anpassen
 
 ### Kofi Game Engine Series
 
