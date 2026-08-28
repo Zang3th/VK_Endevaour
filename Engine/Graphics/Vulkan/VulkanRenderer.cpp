@@ -50,7 +50,9 @@ namespace Engine::Graphics
         const u32                   currentIndex = m_PipelineIndex;
         const PipelineSpecification spec{ .VertexShader        = m_Shaders.at(vertexID).get(),
                                           .FragmentShader      = m_Shaders.at(fragmentID).get(),
-                                          .DescriptorSetLayout = m_VulkanGlobalUniforms->GetLayout()->GetHandle() };
+                                          .DescriptorSetLayout = m_VulkanGlobalUniforms->GetLayout()->GetHandle(),
+                                          .DepthTest           = vk::True,
+                                          .DepthWrite          = vk::True };
 
         m_Pipelines[currentIndex] = MakeScope<VulkanPipeline>(m_Context.get(), spec);
         m_PipelineIndex++;
@@ -119,7 +121,7 @@ namespace Engine::Graphics
         m_GlobalUniformData.View =
             glm::lookAt(glm::vec3(0.0f, 15.0f, 10.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
         m_GlobalUniformData.Projection =
-            glm::perspective(glm::radians(45.0f), (f32)extent.width / (f32)extent.height, 0.1f, 100.0f);
+            glm::perspectiveRH_ZO(glm::radians(45.0f), (f32)extent.width / (f32)extent.height, 0.1f, 100.0f);
         m_GlobalUniformData.Projection[1][1] *= -1; // Flip Y-Coordinate of clip coordinates because of legacy OpenGL
 
         // Inform global uniforms that the data has changed

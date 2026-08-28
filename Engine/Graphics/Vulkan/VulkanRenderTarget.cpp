@@ -55,7 +55,7 @@ namespace Engine::Graphics
             .extent      = { .width = createInfo.Extent.width, .height = createInfo.Extent.height, .depth = 1 },
             .mipLevels   = 1,
             .arrayLayers = 1,
-            .samples     = vk::SampleCountFlagBits::e1,
+            .samples     = createInfo.SampleCount,
             .tiling      = vk::ImageTiling::eOptimal,
             .usage       = createInfo.UsageFlags,
             .sharingMode = vk::SharingMode::eExclusive,

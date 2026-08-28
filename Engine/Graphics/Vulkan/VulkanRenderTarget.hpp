@@ -6,10 +6,11 @@ namespace Engine::Graphics
 {
     struct VulkanRenderTargetCreateInfo
     {
-        vk::Format           Format;
-        vk::Extent2D         Extent;
-        vk::ImageUsageFlags  UsageFlags;
-        vk::ImageAspectFlags AspectFlags;
+        vk::Format              Format;
+        vk::Extent2D            Extent;
+        vk::SampleCountFlagBits SampleCount;
+        vk::ImageUsageFlags     UsageFlags;
+        vk::ImageAspectFlags    AspectFlags;
     };
 
     class VulkanRenderTarget

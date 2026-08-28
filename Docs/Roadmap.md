@@ -168,6 +168,7 @@
 - [x] ~Tests für den ObjLoader fixen~
 - [x] ~Tooling-Verbesserungen~
 - [x] ~Unnötige Includes~
+- [ ] Logging von Allocations nochmal verbessern
 
 ### Bugs
 
@@ -192,13 +193,17 @@
 - [x] ~ColorTarget + DepthTarget initialisieren~
 
 #### Render-Konfiguration
-- [ ] SampleCount + DepthFormat merken
-- [ ] Hardware-Capabilities abfragen
+- [x] ~SampleCount + DepthFormat merken~
+- [x] ~Hardware-Capabilities abfragen~
 - [ ] DepthAttachment ergänzen
 - [ ] ColorAttachment anpassen
-- [ ] Pipeline und Dynamic Rendering anpassen
+- [x] ~Pipeline und Dynamic Rendering anpassen~
 - [ ] ImGui anpassen
-- [ ] Vulkan-Depth-Range bei GLM anpassen
+- [x] ~Vulkan-Depth-Range bei GLM anpassen~
+- [ ] Resolve: ColorTarget => Swapchain-Image
+
+#### Tests
+- [ ] Ergänzen
 
 ### Kofi Game Engine Series
 

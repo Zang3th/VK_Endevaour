@@ -82,9 +82,10 @@ namespace Engine::Graphics
                                                                         .lineWidth               = 1.0f };
 
         // Multisampling state
-        const vk::PipelineMultisampleStateCreateInfo multisampleState{ .rasterizationSamples =
-                                                                           vk::SampleCountFlagBits::e1,
-                                                                       .sampleShadingEnable = vk::False };
+        const vk::PipelineMultisampleStateCreateInfo multisampleState{
+            .rasterizationSamples = m_Context->GetSwapchain()->GetProperties().SampleCount,
+            .sampleShadingEnable  = vk::False
+        };
 
         // Depth stencil state
         const vk::PipelineDepthStencilStateCreateInfo depthStencilState{ .depthTestEnable       = m_Spec.DepthTest,

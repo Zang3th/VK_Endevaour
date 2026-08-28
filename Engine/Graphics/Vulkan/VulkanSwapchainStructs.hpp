@@ -11,24 +11,31 @@
 namespace Engine::Graphics
 {
     // Capabilities and options reported by the physical device for the current surface.
-    // Used to choose the concrete swapchain properties during creation/recreation.
+    // Used to choose the specific swapchain properties during creation/recreation.
     struct SwapchainSupport
     {
         vk::SurfaceCapabilitiesKHR        Capabilities;
         std::vector<vk::SurfaceFormatKHR> Formats;
         std::vector<vk::PresentModeKHR>   PresentModes;
+        vk::Format                        DepthFormat = vk::Format::eUndefined;
+        vk::SampleCountFlagBits           SampleCount = vk::SampleCountFlagBits::e1;
 
-        [[nodiscard]] b8 IsComplete() const { return (!Formats.empty() && !PresentModes.empty()); };
+        [[nodiscard]] b8 IsComplete() const
+        {
+            return (!Formats.empty() && !PresentModes.empty() && DepthFormat != vk::Format::eUndefined);
+        };
     };
 
     // These values describe the current swapchain and may change during recreation.
     struct SwapchainProperties
     {
-        vk::Extent2D                    Extent        = { .width = 0, .height = 0 };
         vk::SurfaceFormatKHR            SurfaceFormat = { .format     = vk::Format::eUndefined,
                                                           .colorSpace = vk::ColorSpaceKHR::eSrgbNonlinear };
+        vk::Extent2D                    Extent        = { .width = 0, .height = 0 };
         vk::PresentModeKHR              PresentMode   = vk::PresentModeKHR::eFifo;
         vk::SurfaceTransformFlagBitsKHR Transform     = vk::SurfaceTransformFlagBitsKHR::eIdentity;
+        vk::Format                      DepthFormat   = vk::Format::eUndefined;
+        vk::SampleCountFlagBits         SampleCount   = vk::SampleCountFlagBits::e1;
 
         u32 MinImageCount = 0;
     };

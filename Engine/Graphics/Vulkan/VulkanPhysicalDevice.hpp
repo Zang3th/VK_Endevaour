@@ -25,19 +25,17 @@ namespace Engine::Graphics
         VulkanPhysicalDevice(const vk::Instance& instance, const vk::SurfaceKHR& surface);
         ~VulkanPhysicalDevice();
 
-        [[nodiscard]] const vk::PhysicalDevice&           GetHandle() const { return m_PhysicalDevice; };
-        [[nodiscard]] const QueueFamilyIndices&           GetQueueFamilies() const { return m_QueueFamilyIndices; };
-        [[nodiscard]] const vk::PhysicalDeviceProperties& GetProperties() const { return m_Properties; };
-
-        [[nodiscard]] SwapchainSupport GetSwapchainSupport() const { return QuerySwapchainSupport(m_PhysicalDevice); };
+        [[nodiscard]] const vk::PhysicalDevice& GetHandle() const { return m_PhysicalDevice; };
+        [[nodiscard]] const QueueFamilyIndices& GetQueueFamilies() const { return m_QueueFamilyIndices; };
+        [[nodiscard]] SwapchainSupport          GetSwapchainSupport() const
+        {
+            return QuerySwapchainSupport(m_PhysicalDevice, m_Surface);
+        }
 
     private:
-        void        PickDevice();
-        static bool CheckDeviceExtensionSupport(vk::PhysicalDevice device);
-
-        [[nodiscard]] bool               IsDeviceSuitable(vk::PhysicalDevice device) const;
-        [[nodiscard]] QueueFamilyIndices FindQueueFamilyIndices(vk::PhysicalDevice device) const;
-        [[nodiscard]] SwapchainSupport   QuerySwapchainSupport(vk::PhysicalDevice physicalDevice) const;
+        void                           PickDevice();
+        [[nodiscard]] SwapchainSupport QuerySwapchainSupport(const vk::PhysicalDevice& device,
+                                                             const vk::SurfaceKHR&     surface) const;
 
         const vk::Instance&          m_Instance;
         const vk::SurfaceKHR&        m_Surface;

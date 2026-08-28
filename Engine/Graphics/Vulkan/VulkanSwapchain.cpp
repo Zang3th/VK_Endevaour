@@ -26,6 +26,9 @@ namespace
         properties.PresentMode =
             Engine::Graphics::VulkanSwapchainUtils::ChoosePresentMode(swapchainSupport.PresentModes);
 
+        properties.DepthFormat = swapchainSupport.DepthFormat;
+        properties.SampleCount = swapchainSupport.SampleCount;
+
         // Specify minimum amount of images in swapchain
         properties.MinImageCount = swapchainSupport.Capabilities.minImageCount + 1;
 
@@ -273,10 +276,10 @@ namespace Engine::Graphics
         LOG_TABLE_BEGIN(7);
         LOG_TABLE_COLUMN("Extent", "{}x{}", m_Properties.Extent.width, m_Properties.Extent.height);
         LOG_TABLE_COLUMN("Images", "{}", m_Properties.MinImageCount);
-        LOG_TABLE_COLUMN("Format", "{}", vk::to_string(m_Properties.SurfaceFormat.format));
-        LOG_TABLE_COLUMN("ColorSpace", "{}", vk::to_string(m_Properties.SurfaceFormat.colorSpace));
+        LOG_TABLE_COLUMN("SurfaceFormat", "{}", vk::to_string(m_Properties.SurfaceFormat.format));
+        LOG_TABLE_COLUMN("DepthFormat", "{}", vk::to_string(m_Properties.DepthFormat));
+        LOG_TABLE_COLUMN("SampleCount", "{}", vk::to_string(m_Properties.SampleCount));
         LOG_TABLE_COLUMN("PresentMode", "{}", vk::to_string(m_Properties.PresentMode));
-        LOG_TABLE_COLUMN("Usage", "{}", vk::to_string(vk::ImageUsageFlagBits::eColorAttachment));
         LOG_TABLE_COLUMN("Recreated", "{}", m_OldSwapchain ? "Yes" : "No");
         LOG_TABLE_END();
 
@@ -337,16 +340,16 @@ namespace Engine::Graphics
             auto [semaphoreResult, renderFinished] = m_Device->GetHandle().createSemaphore(semaphoreInfo);
             VK_VERIFY(semaphoreResult);
 
-            // TODO: Check hardware for capabilities
-
             m_Images.emplace_back(SwapchainImage{
                 .ColorTarget    = VulkanRenderTarget({ .Format      = m_Properties.SurfaceFormat.format,
                                                        .Extent      = m_Properties.Extent,
+                                                       .SampleCount = m_Properties.SampleCount,
                                                        .UsageFlags  = vk::ImageUsageFlagBits::eColorAttachment,
                                                        .AspectFlags = vk::ImageAspectFlagBits::eColor },
                                                      m_Device->GetHandle()),
-                .DepthTarget    = VulkanRenderTarget({ .Format      = vk::Format::eD32Sfloat,
+                .DepthTarget    = VulkanRenderTarget({ .Format      = m_Properties.DepthFormat,
                                                        .Extent      = m_Properties.Extent,
+                                                       .SampleCount = m_Properties.SampleCount,
                                                        .UsageFlags  = vk::ImageUsageFlagBits::eDepthStencilAttachment,
                                                        .AspectFlags = vk::ImageAspectFlagBits::eDepth },
                                                      m_Device->GetHandle()),
