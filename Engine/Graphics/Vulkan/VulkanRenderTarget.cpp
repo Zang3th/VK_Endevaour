@@ -17,7 +17,6 @@ namespace Engine::Graphics
 
     VulkanRenderTarget::~VulkanRenderTarget()
     {
-        LOG_INFO("VulkanRenderTarget::Destructor() ...");
         Destroy();
     }
 

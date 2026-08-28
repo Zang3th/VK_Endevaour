@@ -1,3 +1,5 @@
+#pragma once
+
 #include "Graphics/Vulkan/VulkanContext.hpp"
 #include "Graphics/Vulkan/VulkanDescriptorPool.hpp"
 

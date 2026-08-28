@@ -1,11 +1,11 @@
 #pragma once
 
-#include "Vendor/glm/glm.hpp"
+#include "Core/Types.hpp"
+
+#include "Vendor/glm/vec3.hpp"
 
 #include <filesystem>
 #include <vector>
-
-#include "Types.hpp"
 
 namespace Engine::Core
 {

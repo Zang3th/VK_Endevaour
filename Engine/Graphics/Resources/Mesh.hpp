@@ -3,12 +3,14 @@
 #include "Core/Types.hpp"
 
 #define GLM_ENABLE_EXPERIMENTAL
-#include "Vendor/glm/glm.hpp"
 #include "Vendor/glm/gtx/hash.hpp"
+#include "Vendor/glm/vec2.hpp"
+#include "Vendor/glm/vec3.hpp"
 
 #include <vulkan/vulkan.hpp>
 
 #include <array>
+#include <functional>
 #include <vector>
 
 namespace Engine::Graphics
@@ -74,8 +76,8 @@ namespace std
     {
         size_t operator()(Engine::Graphics::Vertex const& vertex) const
         {
-            return ((hash<glm::vec3>()(vertex.Position) ^ (hash<glm::vec3>()(vertex.Color) << 1)) >> 1)
-                   ^ (hash<glm::vec2>()(vertex.TexCoord) << 1);
+            return ((std::hash<glm::vec3>()(vertex.Position) ^ (std::hash<glm::vec3>()(vertex.Color) << 1)) >> 1)
+                   ^ (std::hash<glm::vec2>()(vertex.TexCoord) << 1);
         }
     };
 }

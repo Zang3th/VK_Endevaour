@@ -1,6 +1,6 @@
 #pragma once
 
-#include "VulkanPhysicalDevice.hpp"
+#include "Graphics/Vulkan/VulkanPhysicalDevice.hpp"
 
 namespace Engine::Graphics
 {

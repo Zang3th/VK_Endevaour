@@ -167,13 +167,11 @@
 - [x] ~Neue Tests ergänzen~
 - [x] ~Tests für den ObjLoader fixen~
 - [x] ~Tooling-Verbesserungen~
-- [ ] Unnötige Includes
-- [ ] Tests für Core::Utility ergänzen
+- [x] ~Unnötige Includes~
 
 ### Bugs
 
 - [x] ~Profiling für Move/Resize vom Window fixen~
-- [ ] Lag-Spikes inspizieren
 
 ### ProfilerPanel
 
@@ -227,7 +225,12 @@ Die Projektion soll rechtshändig mit Z-up sein (entspricht Blender):
 
 ### Improvements
 
+- [ ] Tests für Core::Utility ergänzen
 - [ ] RenderFrame, RenderItem und RenderRequest einführen
+
+### Bugs
+
+- [ ] Lag-Spikes inspizieren
 
 ### Camera
 
@@ -262,6 +265,8 @@ Optionen via UI steuern:
 ### VulkanMesh
 
 - [ ] VulkanModel in VulkanMesh umbenennen
+- [ ] VulkanContext muss da raus
+- [ ] VulkanContext::CopyBuffer muss auch woanders hin
 
 ### Model
 
