@@ -5,6 +5,7 @@ import ctypes
 import shutil
 import subprocess
 import re
+import sys
 from pathlib import Path
 from dataclasses import dataclass
 
@@ -19,7 +20,7 @@ class ExecutableInfo:
 # Vulkan SDK
 # ---------------------------------------------------------------------------
 
-def check_vk_loader():
+def check_vk_loader() -> bool:
     print(f"[VK_LOADER] ", end="")
 
     # Windows
@@ -41,22 +42,23 @@ def check_vk_loader():
             ctypes.CDLL(lib)
             print("✅")
             print(f"  Lib: {lib}\n")
-            return
+            return True
         except OSError:
             continue
 
     print("❌\n")
+    return False
 
 # ---------------------------------------------------------------------------
 
-def check_vk_info():
+def check_vk_info() -> bool:
     print("[VK_INFO] ", end="")
 
     exe = shutil.which("vulkaninfo")
 
     if not exe:
         print("❌\n")
-        return
+        return False
 
     output = subprocess.check_output(
         ["vulkaninfo", "--summary"], stderr=subprocess.STDOUT, text=True
@@ -101,6 +103,7 @@ def check_vk_info():
     print(f"  Device Name: {gpu.get('deviceName')}")
     print(f"  Device Type: {gpu.get('deviceType')}")
     print(f"  Driver Version: {gpu.get('driverVersion')}\n")
+    return True
 
 # ---------------------------------------------------------------------------
 # Utility functions
@@ -120,32 +123,37 @@ def find_executable(name) -> ExecutableInfo | None:
 
 # ---------------------------------------------------------------------------
 
-def check_existence(name: str):
+def check_existence(name: str) -> bool:
     print(f"[{name.upper()}] ", end="")
     exe = find_executable(name)
 
     if not exe:
         print("❌\n")
-        return
+        return False
 
     print("✅")
     print(f"  Path: {exe.path}")
     print(f"  Version: {exe.version}\n")
+    return True
 
 # ---------------------------------------------------------------------------
 
-def main():
+def main() -> int:
+    checks = []
+
     print("\n============ Building ============\n")
-    check_existence("cmake")
-    check_existence("clang++")
-    check_existence("ninja")
+    checks.append(check_existence("cmake"))
+    checks.append(check_existence("clang++"))
+    checks.append(check_existence("ninja"))
 
     print("============ Vulkan ============\n")
-    check_vk_loader()
-    check_vk_info()
-    check_existence("glslc")
+    checks.append(check_vk_loader())
+    checks.append(check_vk_info())
+    checks.append(check_existence("glslc"))
+
+    return 0 if all(checks) else 1
 
 # ---------------------------------------------------------------------------
 
 if __name__ == "__main__":
-    main()
+    sys.exit(main())

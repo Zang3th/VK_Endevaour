@@ -156,7 +156,7 @@
 ### Allgemeines
 
 - [x] ~AGENTS.md anpassen~
-- [x] ~Mehr Tests ergänzen~
+- [x] ~Math + alte Tests rauswerfen~
 - [x] ~GLFW auf v3.5.1 upgraden~
 
 ### Improvements
@@ -164,7 +164,11 @@
 - [x] ~Szene mit .obj und Debugdreieck bauen~
 - [x] ~Konstanten = 1 aus VulkanGlobalUniforms in VulkanGlobal auslagern~
 - [x] ~ObjLoader ein RandomizeColor-Flag für die Vertices mitgeben~
+- [x] ~Neue Tests ergänzen~
 - [x] ~Tests für den ObjLoader fixen~
+- [x] ~Tooling-Verbesserungen~
+- [ ] Unnötige Includes
+- [ ] Tests für Core::Utility ergänzen
 
 ### Bugs
 

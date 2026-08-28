@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import argparse
+import sys
 from ProjectDefines import Paths, run
 from pathlib import Path
 from collections import defaultdict
@@ -89,7 +90,7 @@ def print_tidy_fixes() -> None:
         print("Found no clang-tidy diagnostics outside of 'Vendor/' and the STL.\n")
 # ---------------------------------------------------------------------------
 
-def main():
+def main() -> int:
     parser = argparse.ArgumentParser(description="[VK_Endeavour] clang-tidy helper")
     parser.add_argument("-t", "--tidy", action="store_true", help="Run clang-tidy")
     parser.add_argument("-p", "--print", action="store_true", help="Print results")
@@ -99,23 +100,28 @@ def main():
 
     if not (args.tidy or args.print or args.verify):
         print("> No action specified. Use '-h' or '--help' for usage information.")
-        return
+        return 1
 
     print("")
+    exit_code = 0
 
     if args.verify:
         print("============ Verifying config ============")
-        verify_config()
+        if verify_config() != 0:
+            exit_code = 1
 
     if args.tidy:
         print("============ Running clang-tidy ============")
-        clang_tidy()
+        if clang_tidy() != 0:
+            exit_code = 1
 
     if args.print:
         print("============ Printing results ============\n")
         print_tidy_fixes()
 
+    return exit_code
+
 # ---------------------------------------------------------------------------
 
 if __name__ == "__main__":
-    main()
+    sys.exit(main())

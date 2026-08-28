@@ -28,12 +28,12 @@ def results_path(build_dir: Path) -> Path:
 
 # ---------------------------------------------------------------------------
 
-def run_tests(build_dir: Path, verbose: bool):
+def run_tests(build_dir: Path, verbose: bool) -> int:
     executable = executable_path(build_dir)
 
     if not executable.exists():
         print(f"Test executable '{executable}' does not exist ...")
-        return
+        return 1
 
     results = results_path(build_dir)
 
@@ -67,9 +67,10 @@ def run_tests(build_dir: Path, verbose: bool):
             print(process.stderr, end="")
 
         print(f"> Test run produced no report (exit code {process.returncode}), aborting!\n")
-        sys.exit(1)
+        return 1
 
     print(f"Wrote report to '{results}' ...")
+    return process.returncode
 
 # ---------------------------------------------------------------------------
 
@@ -151,7 +152,7 @@ def print_test_results(build_dir: Path) -> None:
 
 # ---------------------------------------------------------------------------
 
-def main():
+def main() -> int:
     parser = argparse.ArgumentParser(description="[VK_Endeavour] test helper")
     parser.add_argument("-d", "--debug", action="store_true", help="Target the Debug build")
     parser.add_argument("-r", "--release", action="store_true", help="Target the Release build")
@@ -162,7 +163,7 @@ def main():
 
     if not (args.debug or args.release):
         print("> No build specified. Use '-h' or '--help' for usage information.")
-        return
+        return 1
 
     print("")
 
@@ -174,13 +175,17 @@ def main():
     if args.release:
         build_dirs.append(Paths.RELEASE)
 
+    exit_code = 0
+
     for build_dir in build_dirs:
         if not build_dir.exists():
             print(f"Build directory '{build_dir}' does not exist ...")
+            exit_code = 1
             continue
 
         print(f"============ Running tests ({build_dir.name}) ============")
-        run_tests(build_dir, args.verbose)
+        if run_tests(build_dir, args.verbose) != 0:
+            exit_code = 1
 
         if args.print:
             print(f"\n============ Printing results ({build_dir.name}) ============\n")
@@ -188,7 +193,9 @@ def main():
 
         print("")
 
+    return exit_code
+
 # ---------------------------------------------------------------------------
 
 if __name__ == "__main__":
-    main()
+    sys.exit(main())

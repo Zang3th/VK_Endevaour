@@ -7,7 +7,7 @@ from ProjectDefines import Paths, run
 
 # ---------------------------------------------------------------------------
 
-def configure_and_build(build_dir: Path, build_type: str, clean_build: bool):
+def configure_and_build(build_dir: Path, preset: str, clean_build: bool):
     if clean_build:
         print("Clean build ...")
         # Delete specific build subdirectory if it exists
@@ -15,22 +15,13 @@ def configure_and_build(build_dir: Path, build_type: str, clean_build: bool):
             shutil.rmtree(build_dir)
             print(f"Removed directory '{build_dir}' ...")
 
-        build_dir.mkdir(parents=True, exist_ok=True)
-        print(f"Created directory '{build_dir}' ...")
-
-        cmd = [
-            "cmake",
-            "../..",
-            "-G", "Ninja",
-            "-DCMAKE_CXX_COMPILER=clang++",
-            "-DCMAKE_C_COMPILER=clang",
-            f"-DCMAKE_BUILD_TYPE={build_type}",
-            "-DCMAKE_MESSAGE_LOG_LEVEL=WARNING",
-        ]
-        run(cmd, cwd=build_dir)
+    if not (build_dir / "CMakeCache.txt").exists():
+        print("Configure build ...")
+        run(["cmake", "--preset", preset], cwd=Paths.PROJECT_ROOT)
     else:
         print("Fast build ...")
-    run(["ninja"], cwd=build_dir)
+
+    run(["cmake", "--build", "--preset", preset], cwd=Paths.PROJECT_ROOT)
 
 # ---------------------------------------------------------------------------
 
@@ -38,7 +29,7 @@ def main():
     parser = argparse.ArgumentParser(description="[VK_Endeavour] build helper")
     parser.add_argument("-d", "--debug", action="store_true", help="Build Debug")
     parser.add_argument("-r", "--release", action="store_true", help="Build Release")
-    parser.add_argument("-c", "--clean", action="store_true", help="Fast Rebuild")
+    parser.add_argument("-c", "--clean", action="store_true", help="Clean build")
 
     args = parser.parse_args()
 
@@ -48,11 +39,11 @@ def main():
 
     if args.debug:
         print("\n============ Building Debug ============\n")
-        configure_and_build(Paths.DEBUG, "Debug", args.clean)
+        configure_and_build(Paths.DEBUG, "clang-debug", args.clean)
 
     if args.release:
         print("\n============ Building Release ============\n")
-        configure_and_build(Paths.RELEASE, "Release", args.clean)
+        configure_and_build(Paths.RELEASE, "clang-release", args.clean)
 
     print("")
 
