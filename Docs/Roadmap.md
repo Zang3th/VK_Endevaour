@@ -1,55 +1,5 @@
 # VK_Endevaour
 
-## Windows
-
-#Version
-- 0.1.0
-
-#Date
-- 09.12.25 - 06.01.26
-- 21.05.26 - 05.06.26
-
-### Allgemeines
-
-#### Software & Tooling
-- [x] ~RenderDoc~
-- [x] ~Blender~
-- [x] ~F3D~
-
-#### Project
-- [x] ~Vulkan SDK installieren (Winget)~
-- [x] ~CheckDependencies.py schreiben (Vulkan SDK, GLSLC, CMake, Clang++/Linker, Ninja) + alle Tools, die andere Skripte verwenden~
-- [x] ~Einmal pro Woche das Projekt auf dem Laptop bauen~
-- [x] ~LogStats.py schreiben~
-- [x] ~BuildEngine.py schreiben (--debug, --release, --all, --clean)~
-- [x] ~AnalyzeSources.py schreiben (--tidy, --verify)~
-- [x] ~FormatFiles.py schreiben~
-
-#### GitHub
-- [x] ~README überarbeiten (u. a. mit Projektstruktur). Orientierung an SalinityGL~
-- [x] ~Minimale Build Instructions für Windows und Linux hinzufügen (Voraussetzungen erläutern)~
-- [x] ~Tags zum Repo hinzufügen~
-
-### Improvements
-
-#Info
-- Kann ich das Logging verbessern oder muss alles zwangsläufig durch stderr laufen? => Läuft eh unter Windows nicht
-- Wie spiele ich clangd-Vorschläge ("fixes available") in Neovim ein? => code_action (ga)
-
-- [x] ~Typo im Objloader.cpp~
-- [x] ~Typo in README (Punkt fehlt bei vorletzter Zeile)~
-- [x] ~std::source_location im Logging ergänzen~
-- [x] ~Aufruf der Skripte ohne Parameter fixen~
-- [x] ~Richtige Namespaces wie Engine::Core, Engine::Graphics etc. überall ergänzen~
-- [x] ~Skript-Output besser formatieren~
-- [x] ~RAD_Debugger Skript bauen~
-
-### Bugs
-
-- [x] ~Validation Layer laufen auf 1.4.328, während das SDK schon auf 1.4.350 läuft => Alte SDKs müssen deinstalliert und immer der neueste Vulkan Configurator gestartet werden~
-- [x] ~Minimieren reparieren~
-- [x] ~vkQueueSubmit(): Swapchain image 0 was presented but was not re-acquired => Unterschiedliche Plattformen erstellen unterschiedliche Mengen an Bildern => WSI-Image-Acquisition von VulkanFrame::Sync trennen~
-
 ## ImGui
 
 #Version
@@ -102,7 +52,7 @@
 - [x] ~Grundlegende API und ImGui-Integration überlegen~
 - [x] ~ImGui Backend integrieren~
 
-## Descriptor Sets
+## DescriptorSets
 
 #Version
 - 0.2.1
@@ -143,7 +93,6 @@
 - [x] ~Video 29~
 - [x] ~Video 30~
 
-#Pin
 ## ProfilerPanel
 
 #Version
@@ -151,28 +100,12 @@
 
 #Date
 - 22.07.26 - 23.07.26
-- TBD
-
-### Allgemeines
-
-- [x] ~AGENTS.md anpassen~
-- [x] ~Math + alte Tests rauswerfen~
-- [x] ~GLFW auf v3.5.1 upgraden~
 
 ### Improvements
 
 - [x] ~Szene mit .obj und Debugdreieck bauen~
 - [x] ~Konstanten = 1 aus VulkanGlobalUniforms in VulkanGlobal auslagern~
 - [x] ~ObjLoader ein RandomizeColor-Flag für die Vertices mitgeben~
-- [x] ~Neue Tests ergänzen~
-- [x] ~Tests für den ObjLoader fixen~
-- [x] ~Tooling-Verbesserungen~
-- [x] ~Unnötige Includes~
-- [ ] Logging von Allocations nochmal verbessern
-
-### Bugs
-
-- [x] ~Profiling für Move/Resize vom Window fixen~
 
 ### ProfilerPanel
 
@@ -181,29 +114,71 @@
 - [x] ~DrawStats pflegen~
 - [x] ~UI für das Panel finalisieren~
 
-### MSAA + Depth-Buffering
+#Pin
+## RenderTargets
+
+#Version
+- 0.2.3
+
+#Date
+- 21.08.26 - TBD
+
+### Allgemeines
+
+- [x] ~AGENTS.md anpassen~
+- [x] ~GLFW auf v3.5.1 upgraden~
+
+### Improvements
+
+- [x] ~Math + alte Tests rauswerfen~
+- [x] ~Neue Tests hinzufügen~
+- [x] ~Tooling-Verbesserungen~
+- [x] ~Includes überarbeiten~
+- [ ] Logging von Allocations nochmal verbessern
+
+### Bugs
+
+- [x] ~Tests für den ObjLoader fixen~
+- [ ] Profiling für Move/Resize vom Window fixen
+
+### VulkanRenderTargets
 
 #Info
-- Wie läuft die Integration in Render Pass und Framebuffer beim Dynamic Rendering ab?
+- Szene in eigene Color- und Depth-Targets rendern.
+- Das multisampled ColorTarget wird am Ende des Renderings in das einfach gesampelte Swapchain-Image aufgelöst.
+- Das aufgelöste Swapchain-Image wird präsentiert.
 
-#### VulkanRenderTarget
-- [x] ~vk::Image~
-- [x] ~vk::ImageView~
-- [x] ~Memory-Allocation~
-- [x] ~ColorTarget + DepthTarget initialisieren~
+- [x] ~Image, ImageView und Allocation~
+- [x] ~ColorTarget + DepthTarget pro Swapchain-Image initialisieren~
+- [x] ~SampleCount explizit an RenderTargets übergeben~
+
+### MSAA + Depth-Buffering
 
 #### Render-Konfiguration
-- [x] ~SampleCount + DepthFormat merken~
-- [x] ~Hardware-Capabilities abfragen~
-- [ ] DepthAttachment ergänzen
-- [ ] ColorAttachment anpassen
-- [x] ~Pipeline und Dynamic Rendering anpassen~
-- [ ] ImGui anpassen
-- [x] ~Vulkan-Depth-Range bei GLM anpassen~
-- [ ] Resolve: ColorTarget => Swapchain-Image
+- [x] ~DepthFormat bestimmen und speichern~
+- [x] ~Gemeinsame Color-/Depth-Sample-Counts abfragen~
+- [x] ~Vulkan-Depth-Range über perspectiveRH_ZO anpassen~
+- [x] ~Pipeline-RasterizationSamples setzen~
+- [x] ~Depth-Test und Depth-Write aktivieren~
+- [ ] PipelineRenderingCreateInfo::depthAttachmentFormat setzen
 
-#### Tests
-- [ ] Ergänzen
+#### Layouts und Synchronisation
+- [ ] TransitionImageLayout um AspectFlags erweitern
+- [ ] MSAA-ColorTarget nach ColorAttachmentOptimal transitionieren
+- [ ] DepthTarget nach DepthAttachmentOptimal transitionieren
+- [ ] Passende Depth-Stage- und Access-Masks verwenden
+
+#### Dynamic Rendering
+- [ ] ColorAttachment auf MSAA-ColorTarget umstellen
+- [ ] Swapchain-Image als Resolve-Ziel konfigurieren
+- [ ] ResolveMode eAverage setzen
+- [ ] DepthAttachment mit Clearwert ergänzen
+- [ ] RenderingInfo um pDepthAttachment ergänzen
+
+#### ImGui
+- [ ] ImGui-Pipeline auf denselben SampleCount setzen
+- [ ] Dynamic-Rendering-Formate einschließlich DepthFormat setzen
+- [ ] ImGui bei Swapchain-Recreation aktualisieren
 
 ### Kofi Game Engine Series
 
@@ -212,7 +187,7 @@
 ## Camera
 
 #Version
-- 0.2.3
+- 0.2.4
 
 #Date
 - TBD
@@ -262,7 +237,7 @@ Optionen via UI steuern:
 ## Model
 
 #Version
-- 0.2.4
+- 0.2.5
 
 #Date
 - TBD
@@ -293,7 +268,7 @@ Besteht aus einem Mesh-Handle (u32) und einem Transform-Struct
 ## WorldGrid
 
 #Version
-- 0.2.5
+- 0.2.6
 
 #Date
 - TBD
@@ -531,3 +506,53 @@ Raytracer mit Vulkan
 - [x] ~Video 15~
 - [x] ~Video 16~
 - [x] ~Video 17~
+
+## Windows
+
+#Version
+- 0.1.0
+
+#Date
+- 09.12.25 - 06.01.26
+- 21.05.26 - 05.06.26
+
+### Allgemeines
+
+#### Software & Tooling
+- [x] ~RenderDoc~
+- [x] ~Blender~
+- [x] ~F3D~
+
+#### Project
+- [x] ~Vulkan SDK installieren (Winget)~
+- [x] ~CheckDependencies.py schreiben (Vulkan SDK, GLSLC, CMake, Clang++/Linker, Ninja) + alle Tools, die andere Skripte verwenden~
+- [x] ~Einmal pro Woche das Projekt auf dem Laptop bauen~
+- [x] ~LogStats.py schreiben~
+- [x] ~BuildEngine.py schreiben (--debug, --release, --all, --clean)~
+- [x] ~AnalyzeSources.py schreiben (--tidy, --verify)~
+- [x] ~FormatFiles.py schreiben~
+
+#### GitHub
+- [x] ~README überarbeiten (u. a. mit Projektstruktur). Orientierung an SalinityGL~
+- [x] ~Minimale Build Instructions für Windows und Linux hinzufügen (Voraussetzungen erläutern)~
+- [x] ~Tags zum Repo hinzufügen~
+
+### Improvements
+
+#Info
+- Kann ich das Logging verbessern oder muss alles zwangsläufig durch stderr laufen? => Läuft eh unter Windows nicht
+- Wie spiele ich clangd-Vorschläge ("fixes available") in Neovim ein? => code_action (ga)
+
+- [x] ~Typo im Objloader.cpp~
+- [x] ~Typo in README (Punkt fehlt bei vorletzter Zeile)~
+- [x] ~std::source_location im Logging ergänzen~
+- [x] ~Aufruf der Skripte ohne Parameter fixen~
+- [x] ~Richtige Namespaces wie Engine::Core, Engine::Graphics etc. überall ergänzen~
+- [x] ~Skript-Output besser formatieren~
+- [x] ~RAD_Debugger Skript bauen~
+
+### Bugs
+
+- [x] ~Validation Layer laufen auf 1.4.328, während das SDK schon auf 1.4.350 läuft => Alte SDKs müssen deinstalliert und immer der neueste Vulkan Configurator gestartet werden~
+- [x] ~Minimieren reparieren~
+- [x] ~vkQueueSubmit(): Swapchain image 0 was presented but was not re-acquired => Unterschiedliche Plattformen erstellen unterschiedliche Mengen an Bildern => WSI-Image-Acquisition von VulkanFrame::Sync trennen~
