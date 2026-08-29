@@ -127,6 +127,7 @@
 
 - [x] ~AGENTS.md anpassen~
 - [x] ~GLFW auf v3.5.1 upgraden~
+- [ ] Dependency-Graph erstellen
 
 ### Improvements
 
@@ -139,7 +140,7 @@
 ### Bugs
 
 - [x] ~Tests für den ObjLoader fixen~
-- [ ] Profiling für Move/Resize vom Window fixen
+- [x] ~Profiling für Move/Resize vom Window fixen~
 
 ### VulkanRenderTargets
 

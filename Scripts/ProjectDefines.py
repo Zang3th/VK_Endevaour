@@ -1,3 +1,4 @@
+import re
 import subprocess
 import sys
 from pathlib import Path
@@ -144,6 +145,23 @@ STANDARD_EXTENSIONS = {
     ".cpp",
     ".hpp",
 }
+
+# ---------------------------------------------------------------------------
+# Regex filters generated from the shared directory groundtruth
+# ---------------------------------------------------------------------------
+
+PATH_SEPARATOR = r"[\\/]"
+
+def dir_to_pattern(directory: Path) -> str:
+    parts = directory.relative_to(Paths.PROJECT_ROOT).parts
+    path_pattern = PATH_SEPARATOR.join(map(re.escape, parts))
+    return f".*{PATH_SEPARATOR}{path_pattern}{PATH_SEPARATOR}.*"
+
+def dirs_to_pattern(dirs: list[Path]) -> str:
+    patterns = [dir_to_pattern(directory) for directory in dirs]
+    return "(?:" + "|".join(patterns) + ")" if patterns else r"(?!)"
+
+STANDARD_FILTER = dirs_to_pattern(STANDARD_DIRS)
 
 EXPANDED_DIR_GROUPS = [
     ("Applications", APP_DIRS),

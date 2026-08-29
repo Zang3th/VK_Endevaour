@@ -1,17 +1,24 @@
 #!/usr/bin/env python3
 
 import argparse
+import os
+import re
 import sys
-from ProjectDefines import Paths, run
-from pathlib import Path
 from collections import defaultdict
+from pathlib import Path
+
 import yaml
+
+from ProjectDefines import Paths, run, STANDARD_FILTER
 
 # ---------------------------------------------------------------------------
 
-SOURCE_FILTER = r".*[\\/]Engine[\\/](Core|Debug|Graphics|Platform)[\\/].*|.*[\\/]Applications[\\/].*"
-HEADER_FILTER = SOURCE_FILTER
+# Keep clang-tidy and clang-format on the same directory groundtruth.
+SOURCE_FILTER = STANDARD_FILTER
+HEADER_FILTER = STANDARD_FILTER
 TIDY_FIXES_YAML = Paths.PROJECT_ROOT / "tidy-fixes.yaml"
+
+SOURCE_FILTER_RE = re.compile(SOURCE_FILTER, re.IGNORECASE)
 
 # ---------------------------------------------------------------------------
 
@@ -69,15 +76,14 @@ def print_tidy_fixes() -> None:
         if not file or offset is None:
             continue
 
-        # Filter unwanted warnings
-        path_parts = file.lower().replace("\\", "/").split("/")
-        if "vendor" in path_parts or "msvc" in path_parts :
+        normalized_file = Path(os.path.normpath(file)).resolve()
+        if not SOURCE_FILTER_RE.match(str(normalized_file)):
             continue
 
         validResults = True
 
-        line = offset_to_line(Path(file), int(offset))
-        grouped[file].append((line, name, text))
+        line = offset_to_line(normalized_file, int(offset))
+        grouped[str(normalized_file)].append((line, name, text))
 
     for file in sorted(grouped.keys()):
         for line, name, text in grouped[file]:
@@ -85,9 +91,8 @@ def print_tidy_fixes() -> None:
             print(f"  [{name}]")
             print(f"    {text}\n")
 
-    # Print something if we had no valid results
     if not validResults:
-        print("Found no clang-tidy diagnostics outside of 'Vendor/' and the STL.\n")
+        print("Found no clang-tidy diagnostics in the project sources.\n")
 # ---------------------------------------------------------------------------
 
 def main() -> int:
