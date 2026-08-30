@@ -3,6 +3,10 @@
 #include "Graphics/Resources/Mesh.hpp"
 
 #include "Graphics/Vulkan/VulkanAssert.hpp"
+#include "Graphics/Vulkan/VulkanContext.hpp"
+#include "Graphics/Vulkan/VulkanDevice.hpp"
+#include "Graphics/Vulkan/VulkanShader.hpp"
+#include "Graphics/Vulkan/VulkanSwapchain.hpp"
 
 namespace Engine::Graphics
 {

@@ -1,11 +1,21 @@
 #pragma once
 
-#include "Graphics/Vulkan/VulkanAllocator.hpp"
-#include "Graphics/Vulkan/VulkanContext.hpp"
-#include "Graphics/Vulkan/VulkanDescriptorPool.hpp"
-#include "Graphics/Vulkan/VulkanDescriptorSetLayout.hpp"
+#include "Core/Memory.hpp"
+#include "Core/Types.hpp"
+
+#include "Graphics/Vulkan/VulkanAllocationStructs.hpp"
+#include "Graphics/Vulkan/VulkanGlobals.hpp"
 
 #include "Vendor/glm/mat4x4.hpp"
+
+#include <vulkan/vulkan.hpp>
+
+namespace Engine::Graphics
+{
+    class VulkanContext;
+    class VulkanDescriptorPool;
+    class VulkanDescriptorSetLayout;
+}
 
 namespace Engine::Graphics
 {

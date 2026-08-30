@@ -135,6 +135,7 @@
 - [x] ~Tooling-Verbesserungen~
 - [x] ~Includes überarbeiten~
 - [x] ~Logging von Allocations nochmal verbessern~
+- [x] ~Mehr Forward-Declarations einbauen~
 
 ### Bugs
 

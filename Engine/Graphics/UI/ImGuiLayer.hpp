@@ -1,7 +1,14 @@
 #pragma once
 
-#include "Graphics/Vulkan/VulkanContext.hpp"
-#include "Graphics/Vulkan/VulkanDescriptorPool.hpp"
+#include "Core/Memory.hpp"
+
+#include <vulkan/vulkan.hpp>
+
+namespace Engine::Graphics
+{
+    class VulkanContext;
+    class VulkanDescriptorPool;
+}
 
 namespace Engine::Graphics
 {

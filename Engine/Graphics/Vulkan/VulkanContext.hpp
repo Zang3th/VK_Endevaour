@@ -1,10 +1,16 @@
 #pragma once
 
 #include "Core/Memory.hpp"
+#include "Core/Types.hpp"
 
-#include "Graphics/Vulkan/VulkanDevice.hpp"
-#include "Graphics/Vulkan/VulkanPhysicalDevice.hpp"
-#include "Graphics/Vulkan/VulkanSwapchain.hpp"
+#include <vulkan/vulkan.hpp>
+
+namespace Engine::Graphics
+{
+    class VulkanPhysicalDevice;
+    class VulkanDevice;
+    class VulkanSwapchain;
+}
 
 namespace Engine::Graphics
 {

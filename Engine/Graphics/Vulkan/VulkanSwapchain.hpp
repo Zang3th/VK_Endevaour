@@ -1,8 +1,12 @@
 #pragma once
 
-#include "Graphics/Vulkan/VulkanDevice.hpp"
 #include "Graphics/Vulkan/VulkanGlobals.hpp"
 #include "Graphics/Vulkan/VulkanSwapchainStructs.hpp"
+
+namespace Engine::Graphics
+{
+    class VulkanDevice;
+}
 
 #include "Vendor/glm/vec4.hpp"
 

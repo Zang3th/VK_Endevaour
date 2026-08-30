@@ -2,6 +2,17 @@
 
 #include "Debug/Log.hpp"
 
+#include "Graphics/UI/ImGuiLayer.hpp"
+#include "Graphics/UI/ProfilerPanel.hpp"
+
+#include "Graphics/Vulkan/VulkanContext.hpp"
+#include "Graphics/Vulkan/VulkanDescriptorSetLayout.hpp"
+#include "Graphics/Vulkan/VulkanDevice.hpp"
+#include "Graphics/Vulkan/VulkanModel.hpp"
+#include "Graphics/Vulkan/VulkanPipeline.hpp"
+#include "Graphics/Vulkan/VulkanShader.hpp"
+#include "Graphics/Vulkan/VulkanSwapchain.hpp"
+
 namespace Engine::Graphics
 {
     // ----- Public -----

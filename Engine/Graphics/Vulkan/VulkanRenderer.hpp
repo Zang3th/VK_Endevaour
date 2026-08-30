@@ -1,17 +1,26 @@
 #pragma once
 
+#include "Core/Memory.hpp"
 #include "Core/Timer.hpp"
+#include "Core/Types.hpp"
 
-#include "Graphics/UI/ImGuiLayer.hpp"
-#include "Graphics/UI/ProfilerPanel.hpp"
-
-#include "Graphics/Vulkan/VulkanContext.hpp"
 #include "Graphics/Vulkan/VulkanGlobalUniforms.hpp"
 #include "Graphics/Vulkan/VulkanGlobals.hpp"
-#include "Graphics/Vulkan/VulkanModel.hpp"
-#include "Graphics/Vulkan/VulkanPipeline.hpp"
 #include "Graphics/Vulkan/VulkanRendererStructs.hpp"
-#include "Graphics/Vulkan/VulkanShader.hpp"
+
+#include <filesystem>
+
+namespace Engine::Graphics
+{
+    struct Mesh;
+    class ImGuiLayer;
+    class ProfilerPanel;
+    class VulkanContext;
+    class VulkanSwapchain;
+    class VulkanShader;
+    class VulkanModel;
+    class VulkanPipeline;
+}
 
 namespace Engine::Graphics
 {

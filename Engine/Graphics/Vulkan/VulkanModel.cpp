@@ -2,6 +2,9 @@
 
 #include "Debug/Log.hpp"
 
+#include "Graphics/Vulkan/VulkanAllocator.hpp"
+#include "Graphics/Vulkan/VulkanContext.hpp"
+
 namespace Engine::Graphics
 {
     // ----- Public -----

@@ -2,6 +2,12 @@
 
 #include "Debug/Log.hpp"
 
+#include "Graphics/Vulkan/VulkanContext.hpp"
+#include "Graphics/Vulkan/VulkanDescriptorPool.hpp"
+#include "Graphics/Vulkan/VulkanDevice.hpp"
+#include "Graphics/Vulkan/VulkanGlobals.hpp"
+#include "Graphics/Vulkan/VulkanSwapchain.hpp"
+
 #include "Platform/Window.hpp"
 
 #include "Vendor/imgui/imgui.h"

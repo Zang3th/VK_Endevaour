@@ -1,7 +1,16 @@
 #pragma once
 
-#include "Graphics/Vulkan/VulkanContext.hpp"
-#include "Graphics/Vulkan/VulkanShader.hpp"
+#include "Core/Types.hpp"
+
+#include "Graphics/Vulkan/VulkanGlobals.hpp"
+
+#include <vulkan/vulkan.hpp>
+
+namespace Engine::Graphics
+{
+    class VulkanContext;
+    class VulkanShader;
+}
 
 namespace Engine::Graphics
 {

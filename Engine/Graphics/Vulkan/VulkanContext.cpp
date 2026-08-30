@@ -1,15 +1,16 @@
 #include "VulkanContext.hpp"
 
-#include "Core/Memory.hpp"
+#include "Core/Utility.hpp"
 
 #include "Graphics/Vulkan/VulkanAllocator.hpp"
 #include "Graphics/Vulkan/VulkanAssert.hpp"
 #include "Graphics/Vulkan/VulkanDebug.hpp"
+#include "Graphics/Vulkan/VulkanDevice.hpp"
 #include "Graphics/Vulkan/VulkanGlobals.hpp"
+#include "Graphics/Vulkan/VulkanPhysicalDevice.hpp"
+#include "Graphics/Vulkan/VulkanSwapchain.hpp"
 
 #include "Platform/Window.hpp"
-
-#include <vulkan/vulkan.hpp>
 
 namespace Engine::Graphics
 {
@@ -59,7 +60,7 @@ namespace Engine::Graphics
         const vk::BufferCopy    bufferCopy    = { .size = size };
         commandBuffer.copyBuffer(srcBuffer, dstBuffer, 1, &bufferCopy);
         m_Swapchain->SubmitTransferCommandBuffer(commandBuffer);
-        LOG_INFO("Copied {} bytes from CPU => GPU ...", size);
+        LOG_MEM("Copied {} from CPU => GPU ...", Core::Utility::BytesToString(size));
     }
 
     // ----- Private -----

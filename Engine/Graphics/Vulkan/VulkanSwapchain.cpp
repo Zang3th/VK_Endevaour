@@ -3,6 +3,7 @@
 #include "Debug/LogTable.hpp"
 
 #include "Graphics/Vulkan/VulkanAssert.hpp"
+#include "Graphics/Vulkan/VulkanDevice.hpp"
 #include "Graphics/Vulkan/VulkanSwapchainUtils.hpp"
 
 #include "Platform/Window.hpp"

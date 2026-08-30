@@ -1,6 +1,11 @@
 #include "VulkanGlobalUniforms.hpp"
 
+#include "Graphics/Vulkan/VulkanAllocator.hpp"
 #include "Graphics/Vulkan/VulkanAssert.hpp"
+#include "Graphics/Vulkan/VulkanContext.hpp"
+#include "Graphics/Vulkan/VulkanDescriptorPool.hpp"
+#include "Graphics/Vulkan/VulkanDescriptorSetLayout.hpp"
+#include "Graphics/Vulkan/VulkanDevice.hpp"
 
 namespace Engine::Graphics
 {
