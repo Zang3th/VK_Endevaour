@@ -127,7 +127,6 @@
 
 - [x] ~AGENTS.md anpassen~
 - [x] ~GLFW auf v3.5.1 upgraden~
-- [ ] Dependency-Graph erstellen
 
 ### Improvements
 
@@ -135,7 +134,7 @@
 - [x] ~Neue Tests hinzufügen~
 - [x] ~Tooling-Verbesserungen~
 - [x] ~Includes überarbeiten~
-- [ ] Logging von Allocations nochmal verbessern
+- [x] ~Logging von Allocations nochmal verbessern~
 
 ### Bugs
 

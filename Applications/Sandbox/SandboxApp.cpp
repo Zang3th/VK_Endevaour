@@ -93,9 +93,4 @@ void Sandbox::Run()
 
     // Wait for device idle
     vkRenderer.WaitForDevice();
-
-    // Log some stats
-    LOG_PERF("Engine runtime was {} with an average of {} ...",
-             timer.GetEngineTotalRuntimeString(),
-             timer.GetEngineFPSAverageString());
 }

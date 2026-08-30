@@ -70,7 +70,8 @@ namespace Engine::Graphics
                                         .BufferUsageFlags = vk::BufferUsageFlagBits::eUniformBuffer,
                                         .MemoryUsage      = MemoryUsage::eCPUToGPU,
                                         .MemoryFlags      = vk::MemoryPropertyFlagBits::eHostVisible
-                                                            | vk::MemoryPropertyFlagBits::eHostCoherent };
+                                                            | vk::MemoryPropertyFlagBits::eHostCoherent,
+                                        .DebugName        = "GlobalUniforms" };
 
         for (u8 i = 0; i < FRAMES_IN_FLIGHT; i++)
         {

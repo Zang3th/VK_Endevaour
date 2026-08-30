@@ -37,7 +37,8 @@ namespace Engine::Graphics
                                            .BufferUsageFlags = vk::BufferUsageFlagBits::eVertexBuffer
                                                                | vk::BufferUsageFlagBits::eTransferDst,
                                            .MemoryUsage      = MemoryUsage::eGPUOnly,
-                                           .MemoryFlags      = vk::MemoryPropertyFlagBits::eDeviceLocal };
+                                           .MemoryFlags      = vk::MemoryPropertyFlagBits::eDeviceLocal,
+                                           .DebugName        = "Model/VBO" };
         m_VertexBufferAlloc = VulkanAllocator::AllocateBuffer(vboSpec);
 
         // Create staging buffer
@@ -45,7 +46,8 @@ namespace Engine::Graphics
                                                .BufferUsageFlags = vk::BufferUsageFlagBits::eTransferSrc,
                                                .MemoryUsage      = MemoryUsage::eCPUOnly,
                                                .MemoryFlags      = vk::MemoryPropertyFlagBits::eHostVisible
-                                                                   | vk::MemoryPropertyFlagBits::eHostCoherent };
+                                                                   | vk::MemoryPropertyFlagBits::eHostCoherent,
+                                               .DebugName        = "Model/Staging" };
         const BufferAllocation    stagingBufferAlloc = VulkanAllocator::AllocateBuffer(stagingSpec);
 
         // Fill out staging buffer
@@ -71,7 +73,8 @@ namespace Engine::Graphics
                                            .BufferUsageFlags = vk::BufferUsageFlagBits::eIndexBuffer
                                                                | vk::BufferUsageFlagBits::eTransferDst,
                                            .MemoryUsage      = MemoryUsage::eGPUOnly,
-                                           .MemoryFlags      = vk::MemoryPropertyFlagBits::eDeviceLocal };
+                                           .MemoryFlags      = vk::MemoryPropertyFlagBits::eDeviceLocal,
+                                           .DebugName        = "Model/IBO" };
         m_IndexBufferAlloc = VulkanAllocator::AllocateBuffer(iboSpec);
 
         // Create staging buffer
@@ -79,7 +82,8 @@ namespace Engine::Graphics
                                                .BufferUsageFlags = vk::BufferUsageFlagBits::eTransferSrc,
                                                .MemoryUsage      = MemoryUsage::eCPUOnly,
                                                .MemoryFlags      = vk::MemoryPropertyFlagBits::eHostVisible
-                                                                   | vk::MemoryPropertyFlagBits::eHostCoherent };
+                                                                   | vk::MemoryPropertyFlagBits::eHostCoherent,
+                                               .DebugName        = "Model/Staging" };
         const BufferAllocation    stagingBufferAlloc = VulkanAllocator::AllocateBuffer(stagingSpec);
 
         // Fill out staging buffer

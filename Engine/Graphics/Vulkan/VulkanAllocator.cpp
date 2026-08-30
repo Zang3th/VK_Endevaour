@@ -3,8 +3,7 @@
 #include "Core/Utility.hpp"
 
 #include "Graphics/Vulkan/VulkanAssert.hpp"
-
-#include <string_view>
+#include "Graphics/Vulkan/VulkanDevice.hpp"
 
 // Deactivate clang extensions
 #pragma clang diagnostic push
@@ -17,7 +16,6 @@
 #define VMA_NOT_NULL
 #define VMA_NOT_NULL_NON_DISPATCHABLE
 #include "Vendor/VulkanMemoryAllocator/vk_mem_alloc.hpp"
-
 #pragma clang diagnostic pop
 
 namespace
@@ -128,74 +126,70 @@ namespace Engine::Graphics
                                                &allocationInfo)));
         s_totalMemory += allocationInfo.size;
 
-        LOG_PERF("Allocated {} of '{}' memory as {}. Total: {} ...",
-                 Core::Utility::BytesToString(allocationInfo.size),
-                 MemoryUsageToString(spec.MemoryUsage),
-                 vk::to_string(spec.BufferUsageFlags),
-                 Core::Utility::BytesToString(s_totalMemory));
+        LOG_MEM("+ {} for {} [{}] ... (total {})",
+                Core::Utility::BytesToString(allocationInfo.size),
+                spec.DebugName,
+                MemoryUsageToString(spec.MemoryUsage),
+                Core::Utility::BytesToString(s_totalMemory));
 
-        return { .Buffer = buffer, .Handle = (void*)allocation };
+        return { .Buffer = buffer, .Handle = (void*)allocation, .DebugName = spec.DebugName };
     }
 
-    void VulkanAllocator::DestroyBuffer(const BufferAllocation& bufferAlloc)
+    void VulkanAllocator::DestroyBuffer(const BufferAllocation& alloc)
     {
         VmaAllocationInfo allocationInfo{};
-        vmaGetAllocationInfo(s_Allocator, (VmaAllocation)bufferAlloc.Handle, &allocationInfo);
+        vmaGetAllocationInfo(s_Allocator, (VmaAllocation)alloc.Handle, &allocationInfo);
 
-        VkMemoryPropertyFlags memoryFlags{};
-        vmaGetAllocationMemoryProperties(s_Allocator, (VmaAllocation)bufferAlloc.Handle, &memoryFlags);
-
+        ASSERT(s_totalMemory >= allocationInfo.size, "Total memory allocations went negative!");
         s_totalMemory -= allocationInfo.size;
-        vmaDestroyBuffer(s_Allocator, (VkBuffer)bufferAlloc.Buffer, (VmaAllocation)bufferAlloc.Handle);
+        vmaDestroyBuffer(s_Allocator, (VkBuffer)alloc.Buffer, (VmaAllocation)alloc.Handle);
 
-        LOG_PERF("Freed {} from {} memory. Total: {} ...",
-                 Core::Utility::BytesToString(allocationInfo.size),
-                 vk::to_string((vk::MemoryPropertyFlags)memoryFlags),
-                 Core::Utility::BytesToString(s_totalMemory));
+        LOG_MEM("- {} for {} ... (total {})",
+                Core::Utility::BytesToString(allocationInfo.size),
+                alloc.DebugName,
+                Core::Utility::BytesToString(s_totalMemory));
     }
 
-    void* VulkanAllocator::AllocateImage(const vk::ImageCreateInfo* imageCreateInfo, vk::Image* image)
+    ImageAllocation VulkanAllocator::AllocateImage(const ImageSpecification& spec)
     {
         ASSERT(s_Allocator != VK_NULL_HANDLE, "VulkanAllocator wasn't initialized yet!");
 
         VmaAllocationCreateInfo allocationCreateInfo{};
-        allocationCreateInfo.usage = VMA_MEMORY_USAGE_AUTO_PREFER_DEVICE;
+        allocationCreateInfo.usage = MapMemoryUsage(spec.MemoryUsage);
 
         VmaAllocation     allocation{};
         VmaAllocationInfo allocationInfo{};
 
         VK_VERIFY((vk::Result)(vmaCreateImage(s_Allocator,
-                                              (const VkImageCreateInfo*)imageCreateInfo,
+                                              (const VkImageCreateInfo*)spec.CreateInfo,
                                               &allocationCreateInfo,
-                                              (VkImage*)image,
+                                              (VkImage*)spec.Image,
                                               &allocation,
                                               &allocationInfo)));
         s_totalMemory += allocationInfo.size;
 
-        LOG_PERF("Allocated {} of '{}' memory as {}. Total: {} ...",
-                 Core::Utility::BytesToString(allocationInfo.size),
-                 MemoryUsageToString(MemoryUsage::eAutoPreferDevice),
-                 vk::to_string(imageCreateInfo->usage),
-                 Core::Utility::BytesToString(s_totalMemory));
+        LOG_MEM("+ {} for {} [{}] ... (total {})",
+                Core::Utility::BytesToString(allocationInfo.size),
+                spec.DebugName,
+                MemoryUsageToString(spec.MemoryUsage),
+                Core::Utility::BytesToString(s_totalMemory));
 
-        return (void*)allocation;
+        return { .Handle = allocation, .DebugName = spec.DebugName };
     }
 
-    void VulkanAllocator::DestroyImage(vk::Image image, void* allocationHandle)
+    void VulkanAllocator::DestroyImage(vk::Image image, const ImageAllocation& alloc)
     {
         VmaAllocationInfo allocationInfo{};
-        vmaGetAllocationInfo(s_Allocator, (VmaAllocation)allocationHandle, &allocationInfo);
+        vmaGetAllocationInfo(s_Allocator, (VmaAllocation)alloc.Handle, &allocationInfo);
 
-        VkMemoryPropertyFlags memoryFlags{};
-        vmaGetAllocationMemoryProperties(s_Allocator, (VmaAllocation)allocationHandle, &memoryFlags);
-
+        ASSERT(s_totalMemory >= allocationInfo.size, "Total memory allocations went negative!");
         s_totalMemory -= allocationInfo.size;
-        vmaDestroyImage(s_Allocator, image, (VmaAllocation)allocationHandle);
+        vmaDestroyImage(s_Allocator, image, (VmaAllocation)alloc.Handle);
 
-        LOG_PERF("Freed {} from {} memory. Total: {} ...",
-                 Core::Utility::BytesToString(allocationInfo.size),
-                 vk::to_string((vk::MemoryPropertyFlags)memoryFlags),
-                 Core::Utility::BytesToString(s_totalMemory));
+        LOG_MEM("- {} for {} ... (total {})",
+                Core::Utility::BytesToString(allocationInfo.size),
+                alloc.DebugName,
+                Core::Utility::BytesToString(s_totalMemory));
     }
 
     void* VulkanAllocator::MapMemory(void* allocationHandle)

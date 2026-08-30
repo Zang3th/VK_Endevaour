@@ -1,5 +1,7 @@
 #pragma once
 
+#include "Graphics/Vulkan/VulkanAllocationStructs.hpp"
+
 #include <vulkan/vulkan.hpp>
 
 namespace Engine::Graphics
@@ -11,6 +13,7 @@ namespace Engine::Graphics
         vk::SampleCountFlagBits SampleCount;
         vk::ImageUsageFlags     UsageFlags;
         vk::ImageAspectFlags    AspectFlags;
+        std::string_view        DebugName;
     };
 
     class VulkanRenderTarget
@@ -32,9 +35,9 @@ namespace Engine::Graphics
         void Create(const VulkanRenderTargetCreateInfo& createInfo);
         void Destroy();
 
-        vk::Device    m_Device           = nullptr;
-        vk::Image     m_Image            = nullptr;
-        vk::ImageView m_View             = nullptr;
-        void*         m_AllocationHandle = nullptr;
+        vk::Device      m_Device = nullptr;
+        vk::Image       m_Image  = nullptr;
+        vk::ImageView   m_View   = nullptr;
+        ImageAllocation m_ImageAllocation;
     };
 }

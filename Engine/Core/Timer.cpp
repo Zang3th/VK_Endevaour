@@ -14,6 +14,13 @@ namespace Engine::Core
         LOG_INFO("Timer initialized ...");
     }
 
+    Timer::~Timer()
+    {
+        LOG_PERF("Engine runtime was {} with an average of {} ...",
+                 GetEngineTotalRuntimeString(),
+                 GetEngineFPSAverageString());
+    }
+
     [[nodiscard]] std::string Timer::GetEngineTotalRuntimeString() const
     {
         auto deltaClock = Clock::now() - m_StartClock;

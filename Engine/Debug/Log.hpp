@@ -7,9 +7,12 @@
 
 #define LOG_LOCATION() std::source_location::current().file_name(), std::source_location::current().line()
 
-#define LOG_VERBOSE(msg, ...) fmt::print(stdout, "[VERBOSE] " msg "\n" __VA_OPT__(, ) __VA_ARGS__)
+#define LOG_VERBOSE(msg, ...) fmt::print(stdout, fg(fmt::color::tan), "[VERBOSE] " msg "\n" __VA_OPT__(, ) __VA_ARGS__)
 
-#define LOG_PERF(msg, ...) fmt::print(stdout, fg(fmt::color::aqua), "[PERF] " msg "\n" __VA_OPT__(, ) __VA_ARGS__)
+#define LOG_PERF(msg, ...)                                                                                             \
+    fmt::print(stdout, fg(fmt::color::medium_aquamarine), "[PERF] " msg "\n" __VA_OPT__(, ) __VA_ARGS__)
+
+#define LOG_MEM(msg, ...) fmt::print(stdout, fg(fmt::color::salmon), "[MEM]  " msg "\n" __VA_OPT__(, ) __VA_ARGS__)
 
 #define LOG_INFO(msg, ...) fmt::print(stdout, fg(fmt::color::green), "[INFO] " msg "\n" __VA_OPT__(, ) __VA_ARGS__)
 
@@ -30,10 +33,10 @@
         if (!(condition))                                                                                              \
         {                                                                                                              \
             fmt::print(stdout,                                                                                         \
-                       fg(fmt::color::purple) | fmt::emphasis::bold,                                                   \
+                       fg(fmt::color::orange_red) | fmt::emphasis::bold,                                               \
                        "\n[ASSERT] " msg "\n" __VA_OPT__(, __VA_ARGS__));                                              \
                                                                                                                        \
-            fmt::print(stdout, fg(fmt::color::purple), "      -> {}:{}\n", LOG_LOCATION());                            \
+            fmt::print(stdout, fg(fmt::color::orange_red), "      -> {}:{}\n", LOG_LOCATION());                        \
             __builtin_trap();                                                                                          \
         }                                                                                                              \
     } while (false)

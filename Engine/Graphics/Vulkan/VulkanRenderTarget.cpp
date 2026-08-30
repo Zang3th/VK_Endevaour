@@ -24,7 +24,7 @@ namespace Engine::Graphics
         : m_Device(std::exchange(other.m_Device, nullptr)),
           m_Image(std::exchange(other.m_Image, nullptr)),
           m_View(std::exchange(other.m_View, nullptr)),
-          m_AllocationHandle(std::exchange(other.m_AllocationHandle, nullptr))
+          m_ImageAllocation(std::exchange(other.m_ImageAllocation, {}))
     {
     }
 
@@ -37,10 +37,10 @@ namespace Engine::Graphics
 
         Destroy();
 
-        m_Device           = std::exchange(other.m_Device, nullptr);
-        m_Image            = std::exchange(other.m_Image, nullptr);
-        m_View             = std::exchange(other.m_View, nullptr);
-        m_AllocationHandle = std::exchange(other.m_AllocationHandle, nullptr);
+        m_Device          = std::exchange(other.m_Device, nullptr);
+        m_Image           = std::exchange(other.m_Image, nullptr);
+        m_View            = std::exchange(other.m_View, nullptr);
+        m_ImageAllocation = std::exchange(other.m_ImageAllocation, {});
 
         return *this;
     }
@@ -62,7 +62,13 @@ namespace Engine::Graphics
         };
 
         // Create and allocate image
-        m_AllocationHandle = Engine::Graphics::VulkanAllocator::AllocateImage(&imageCreateInfo, &m_Image);
+        const ImageSpecification imageSpec{
+            .CreateInfo  = &imageCreateInfo,
+            .Image       = &m_Image,
+            .MemoryUsage = MemoryUsage::eAutoPreferDevice,
+            .DebugName   = createInfo.DebugName,
+        };
+        m_ImageAllocation = Engine::Graphics::VulkanAllocator::AllocateImage(imageSpec);
 
         const vk::ImageViewCreateInfo viewCreateInfo = { .image            = m_Image,
                                                          .viewType         = vk::ImageViewType::e2D,
@@ -78,13 +84,13 @@ namespace Engine::Graphics
         VK_VERIFY(result);
         m_View = view;
 
-        LOG_INFO("Created {} render target ...", vk::to_string(createInfo.Format));
+        LOG_INFO("Created render target ({}) ...", vk::to_string(createInfo.Format));
     }
 
     void VulkanRenderTarget::Destroy()
     {
         // Completely empty is a valid state
-        if (m_Device == nullptr && m_Image == nullptr && m_View == nullptr && m_AllocationHandle == nullptr)
+        if (m_Device == nullptr && m_Image == nullptr && m_View == nullptr && m_ImageAllocation.Handle == nullptr)
         {
             return;
         }
@@ -95,12 +101,12 @@ namespace Engine::Graphics
         LOG_INFO("Destroyed image view for render target ...");
 
         ASSERT(m_Image != nullptr, "RenderTarget has no valid image to destroy!");
-        ASSERT(m_AllocationHandle != nullptr, "RenderTarget holds no valid allocation handle!");
-        VulkanAllocator::DestroyImage(m_Image, m_AllocationHandle);
+        ASSERT(m_ImageAllocation.Handle != nullptr, "RenderTarget holds no valid allocation handle!");
+        VulkanAllocator::DestroyImage(m_Image, m_ImageAllocation);
 
-        m_Device           = nullptr;
-        m_Image            = nullptr;
-        m_View             = nullptr;
-        m_AllocationHandle = nullptr;
+        m_Device          = nullptr;
+        m_Image           = nullptr;
+        m_View            = nullptr;
+        m_ImageAllocation = {};
     }
 }
