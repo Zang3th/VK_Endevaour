@@ -1,10 +1,7 @@
 Build/
-Build_CLion/
-Backup/
-.cache/
-.idea/
 compile_commands.json
 *.spv
 imgui.ini
 __pycache__
 *.yaml
+*.*config
