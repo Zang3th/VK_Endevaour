@@ -24,7 +24,7 @@
         fmt::print(                                                                                                    \
             stdout, fg(fmt::color::crimson) | fmt::emphasis::bold, "\n[ERROR] " msg "\n" __VA_OPT__(, __VA_ARGS__));   \
                                                                                                                        \
-        fmt::print(stdout, fg(fmt::color::crimson), "     -> {}:{}\n", LOG_LOCATION());                                \
+        fmt::print(stdout, fg(fmt::color::crimson), "      -> {}:{}\n", LOG_LOCATION());                                \
     } while (false)
 
 #define ASSERT(condition, msg, ...)                                                                                    \

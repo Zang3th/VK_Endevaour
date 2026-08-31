@@ -67,19 +67,21 @@ namespace Engine::Graphics
 
         DestroyImages();
 
+        auto deviceHandle = m_Device->GetHandle();
+
         // Destroy sync objects
         for (size_t i = 0; i < FRAMES_IN_FLIGHT; i++)
         {
-            m_Device->GetHandle().destroySemaphore(m_FrameResources.at(i).ImageAvailable);
-            m_Device->GetHandle().destroyFence(m_FrameResources.at(i).InFlight);
+            deviceHandle.destroySemaphore(m_FrameResources.at(i).ImageAvailable);
+            deviceHandle.destroyFence(m_FrameResources.at(i).InFlight);
         }
 
         // Destroy command pools
-        m_Device->GetHandle().destroyCommandPool(m_GraphicsCommandPool);
-        m_Device->GetHandle().destroyCommandPool(m_TransferCommandPool);
+        deviceHandle.destroyCommandPool(m_GraphicsCommandPool);
+        deviceHandle.destroyCommandPool(m_TransferCommandPool);
 
         // Destroy swapchain
-        m_Device->GetHandle().destroySwapchainKHR(m_CurrentSwapchain);
+        deviceHandle.destroySwapchainKHR(m_CurrentSwapchain);
     }
 
     vk::CommandBuffer VulkanSwapchain::CreateTransferCommandBuffer()
@@ -119,13 +121,15 @@ namespace Engine::Graphics
         // Get current frame resources
         VulkanFrameResources* currentFrameResources = &m_FrameResources.at(m_CurrentFrameIndex);
 
+        auto deviceHandle = m_Device->GetHandle();
+
         // Wait for this frame-slot's previous submission to finish
-        VK_VERIFY(m_Device->GetHandle().waitForFences(1, &currentFrameResources->InFlight, vk::True, UINT64_MAX));
+        VK_VERIFY(deviceHandle.waitForFences(1, &currentFrameResources->InFlight, vk::True, UINT64_MAX));
 
         u32 imageIndex = UINT32_MAX;
 
         // Try to aquire next image
-        const vk::Result res = m_Device->GetHandle().acquireNextImageKHR(
+        const vk::Result res = deviceHandle.acquireNextImageKHR(
             m_CurrentSwapchain, UINT64_MAX, currentFrameResources->ImageAvailable, nullptr, &imageIndex);
 
         if (res == vk::Result::eErrorOutOfDateKHR)
@@ -139,7 +143,7 @@ namespace Engine::Graphics
         ASSERT(res == vk::Result::eSuccess || res == vk::Result::eSuboptimalKHR, "Failed to acquire swapchain image!");
 
         // Reset fence
-        VK_VERIFY(m_Device->GetHandle().resetFences(1, &currentFrameResources->InFlight));
+        VK_VERIFY(deviceHandle.resetFences(1, &currentFrameResources->InFlight));
 
         // Reset command buffer
         VK_VERIFY(currentFrameResources->CommandBuffer.reset());
@@ -314,8 +318,10 @@ namespace Engine::Graphics
 
     void VulkanSwapchain::CreateImages()
     {
+        auto deviceHandle = m_Device->GetHandle();
+
         // Retrieve image handles
-        auto [result, images] = m_Device->GetHandle().getSwapchainImagesKHR(m_CurrentSwapchain);
+        auto [result, images] = deviceHandle.getSwapchainImagesKHR(m_CurrentSwapchain);
         VK_VERIFY(result);
 
         // Reserve space
@@ -334,11 +340,11 @@ namespace Engine::Graphics
                                                                                    .baseArrayLayer = 0,
                                                                                    .layerCount     = 1 } };
 
-            auto [result, view] = m_Device->GetHandle().createImageView(viewCreateInfo);
+            auto [result, view] = deviceHandle.createImageView(viewCreateInfo);
             VK_VERIFY(result);
 
             const vk::SemaphoreCreateInfo semaphoreInfo{};
-            auto [semaphoreResult, renderFinished] = m_Device->GetHandle().createSemaphore(semaphoreInfo);
+            auto [semaphoreResult, renderFinished] = deviceHandle.createSemaphore(semaphoreInfo);
             VK_VERIFY(semaphoreResult);
 
             m_Images.emplace_back(SwapchainImage{
@@ -348,14 +354,14 @@ namespace Engine::Graphics
                                                        .UsageFlags  = vk::ImageUsageFlagBits::eColorAttachment,
                                                        .AspectFlags = vk::ImageAspectFlagBits::eColor,
                                                        .DebugName   = "ColorTarget" },
-                                                     m_Device->GetHandle()),
+                                                     deviceHandle),
                 .DepthTarget    = VulkanRenderTarget({ .Format      = m_Properties.DepthFormat,
                                                        .Extent      = m_Properties.Extent,
                                                        .SampleCount = m_Properties.SampleCount,
                                                        .UsageFlags  = vk::ImageUsageFlagBits::eDepthStencilAttachment,
                                                        .AspectFlags = vk::ImageAspectFlagBits::eDepth,
                                                        .DebugName   = "DepthTarget" },
-                                                     m_Device->GetHandle()),
+                                                     deviceHandle),
                 .InternalImage  = image,
                 .InternalView   = view,
                 .RenderFinished = renderFinished });
@@ -398,19 +404,20 @@ namespace Engine::Graphics
         // Define fence (in signaled state to avoid endless waiting for the first frame)
         const vk::FenceCreateInfo fenceInfo{ .flags = vk::FenceCreateFlagBits::eSignaled };
 
+        auto deviceHandle = m_Device->GetHandle();
+
         // Create sync objects
         for (u32 i = 0; i < FRAMES_IN_FLIGHT; i++)
         {
-            VK_VERIFY(
-                m_Device->GetHandle().createSemaphore(&semaphoreInfo, nullptr, &m_FrameResources[i].ImageAvailable));
-            VK_VERIFY(m_Device->GetHandle().createFence(&fenceInfo, nullptr, &m_FrameResources[i].InFlight));
+            VK_VERIFY(deviceHandle.createSemaphore(&semaphoreInfo, nullptr, &m_FrameResources[i].ImageAvailable));
+            VK_VERIFY(deviceHandle.createFence(&fenceInfo, nullptr, &m_FrameResources[i].InFlight));
         }
 
         // Allocate command buffers
         const vk::CommandBufferAllocateInfo allocateInfo{ .commandPool        = m_GraphicsCommandPool,
                                                           .level              = vk::CommandBufferLevel::ePrimary,
                                                           .commandBufferCount = FRAMES_IN_FLIGHT };
-        auto [res, commandBuffers] = m_Device->GetHandle().allocateCommandBuffers(allocateInfo);
+        auto [res, commandBuffers] = deviceHandle.allocateCommandBuffers(allocateInfo);
         VK_VERIFY(res);
         ASSERT(!commandBuffers.empty(), "Allocated command buffer vector was empty!");
 

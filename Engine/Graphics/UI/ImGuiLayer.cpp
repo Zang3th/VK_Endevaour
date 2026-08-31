@@ -92,8 +92,11 @@ namespace Engine::Graphics
         IMGUI_CHECKVERSION();
         ImGui::CreateContext();
 
+        const auto* swapchain = m_Context->GetSwapchain();
+        const auto* device    = m_Context->GetDevice();
+
         // Dynamic rendering specification
-        const vk::Format                      format = m_Context->GetSwapchain()->GetProperties().SurfaceFormat.format;
+        const vk::Format                      format = swapchain->GetProperties().SurfaceFormat.format;
         const vk::PipelineRenderingCreateInfo renderingInfo{ .colorAttachmentCount    = GLOBAL_COLOR_ATTACHMENT_COUNT,
                                                              .pColorAttachmentFormats = &format };
 
@@ -109,16 +112,16 @@ namespace Engine::Graphics
         // Setup ImGui renderer backend
         ImGui_ImplVulkan_InitInfo initInfo{ .ApiVersion     = m_Context->GetApiVersion(),
                                             .Instance       = m_Context->GetInstance(),
-                                            .PhysicalDevice = m_Context->GetDevice()->GetPhysicalDevice()->GetHandle(),
-                                            .Device         = m_Context->GetDevice()->GetHandle(),
-                                            .QueueFamily    = m_Context->GetDevice()->GetGraphicsQueueFamily(),
-                                            .Queue          = m_Context->GetDevice()->GetGraphicsQueue(),
+                                            .PhysicalDevice = device->GetPhysicalDevice()->GetHandle(),
+                                            .Device         = device->GetHandle(),
+                                            .QueueFamily    = device->GetGraphicsQueueFamily(),
+                                            .Queue          = device->GetGraphicsQueue(),
                                             .DescriptorPool = m_DescriptorPool->GetHandle(),
                                             .DescriptorPoolSize =
                                                 0, // ImGui backend would create an own pool with values > 0
-                                            .MinImageCount = m_Context->GetSwapchain()->GetProperties().MinImageCount,
-                                            .ImageCount    = m_Context->GetSwapchain()->GetImageCount(),
-                                            .PipelineCache = nullptr,
+                                            .MinImageCount              = swapchain->GetProperties().MinImageCount,
+                                            .ImageCount                 = swapchain->GetImageCount(),
+                                            .PipelineCache              = nullptr,
                                             .PipelineInfoMain           = pipelineInfo,
                                             .UseDynamicRendering        = true,
                                             .Allocator                  = nullptr,

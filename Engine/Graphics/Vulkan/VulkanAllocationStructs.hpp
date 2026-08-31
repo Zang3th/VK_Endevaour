@@ -21,6 +21,7 @@ namespace Engine::Graphics
         eAutoPreferDevice = 8u,
         eAutoPreferHost   = 9u
     };
+
     struct BufferAllocation
     {
         vk::Buffer       Buffer = nullptr;
@@ -30,9 +31,9 @@ namespace Engine::Graphics
 
     struct BufferSpecification
     {
-        vk::DeviceSize          Size;
+        vk::DeviceSize          Size = 0;
         vk::BufferUsageFlags    BufferUsageFlags;
-        MemoryUsage             MemoryUsage;
+        MemoryUsage             MemoryUsage = MemoryUsage::eUnknown;
         vk::MemoryPropertyFlags MemoryFlags;
         std::string_view        DebugName;
     };
@@ -45,9 +46,9 @@ namespace Engine::Graphics
 
     struct ImageSpecification
     {
-        const vk::ImageCreateInfo* CreateInfo = nullptr;
-        vk::Image*                 Image      = nullptr;
-        MemoryUsage                MemoryUsage;
+        const vk::ImageCreateInfo* CreateInfo  = nullptr;
+        vk::Image*                 Image       = nullptr;
+        MemoryUsage                MemoryUsage = MemoryUsage::eUnknown;
         std::string_view           DebugName;
     };
 }

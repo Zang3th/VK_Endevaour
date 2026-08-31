@@ -6,7 +6,7 @@
 
 namespace Engine::Graphics
 {
-    vk::Extent2D VulkanSwapchainUtils::ChooseExtent(vk::SurfaceCapabilitiesKHR capabilities)
+    vk::Extent2D VulkanSwapchainUtils::ChooseExtent(const vk::SurfaceCapabilitiesKHR& capabilities)
     {
         // Swapchain dimensions are fixed by the surface. Don't change anything
         if (capabilities.currentExtent.width != std::numeric_limits<u32>::max())

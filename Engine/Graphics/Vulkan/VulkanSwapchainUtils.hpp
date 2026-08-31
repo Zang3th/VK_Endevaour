@@ -9,7 +9,7 @@ namespace Engine::Graphics
     public:
         VulkanSwapchainUtils() = delete;
 
-        static vk::Extent2D         ChooseExtent(vk::SurfaceCapabilitiesKHR capabilities);
+        static vk::Extent2D         ChooseExtent(const vk::SurfaceCapabilitiesKHR& capabilities);
         static vk::SurfaceFormatKHR ChooseSurfaceFormat(const std::vector<vk::SurfaceFormatKHR>& surfaceFormats);
         static vk::PresentModeKHR   ChoosePresentMode(const std::vector<vk::PresentModeKHR>& presentModes);
         static void                 TransitionImageLayout(vk::CommandBuffer       cmd,

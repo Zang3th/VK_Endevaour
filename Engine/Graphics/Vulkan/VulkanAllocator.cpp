@@ -23,7 +23,7 @@ namespace
     // ----- Internal -----
 
     VmaAllocator s_Allocator   = VK_NULL_HANDLE;
-    Engine::u64  s_totalMemory = 0;
+    Engine::u64  s_TotalMemory = 0;
 
     inline VmaMemoryUsage MapMemoryUsage(Engine::Graphics::MemoryUsage usage)
     {
@@ -124,13 +124,13 @@ namespace Engine::Graphics
                                                (VkBuffer*)&buffer,
                                                &allocation,
                                                &allocationInfo)));
-        s_totalMemory += allocationInfo.size;
+        s_TotalMemory += allocationInfo.size;
 
         LOG_MEM("+ {} for {} [{}] ... (total {})",
                 Core::Utility::BytesToString(allocationInfo.size),
                 spec.DebugName,
                 MemoryUsageToString(spec.MemoryUsage),
-                Core::Utility::BytesToString(s_totalMemory));
+                Core::Utility::BytesToString(s_TotalMemory));
 
         return { .Buffer = buffer, .Handle = (void*)allocation, .DebugName = spec.DebugName };
     }
@@ -140,14 +140,14 @@ namespace Engine::Graphics
         VmaAllocationInfo allocationInfo{};
         vmaGetAllocationInfo(s_Allocator, (VmaAllocation)alloc.Handle, &allocationInfo);
 
-        ASSERT(s_totalMemory >= allocationInfo.size, "Total memory allocations went negative!");
-        s_totalMemory -= allocationInfo.size;
+        ASSERT(s_TotalMemory >= allocationInfo.size, "Total memory allocations went negative!");
+        s_TotalMemory -= allocationInfo.size;
         vmaDestroyBuffer(s_Allocator, (VkBuffer)alloc.Buffer, (VmaAllocation)alloc.Handle);
 
         LOG_MEM("- {} for {} ... (total {})",
                 Core::Utility::BytesToString(allocationInfo.size),
                 alloc.DebugName,
-                Core::Utility::BytesToString(s_totalMemory));
+                Core::Utility::BytesToString(s_TotalMemory));
     }
 
     ImageAllocation VulkanAllocator::AllocateImage(const ImageSpecification& spec)
@@ -166,13 +166,13 @@ namespace Engine::Graphics
                                               (VkImage*)spec.Image,
                                               &allocation,
                                               &allocationInfo)));
-        s_totalMemory += allocationInfo.size;
+        s_TotalMemory += allocationInfo.size;
 
         LOG_MEM("+ {} for {} [{}] ... (total {})",
                 Core::Utility::BytesToString(allocationInfo.size),
                 spec.DebugName,
                 MemoryUsageToString(spec.MemoryUsage),
-                Core::Utility::BytesToString(s_totalMemory));
+                Core::Utility::BytesToString(s_TotalMemory));
 
         return { .Handle = allocation, .DebugName = spec.DebugName };
     }
@@ -182,14 +182,14 @@ namespace Engine::Graphics
         VmaAllocationInfo allocationInfo{};
         vmaGetAllocationInfo(s_Allocator, (VmaAllocation)alloc.Handle, &allocationInfo);
 
-        ASSERT(s_totalMemory >= allocationInfo.size, "Total memory allocations went negative!");
-        s_totalMemory -= allocationInfo.size;
+        ASSERT(s_TotalMemory >= allocationInfo.size, "Total memory allocations went negative!");
+        s_TotalMemory -= allocationInfo.size;
         vmaDestroyImage(s_Allocator, image, (VmaAllocation)alloc.Handle);
 
         LOG_MEM("- {} for {} ... (total {})",
                 Core::Utility::BytesToString(allocationInfo.size),
                 alloc.DebugName,
-                Core::Utility::BytesToString(s_totalMemory));
+                Core::Utility::BytesToString(s_TotalMemory));
     }
 
     void* VulkanAllocator::MapMemory(void* allocationHandle)

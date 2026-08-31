@@ -40,7 +40,7 @@ namespace Engine::Graphics
         void AssignModelToPipeline(u32 modelID, u32 pipelineID);
 
         [[nodiscard]] RenderPacket BeginFrame(u32 pipelineID);
-        void                       DrawFrame(RenderPacket renderPacket, const Core::FrameTiming& frameTiming);
+        void                       DrawFrame(const RenderPacket& renderPacket, const Core::FrameTiming& frameTiming);
 
         void WaitForDevice();
 

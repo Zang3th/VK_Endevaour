@@ -8,6 +8,14 @@
 #define TINYOBJLOADER_IMPLEMENTATION
 #include "Vendor/tinyobjloader/tiny_obj_loader.hpp"
 
+namespace
+{
+    // ----- Internal -----
+
+    // Hash map to store and reuse vertices (needs a hashing function and an overloaded comparison operator)
+    std::unordered_map<Engine::Graphics::Vertex, Engine::u32> s_UniqueVertices{};
+}
+
 namespace Engine::Graphics
 {
     Mesh ObjLoader::LoadMeshFromFile(const std::filesystem::path& path, ImportMode mode)
@@ -45,11 +53,10 @@ namespace Engine::Graphics
         LOG_TABLE_COLUMN("TexCoords", "{} floats", attrib.texcoords.size());
         LOG_TABLE_END();
 
-        // Hash map to store and reuse vertices (needs a hashing function and an overloaded comparison operator)
-        std::unordered_map<Vertex, u32> uniqueVertices{};
         if (mode == ImportMode::eOptimized)
         {
-            uniqueVertices.reserve(attrib.vertices.size());
+            s_UniqueVertices.clear();
+            s_UniqueVertices.reserve(attrib.vertices.size());
         }
 
         Mesh     mesh;
@@ -105,7 +112,7 @@ namespace Engine::Graphics
                 else
                 {
                     // Try to emplace vertex in hash map
-                    const auto [it, inserted] = uniqueVertices.try_emplace(vertex, (u32)mesh.Vertices.size());
+                    const auto [it, inserted] = s_UniqueVertices.try_emplace(vertex, (u32)mesh.Vertices.size());
 
                     // Success => New, unique vertex
                     if (inserted)

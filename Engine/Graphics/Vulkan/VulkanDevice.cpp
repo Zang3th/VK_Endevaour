@@ -35,7 +35,7 @@ namespace Engine::Graphics
         std::vector<vk::DeviceQueueCreateInfo> queueCreateInfos;
 
         // Add queue infos for graphics
-        queueCreateInfos.push_back({
+        queueCreateInfos.emplace_back(vk::DeviceQueueCreateInfo{
             .queueFamilyIndex = (u32)queueFamilyIndices.GraphicsFamily,
             .queueCount       = 1,
             .pQueuePriorities = &queuePriority,
@@ -44,7 +44,7 @@ namespace Engine::Graphics
         // If transfer uses a different queue, add it too
         if (queueFamilyIndices.GraphicsFamily != queueFamilyIndices.TransferFamily)
         {
-            queueCreateInfos.push_back({
+            queueCreateInfos.emplace_back(vk::DeviceQueueCreateInfo{
                 .queueFamilyIndex = (u32)queueFamilyIndices.TransferFamily,
                 .queueCount       = 1,
                 .pQueuePriorities = &queuePriority,

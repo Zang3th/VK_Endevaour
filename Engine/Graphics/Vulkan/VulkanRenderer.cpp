@@ -82,7 +82,7 @@ namespace Engine::Graphics
         return { .Frame = m_Swapchain->BeginFrame(), .PipelineID = pipelineID };
     }
 
-    void VulkanRenderer::DrawFrame(RenderPacket renderPacket, const Core::FrameTiming& frameTiming)
+    void VulkanRenderer::DrawFrame(const RenderPacket& renderPacket, const Core::FrameTiming& frameTiming)
     {
         ASSERT(renderPacket.Frame.has_value(), "Application should only commit valid frames!");
         const SwapchainFrame frame = *renderPacket.Frame;
