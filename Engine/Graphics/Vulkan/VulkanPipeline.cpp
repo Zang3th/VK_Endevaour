@@ -52,8 +52,11 @@ namespace Engine::Graphics
 
         // Dynamic rendering specification
         const vk::Format                      format = m_Context->GetSwapchain()->GetProperties().SurfaceFormat.format;
-        const vk::PipelineRenderingCreateInfo renderingInfo{ .colorAttachmentCount    = GLOBAL_COLOR_ATTACHMENT_COUNT,
-                                                             .pColorAttachmentFormats = &format };
+        const vk::PipelineRenderingCreateInfo renderingInfo{
+            .colorAttachmentCount    = GLOBAL_COLOR_ATTACHMENT_COUNT,
+            .pColorAttachmentFormats = &format,
+            .depthAttachmentFormat   = m_Context->GetSwapchain()->GetProperties().DepthFormat
+        };
 
         // Shader stages
         std::array<vk::PipelineShaderStageCreateInfo, 2> shaderStages = {

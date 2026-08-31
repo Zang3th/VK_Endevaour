@@ -1,57 +1,5 @@
 # VK_Endevaour
 
-## ImGui
-
-#Version
-- 0.2.0
-
-#Date
-- 08.06.26 - 13.06.26
-
-### Allgemeines
-
-#### Software & Tooling
-- [x] ~Codex installieren und AGENTS.md erstellen~
-
-#### Project
-- [x] ~ImGui auf v1.92.8 upgraden => README.md anpassen~
-- [x] ~VMA auf v3.4.0 upgraden => README.md anpassen~
-- [x] ~Nächste App auf prozedurale Terrain-Generierung auf der GPU ändern~
-
-### Improvements
-
-#Info
-- [x] Wie kann das LSP alles in Vendor/ und in externem Vulkan-/STL-Code ignorieren? => .clangd anpassen ... Funktioniert mehr schlecht als recht
-- [x] Wie kann ich dieses lästige Einsetzen von Funktionskörpern optimieren? Vim-Makro oder ein neues LSP-Binding? => Neues Keybinding auf <Tab> gelegt
-
-- [x] ~Logging: Shader-Creation verbessern (Typ von Shader)~
-- [x] ~Logging: Shader-Destruction verbessern (Typ von Shader)~
-- [x] ~.clang-format noch stärker an die Firma anpassen~
-- [x] ~Codex: VulkanRenderer::DrawFrame runterstampfen => Was kann man noch besser abstrahieren oder zusammenfassen?~
-- [x] ~Codex: VulkanFrame anschauen => Ist das wirklich optimal so?~
-
-### Bugs
-
-- [x] ~Codex-Code-Review: In allen Klassen, die interne Vulkan-Handles (owning) halten, den Copy-Konstruktor und Assignment-Operator löschen, da ansonsten Double-Destroys passieren können~
-- [x] ~Codex-Code-Review: Uneinheitliche Codeabschnitte (die stilistisch oder architektonisch nicht zum Rest passen)~
-- [x] ~Codex-Code-Review: Riskante, unsichere Codeabschnitte und fehlendes const~
-- [x] ~Fast-Compile-Option einfügen (ohne sauberen Full Rebuild)~
-- [x] ~GLFW-Error-Callback anlegen~
-- [x] ~ImGui-Error-Callback anlegen~
-- [x] ~API_VERSION überall korrekt ersetzen~
-- [x] ~Codex-Code-Review: ImGui-Integration~
-- [x] ~GLFW nur noch in Window.cpp inkludieren (denk an das Define) und Window zur einzigen Schnittstelle umbauen (danach auch unter Linux testen) + Swapchain fragt Resize-/Minimize-State beim Window ab (Callback sollte auch dort liegen)~
-
-### VulkanDescriptorPool
-
-- [x] ~Minimale API überlegen~
-- [x] ~Implementieren~
-
-### ImGuiLayer
-
-- [x] ~Grundlegende API und ImGui-Integration überlegen~
-- [x] ~ImGui Backend integrieren~
-
 ## DescriptorSets
 
 #Version
@@ -114,14 +62,13 @@
 - [x] ~DrawStats pflegen~
 - [x] ~UI für das Panel finalisieren~
 
-#Pin
 ## RenderTargets
 
 #Version
 - 0.2.3
 
 #Date
-- 21.08.26 - TBD
+- 21.08.26 - 31.08.26
 
 ### Allgemeines
 
@@ -161,30 +108,21 @@
 - [x] ~Vulkan-Depth-Range über perspectiveRH_ZO anpassen~
 - [x] ~Pipeline-RasterizationSamples setzen~
 - [x] ~Depth-Test und Depth-Write aktivieren~
-- [ ] PipelineRenderingCreateInfo::depthAttachmentFormat setzen
+- [x] ~PipelineRenderingCreateInfo::depthAttachmentFormat setzen~
 
-#### Layouts und Synchronisation
-- [ ] TransitionImageLayout um AspectFlags erweitern
-- [ ] MSAA-ColorTarget nach ColorAttachmentOptimal transitionieren
-- [ ] DepthTarget nach DepthAttachmentOptimal transitionieren
-- [ ] Passende Depth-Stage- und Access-Masks verwenden
-
-#### Dynamic Rendering
-- [ ] ColorAttachment auf MSAA-ColorTarget umstellen
-- [ ] Swapchain-Image als Resolve-Ziel konfigurieren
-- [ ] ResolveMode eAverage setzen
-- [ ] DepthAttachment mit Clearwert ergänzen
-- [ ] RenderingInfo um pDepthAttachment ergänzen
+#### Targets und Transitions
+- [x] ~ColorAttachment auf MSAA-ColorTarget umstellen~
+- [x] ~Im ColorAttachment alles für `resolve` ergänzen~
+- [x] ~TransitionImageLayout um AspectFlags erweitern~
+- [x] ~MSAA-ColorTarget nach ColorAttachmentOptimal transitionieren~
+- [x] ~DepthAttachment ergänzen~
+- [x] ~DepthTarget nach DepthAttachmentOptimal transitionieren~
+- [x] ~RenderingInfo um pDepthAttachment ergänzen~
 
 #### ImGui
-- [ ] ImGui-Pipeline auf denselben SampleCount setzen
-- [ ] Dynamic-Rendering-Formate einschließlich DepthFormat setzen
-- [ ] ImGui bei Swapchain-Recreation aktualisieren
+- [x] ~`PipelineInfoMain.MSAASamples` auf den aktiven Color-/Depth-SampleCount setzen~
 
-### Kofi Game Engine Series
-
-- [ ] Video 31
-
+#Pin
 ## Camera
 
 #Version
@@ -234,6 +172,10 @@ Optionen via UI steuern:
 #### ToDo
 - [ ] Interaktion / Schnittstelle mit dem Renderer überlegen
 - [ ] UI implementieren
+
+### Kofi Game Engine Series
+
+- [ ] Video 31
 
 ## Model
 
@@ -557,3 +499,55 @@ Raytracer mit Vulkan
 - [x] ~Validation Layer laufen auf 1.4.328, während das SDK schon auf 1.4.350 läuft => Alte SDKs müssen deinstalliert und immer der neueste Vulkan Configurator gestartet werden~
 - [x] ~Minimieren reparieren~
 - [x] ~vkQueueSubmit(): Swapchain image 0 was presented but was not re-acquired => Unterschiedliche Plattformen erstellen unterschiedliche Mengen an Bildern => WSI-Image-Acquisition von VulkanFrame::Sync trennen~
+
+## ImGui
+
+#Version
+- 0.2.0
+
+#Date
+- 08.06.26 - 13.06.26
+
+### Allgemeines
+
+#### Software & Tooling
+- [x] ~Codex installieren und AGENTS.md erstellen~
+
+#### Project
+- [x] ~ImGui auf v1.92.8 upgraden => README.md anpassen~
+- [x] ~VMA auf v3.4.0 upgraden => README.md anpassen~
+- [x] ~Nächste App auf prozedurale Terrain-Generierung auf der GPU ändern~
+
+### Improvements
+
+#Info
+- [x] Wie kann das LSP alles in Vendor/ und in externem Vulkan-/STL-Code ignorieren? => .clangd anpassen ... Funktioniert mehr schlecht als recht
+- [x] Wie kann ich dieses lästige Einsetzen von Funktionskörpern optimieren? Vim-Makro oder ein neues LSP-Binding? => Neues Keybinding auf <Tab> gelegt
+
+- [x] ~Logging: Shader-Creation verbessern (Typ von Shader)~
+- [x] ~Logging: Shader-Destruction verbessern (Typ von Shader)~
+- [x] ~.clang-format noch stärker an die Firma anpassen~
+- [x] ~Codex: VulkanRenderer::DrawFrame runterstampfen => Was kann man noch besser abstrahieren oder zusammenfassen?~
+- [x] ~Codex: VulkanFrame anschauen => Ist das wirklich optimal so?~
+
+### Bugs
+
+- [x] ~Codex-Code-Review: In allen Klassen, die interne Vulkan-Handles (owning) halten, den Copy-Konstruktor und Assignment-Operator löschen, da ansonsten Double-Destroys passieren können~
+- [x] ~Codex-Code-Review: Uneinheitliche Codeabschnitte (die stilistisch oder architektonisch nicht zum Rest passen)~
+- [x] ~Codex-Code-Review: Riskante, unsichere Codeabschnitte und fehlendes const~
+- [x] ~Fast-Compile-Option einfügen (ohne sauberen Full Rebuild)~
+- [x] ~GLFW-Error-Callback anlegen~
+- [x] ~ImGui-Error-Callback anlegen~
+- [x] ~API_VERSION überall korrekt ersetzen~
+- [x] ~Codex-Code-Review: ImGui-Integration~
+- [x] ~GLFW nur noch in Window.cpp inkludieren (denk an das Define) und Window zur einzigen Schnittstelle umbauen (danach auch unter Linux testen) + Swapchain fragt Resize-/Minimize-State beim Window ab (Callback sollte auch dort liegen)~
+
+### VulkanDescriptorPool
+
+- [x] ~Minimale API überlegen~
+- [x] ~Implementieren~
+
+### ImGuiLayer
+
+- [x] ~Grundlegende API und ImGui-Integration überlegen~
+- [x] ~ImGui Backend integrieren~

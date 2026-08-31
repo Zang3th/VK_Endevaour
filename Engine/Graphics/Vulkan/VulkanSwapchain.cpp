@@ -162,7 +162,7 @@ namespace Engine::Graphics
         const vk::CommandBufferBeginInfo cmdBeginInfo{};
         VK_VERIFY(cmdBuffer.begin(&cmdBeginInfo));
 
-        // Transition image layout from undefined to color
+        // Transition image layout of the internal swapchain image from undefined to color
         VulkanSwapchainUtils::TransitionImageLayout(cmdBuffer,
                                                     m_Images.at(frame.ImageIndex).InternalImage,
                                                     vk::ImageLayout::eUndefined,
@@ -170,23 +170,62 @@ namespace Engine::Graphics
                                                     vk::AccessFlagBits2::eNone,
                                                     vk::AccessFlagBits2::eColorAttachmentWrite,
                                                     vk::PipelineStageFlagBits2::eTopOfPipe,
-                                                    vk::PipelineStageFlagBits2::eColorAttachmentOutput);
+                                                    vk::PipelineStageFlagBits2::eColorAttachmentOutput,
+                                                    vk::ImageAspectFlagBits::eColor);
 
-        // Set up clear value
+        // Transition image layout of msaa color target from undefined to color
+        VulkanSwapchainUtils::TransitionImageLayout(cmdBuffer,
+                                                    m_Images.at(frame.ImageIndex).ColorTarget.GetImage(),
+                                                    vk::ImageLayout::eUndefined,
+                                                    vk::ImageLayout::eColorAttachmentOptimal,
+                                                    vk::AccessFlagBits2::eNone,
+                                                    vk::AccessFlagBits2::eColorAttachmentWrite,
+                                                    vk::PipelineStageFlagBits2::eTopOfPipe,
+                                                    vk::PipelineStageFlagBits2::eColorAttachmentOutput,
+                                                    vk::ImageAspectFlagBits::eColor);
+
         const vk::ClearValue clearValue{ .color = { { { clearColor.x, clearColor.y, clearColor.z, clearColor.a } } } };
 
-        // Set up rendering attachment info
-        const vk::RenderingAttachmentInfo colorAttachment{ .imageView   = m_Images.at(frame.ImageIndex).InternalView,
-                                                           .imageLayout = vk::ImageLayout::eColorAttachmentOptimal,
-                                                           .loadOp      = vk::AttachmentLoadOp::eClear,
-                                                           .storeOp     = vk::AttachmentStoreOp::eStore,
-                                                           .clearValue  = clearValue };
+        // Set up rendering attachment info for the color target
+        const vk::RenderingAttachmentInfo colorAttachment{
+            .imageView   = m_Images.at(frame.ImageIndex).ColorTarget.GetView(),
+            .imageLayout = vk::ImageLayout::eColorAttachmentOptimal,
+            .resolveMode = vk::ResolveModeFlagBits::eAverage,
+            .resolveImageView =
+                m_Images.at(frame.ImageIndex).InternalView, // Resolve color target in internal swapchain image (::e1)
+            .resolveImageLayout = vk::ImageLayout::eColorAttachmentOptimal,
+            .loadOp             = vk::AttachmentLoadOp::eClear,
+            .storeOp            = vk::AttachmentStoreOp::eDontCare,
+            .clearValue         = clearValue
+        };
+
+        // Transition image layout of the depth target from undefined to depth
+        VulkanSwapchainUtils::TransitionImageLayout(
+            cmdBuffer,
+            m_Images.at(frame.ImageIndex).DepthTarget.GetImage(),
+            vk::ImageLayout::eUndefined,
+            vk::ImageLayout::eDepthAttachmentOptimal,
+            vk::AccessFlagBits2::eNone,
+            vk::AccessFlagBits2::eDepthStencilAttachmentRead | vk::AccessFlagBits2::eDepthStencilAttachmentWrite,
+            vk::PipelineStageFlagBits2::eTopOfPipe,
+            vk::PipelineStageFlagBits2::eEarlyFragmentTests | vk::PipelineStageFlagBits2::eLateFragmentTests,
+            vk::ImageAspectFlagBits::eDepth);
+
+        // Set up rendering attachment info for the depth target
+        const vk::RenderingAttachmentInfo depthAttachment{
+            .imageView   = m_Images.at(frame.ImageIndex).DepthTarget.GetView(),
+            .imageLayout = vk::ImageLayout::eDepthAttachmentOptimal,
+            .loadOp      = vk::AttachmentLoadOp::eClear,
+            .storeOp     = vk::AttachmentStoreOp::eDontCare,
+            .clearValue  = { .depthStencil = { .depth = 1.0f, .stencil = 0 } },
+        };
 
         // Begin rendering
         const vk::RenderingInfo renderingInfo{ .renderArea = { .offset = { .x = 0, .y = 0 }, .extent = frame.Extent },
                                                .layerCount = 1,
                                                .colorAttachmentCount = GLOBAL_COLOR_ATTACHMENT_COUNT,
-                                               .pColorAttachments    = &colorAttachment };
+                                               .pColorAttachments    = &colorAttachment,
+                                               .pDepthAttachment     = &depthAttachment };
 
         cmdBuffer.beginRendering(&renderingInfo);
     }
@@ -206,7 +245,8 @@ namespace Engine::Graphics
                                                     vk::AccessFlagBits2::eColorAttachmentWrite,
                                                     vk::AccessFlagBits2::eNone,
                                                     vk::PipelineStageFlagBits2::eColorAttachmentOutput,
-                                                    vk::PipelineStageFlagBits2::eBottomOfPipe);
+                                                    vk::PipelineStageFlagBits2::eBottomOfPipe,
+                                                    vk::ImageAspectFlagBits::eColor);
 
         // End command buffer recording
         VK_VERIFY(cmdBuffer.end());
@@ -216,7 +256,8 @@ namespace Engine::Graphics
     {
         const vk::CommandBuffer cmdBuffer = frame.Resources->CommandBuffer;
 
-        const vk::PipelineStageFlags waitStage{ vk::PipelineStageFlagBits::eColorAttachmentOutput };
+        const vk::PipelineStageFlags waitStage{ vk::PipelineStageFlagBits::eColorAttachmentOutput
+                                                | vk::PipelineStageFlagBits::eEarlyFragmentTests };
 
         // Create submit info
         const vk::SubmitInfo submitInfo{
@@ -232,7 +273,7 @@ namespace Engine::Graphics
         // Submit frame to queue
         VK_VERIFY(m_Device->GetGraphicsQueue().submit(1, &submitInfo, frame.Resources->InFlight));
 
-        // Advance frame count no matter if presentKHR will trigger a recreate
+        // Advance frame count, no matter if presentKHR triggers a recreate
         AdvanceFrameCount();
 
         // Create present info

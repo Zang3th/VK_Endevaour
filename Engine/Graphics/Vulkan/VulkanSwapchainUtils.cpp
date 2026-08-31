@@ -65,7 +65,8 @@ namespace Engine::Graphics
                                                      vk::AccessFlags2        srcAccessMask,
                                                      vk::AccessFlags2        dstAccessMask,
                                                      vk::PipelineStageFlags2 srcStage,
-                                                     vk::PipelineStageFlags2 dstStage)
+                                                     vk::PipelineStageFlags2 dstStage,
+                                                     vk::ImageAspectFlags    aspectFlags)
     {
         // Initialize the VkImageMemoryBarrier2 structure
         const vk::ImageMemoryBarrier2 imageMemoryBarrier
@@ -90,11 +91,11 @@ namespace Engine::Graphics
             // Define the subresource range (which parts of the image are affected)
             .subresourceRange =
             {
-                .aspectMask     = vk::ImageAspectFlagBits::eColor, // Affects the color aspect of the image
-                .baseMipLevel   = 0,                               // Start at mip level 0
-                .levelCount     = 1,                               // Number of mip levels affected
-                .baseArrayLayer = 0,                               // Start at array layer 0
-                .layerCount     = 1                                // Number of array layers affected
+                .aspectMask     = aspectFlags, // Affects the aspect of the image
+                .baseMipLevel   = 0,           // Start at mip level 0
+                .levelCount     = 1,           // Number of mip levels affected
+                .baseArrayLayer = 0,           // Start at array layer 0
+                .layerCount     = 1            // Number of array layers affected
             }
         };
 

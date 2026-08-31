@@ -86,6 +86,10 @@ When file edits are requested:
 * Preserve existing style
 * Do not mix formatting-only changes with logic changes
 
+## Roadmap
+
+Only update `Docs/Roadmap.md` when explicitly requested. Match its existing style: short, precise, technical ToDos scoped to the affected codebase area. Use one actionable outcome per bullet; no rationale or implementation prose.
+
 ---
 
 ## Code Style

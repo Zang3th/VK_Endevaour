@@ -22,7 +22,8 @@ namespace Engine::Graphics
 
         [[nodiscard]] b8 IsComplete() const
         {
-            return (!Formats.empty() && !PresentModes.empty() && DepthFormat != vk::Format::eUndefined);
+            return (!Formats.empty() && !PresentModes.empty() && DepthFormat != vk::Format::eUndefined
+                    && SampleCount != vk::SampleCountFlagBits::e1);
         };
     };
 
@@ -45,7 +46,7 @@ namespace Engine::Graphics
         // Holds image, view and allocation for the color render target.
         VulkanRenderTarget ColorTarget;
 
-        // "..." but for the depth target.
+        // Holds image, view and allocation for the depth target.
         VulkanRenderTarget DepthTarget;
 
         // Image handle owned by the swapchain implementation.

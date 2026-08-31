@@ -106,9 +106,8 @@ namespace
 
     [[nodiscard]] vk::Format FindSupportedDepthFormat(vk::PhysicalDevice device)
     {
-        constexpr std::array formats = {
-            vk::Format::eD32Sfloat, vk::Format::eD32SfloatS8Uint, vk::Format::eD24UnormS8Uint, vk::Format::eD16Unorm
-        };
+        // No stencil support for now
+        constexpr std::array formats = { vk::Format::eD32Sfloat, vk::Format::eD16Unorm };
 
         constexpr vk::FormatFeatureFlagBits required = vk::FormatFeatureFlagBits::eDepthStencilAttachment;
 

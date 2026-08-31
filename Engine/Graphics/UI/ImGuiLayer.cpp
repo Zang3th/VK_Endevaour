@@ -97,13 +97,17 @@ namespace Engine::Graphics
 
         // Dynamic rendering specification
         const vk::Format                      format = swapchain->GetProperties().SurfaceFormat.format;
-        const vk::PipelineRenderingCreateInfo renderingInfo{ .colorAttachmentCount    = GLOBAL_COLOR_ATTACHMENT_COUNT,
-                                                             .pColorAttachmentFormats = &format };
+        const vk::PipelineRenderingCreateInfo renderingInfo{
+            .colorAttachmentCount    = GLOBAL_COLOR_ATTACHMENT_COUNT,
+            .pColorAttachmentFormats = &format,
+            .depthAttachmentFormat   = m_Context->GetSwapchain()->GetProperties().DepthFormat
+        };
 
         const ImGui_ImplVulkan_PipelineInfo pipelineInfo{
-            .RenderPass                  = nullptr,
-            .Subpass                     = 0,
-            .ExtraDynamicStates          = {},
+            .RenderPass         = nullptr,
+            .Subpass            = 0,
+            .MSAASamples        = (VkSampleCountFlagBits)m_Context->GetSwapchain()->GetProperties().SampleCount,
+            .ExtraDynamicStates = {},
             .PipelineRenderingCreateInfo = renderingInfo,
         };
 
