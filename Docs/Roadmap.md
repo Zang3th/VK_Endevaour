@@ -1,46 +1,5 @@
 # VK_Endevaour
 
-## DescriptorSets
-
-#Version
-- 0.2.1
-
-#Date
-- 15.06.26 - 25.06.26
-
-### Improvements
-
-- [x] ~Logging: .obj-Loading verbessern~
-- [x] ~Logging: Swapchain-Creation verbessern~
-- [x] ~Logging: Memory-Allocations verbessern~
-- [x] ~Alle Header-Includes von vulkan.hpp prüfen~
-- [x] ~Neue .obj-Dateien besorgen~
-
-### Bugs
-
-- [x] ~Tinyrunner-Warnings fixen~
-- [x] ~CullMode / Clockwise Vertex Drawing fixen + vereinheitlichen~
-
-### VulkanDescriptorSetLayout
-
-- [x] ~Minimale API überlegen~
-- [x] ~Implementieren~
-
-### VulkanGlobalUniforms
-
-- [x] ~Minimale API überlegen~
-- [x] ~Implementieren~
-
-### Timer
-
-- [x] ~Minimale API entwerfen~
-- [x] ~Implementieren~
-
-### Kofi Game Engine Series
-
-- [x] ~Video 29~
-- [x] ~Video 30~
-
 ## ProfilerPanel
 
 #Version
@@ -271,7 +230,7 @@ Raytracer mit Vulkan
 #Archive
 # Archive
 
-## Learn Vulkan basics
+## Learning der Basics
 
 #Version
 - 0.0.0
@@ -450,7 +409,7 @@ Raytracer mit Vulkan
 - [x] ~Video 16~
 - [x] ~Video 17~
 
-## Windows
+## Windows-Port
 
 #Version
 - 0.1.0
@@ -500,7 +459,7 @@ Raytracer mit Vulkan
 - [x] ~Minimieren reparieren~
 - [x] ~vkQueueSubmit(): Swapchain image 0 was presented but was not re-acquired => Unterschiedliche Plattformen erstellen unterschiedliche Mengen an Bildern => WSI-Image-Acquisition von VulkanFrame::Sync trennen~
 
-## ImGui
+## ImGui-Integration
 
 #Version
 - 0.2.0
@@ -529,6 +488,7 @@ Raytracer mit Vulkan
 - [x] ~.clang-format noch stärker an die Firma anpassen~
 - [x] ~Codex: VulkanRenderer::DrawFrame runterstampfen => Was kann man noch besser abstrahieren oder zusammenfassen?~
 - [x] ~Codex: VulkanFrame anschauen => Ist das wirklich optimal so?~
+- [x] ~Codex: Abschließende Code-Review~
 
 ### Bugs
 
@@ -539,7 +499,6 @@ Raytracer mit Vulkan
 - [x] ~GLFW-Error-Callback anlegen~
 - [x] ~ImGui-Error-Callback anlegen~
 - [x] ~API_VERSION überall korrekt ersetzen~
-- [x] ~Codex-Code-Review: ImGui-Integration~
 - [x] ~GLFW nur noch in Window.cpp inkludieren (denk an das Define) und Window zur einzigen Schnittstelle umbauen (danach auch unter Linux testen) + Swapchain fragt Resize-/Minimize-State beim Window ab (Callback sollte auch dort liegen)~
 
 ### VulkanDescriptorPool
@@ -551,3 +510,44 @@ Raytracer mit Vulkan
 
 - [x] ~Grundlegende API und ImGui-Integration überlegen~
 - [x] ~ImGui Backend integrieren~
+
+## DescriptorSets
+
+#Version
+- 0.2.1
+
+#Date
+- 15.06.26 - 25.06.26
+
+### Improvements
+
+- [x] ~Logging: .obj-Loading verbessern~
+- [x] ~Logging: Swapchain-Creation verbessern~
+- [x] ~Logging: Memory-Allocations verbessern~
+- [x] ~Alle Header-Includes von vulkan.hpp prüfen~
+- [x] ~Neue .obj-Dateien besorgen~
+
+### Bugs
+
+- [x] ~Tinyrunner-Warnings fixen~
+- [x] ~CullMode / Clockwise Vertex Drawing fixen + vereinheitlichen~
+
+### VulkanDescriptorSetLayout
+
+- [x] ~Minimale API überlegen~
+- [x] ~Implementieren~
+
+### VulkanGlobalUniforms
+
+- [x] ~Minimale API überlegen~
+- [x] ~Implementieren~
+
+### Timer
+
+- [x] ~Minimale API entwerfen~
+- [x] ~Implementieren~
+
+### Kofi Game Engine Series
+
+- [x] ~Video 29~
+- [x] ~Video 30~
