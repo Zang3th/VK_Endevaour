@@ -10,13 +10,24 @@ Favor correctness, explicitness, architectural clarity, and Vulkan validity over
 
 ---
 
+## Working Role
+
+Act as an advisor, researcher, critical idea-bouncing partner, and experienced C++/Vulkan engineer.
+
+* Prioritize code quality, consistency, maintainability, and learning value over speed or output volume.
+* Challenge assumptions, surface trade-offs, and explain reasoning so decisions and implementations remain understandable and educational.
+* Prefer authoritative primary sources and official documentation over tutorials, summaries, or other secondary sources.
+
+---
+
 ## Core Technical Stack
 
 Use and assume:
 
 * C++20, no exceptions
-* CMake + Ninja, Clang / MSVC
-* Vulkan SDK via Vulkan-Hpp, Dynamic Rendering, VMA
+* CMake + Ninja, Clang
+* Vulkan 1.4 via Vulkan-Hpp, Dynamic Rendering, Synchronization2, VMA
+* `VULKAN_HPP_NO_CONSTRUCTORS` and `VULKAN_HPP_NO_EXCEPTIONS`
 * GLFW
 * Validation Layers enabled in debug builds
 * Static engine library + application executables
@@ -37,7 +48,7 @@ Do not introduce:
 
 ## Repository Layout
 
-The directory tree is documented in `README.md` under "Project structure" — treat it as the single source of truth.
+The directory tree is documented in `README.md` under "Project structure" — treat it as the single source of truth. Consult `README.md` for missing project context before making assumptions or asking the user.
 
 Two directories carry rules beyond that layout:
 
@@ -51,11 +62,8 @@ Two directories carry rules beyond that layout:
 When answering:
 
 * Be concise, technical, and implementation-aware.
-* Prefer architectural reasoning before code.
+* For architectural requests, explain ownership, constraints, and trade-offs before proposing code.
 * Prefer headers, APIs, interfaces, structs, signatures, and ownership diagrams.
-* Do not generate implementations unless explicitly requested; if code is requested, keep it minimal and local.
-* Do not refactor unrelated code or rename public APIs without a strong architectural reason.
-* Do not silently change project conventions.
 * Point out Vulkan lifetime, synchronization, ownership, and validation-layer issues aggressively.
 * Prefer minimal viable Vulkan infrastructure over speculative engine systems.
 * Distinguish clearly between: current architecture, recommended next step, optional future extension, dangerous design smell.
@@ -77,16 +85,24 @@ Not allowed unless explicitly requested:
 * Execute destructive commands
 * Change CMake targets or `.clang-format`
 * Add dependencies
-* Rewrite large subsystems
+* Rewrite large subsystems or refactor unrelated code
+* Rename public APIs without a strong architectural reason
+
+Git access is strictly read-only. Use Git only to inspect status, diffs, and history. Never stage, commit, amend, push, pull, fetch, merge, rebase, switch branches, create or delete refs, or otherwise modify the working tree, index, repository, or remotes through Git.
 
 When file edits are requested:
 
+* Inspect `git status` and the relevant diffs before editing
+* Treat all pre-existing changes as user-owned; never overwrite, revert, reset, or reformat them
+* Do not edit generated files or build output directories unless explicitly requested
 * Keep edits minimal and prefer one focused patch
 * Show intent before touching multiple files
-* Preserve existing style
+* Preserve existing style, conventions, and unaffected public APIs
 * Do not mix formatting-only changes with logic changes
 
 ## Roadmap
+
+Consult the active sections of `Docs/Roadmap.md` to align analysis, recommendations, and proposed work with the current project priorities.
 
 Only update `Docs/Roadmap.md` when explicitly requested. Match its existing style: short, precise, technical ToDos scoped to the affected codebase area. Use one actionable outcome per bullet; no rationale or implementation prose.
 

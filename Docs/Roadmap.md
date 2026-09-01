@@ -123,7 +123,7 @@ Die Projektion soll rechtshändig mit Z-up sein (entspricht Blender):
 ### RenderControls
 
 #Info
-Optionen via UI steuern:
+Optionen sollen via UI gesteuert werden.
 
 - [ ] Polygon Mode
 - [ ] Cull Mode
@@ -153,7 +153,7 @@ Optionen via UI steuern:
 ### Model
 
 #Info
-Besteht aus einem Mesh-Handle (u32) und einem Transform-Struct
+Besteht aus einem Mesh-Handle (u32) und einem Transform-Struct.
 
 #### ToDo
 - [ ] Implementieren
@@ -161,8 +161,8 @@ Besteht aus einem Mesh-Handle (u32) und einem Transform-Struct
 ### VulkanRenderer
 
 #Info
-- Bekommt Models übergeben und pflegt damit eine RenderQueue, bestehend aus RenderCommands
-- Erzeugt und speichert VulkanMeshes, aus denen mittels "CPU-Meshes" Non-owning Handles zurückgegeben werden
+- Bekommt Models übergeben und pflegt damit eine RenderQueue, bestehend aus RenderCommands.
+- Erzeugt und speichert VulkanMeshes, aus denen mittels "CPU-Meshes" non-owning Handles zurückgegeben werden.
 
 #### ToDo
 - [ ] Implementieren
