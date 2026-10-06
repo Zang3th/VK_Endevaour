@@ -104,7 +104,6 @@ Die Projektion soll rechtshändig mit Z-up sein (entspricht Blender):
 ### Improvements
 
 - [ ] Tests für Core::Utility ergänzen
-- [ ] RenderFrame, RenderItem und RenderRequest einführen
 
 ### Bugs
 
@@ -143,6 +142,10 @@ Optionen sollen via UI gesteuert werden.
 
 #Date
 - TBD
+
+### Improvements
+
+- [ ] RenderFrame, RenderItem und RenderRequest einführen
 
 ### VulkanMesh
 

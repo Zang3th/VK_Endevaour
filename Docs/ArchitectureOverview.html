@@ -1,0 +1,947 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>VK_Endevaour · Architecture</title>
+<style>
+:root {
+  --bg: #0e131a; --surface: #151b24; --surface-2: #1b2330; --surface-3: #222c3a;
+  --border: #2b3646; --text: #e5eaf0; --muted: #9ba7b6; --faint: #6d7988;
+  --exe: #74a7ff; --lib: #3fcaa6; --shared: #ae93ff; --iface: #a3abb8; --ext: #94a3b8;
+  --warn: #f2b84b; --warn-bg: #3a2c10; --err: #ff7b7b; --err-bg: #3d1717; --ok: #3fcaa6;
+  --out: #74a7ff; --out-bg: #1a2c4d; --in: #ff9d66; --in-bg: #45240f;
+  --wire: #6d7988; --shadow: none; color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--text); font: 14px/1.45 system-ui, "Segoe UI", sans-serif; }
+code, .mono { font-family: ui-monospace, "Cascadia Mono", Consolas, monospace; font-size: 12px; }
+a { color: var(--out); }
+button { font: inherit; color: inherit; background: none; border: 0; padding: 0; cursor: pointer; text-align: left; }
+[hidden] { display: none !important; }
+.wrap { max-width: 1680px; margin: 0 auto; padding: 24px 16px 48px; }
+header h1 { margin: 0 0 10px; font-size: 26px; letter-spacing: -.01em; }
+.meta { display: flex; flex-wrap: wrap; gap: 6px; }
+.chip { display: inline-flex; gap: 6px; align-items: center; padding: 2px 9px; border: 1px solid var(--border);
+  border-radius: 999px; background: var(--surface); color: var(--muted); font-size: 12px; }
+.chip.warn { color: var(--warn); border-color: var(--warn); background: var(--warn-bg); }
+.tabs { display: flex; gap: 4px; margin: 20px 0 0; border-bottom: 1px solid var(--border); }
+.tab { padding: 8px 16px; border: 1px solid transparent; border-bottom: 0; border-radius: 8px 8px 0 0; color: var(--muted); font-weight: 600; margin-bottom: -1px; }
+.tab[aria-selected="true"] { background: var(--bg); border-color: var(--border); color: var(--text); }
+.toolbar { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 10px; align-items: center;
+  margin: 14px 0; padding: 8px 12px; border: 1px solid var(--border); border-radius: 10px; background: var(--surface); }
+.legend { display: flex; flex-wrap: wrap; gap: 6px 14px; color: var(--muted); font-size: 12px; align-items: center; }
+.legend b { font-size: 14px; margin-right: 3px; }
+.sw { display: inline-block; width: 10px; height: 10px; border-radius: 3px; margin-right: 5px; vertical-align: -1px; }
+.sw.box { width: 16px; height: 11px; border: 1.5px solid var(--muted); background: none; border-radius: 3px; }
+.sw.box.dashed { border-style: dashed; }
+.actions { display: flex; gap: 6px; }
+.btn { border: 1px solid var(--border); border-radius: 7px; padding: 3px 10px; background: var(--surface-2); font-size: 12px; }
+.btn[aria-pressed="true"] { border-color: var(--out); color: var(--out); }
+.main { display: grid; grid-template-columns: minmax(0, 1fr) 360px; gap: 16px; align-items: start; }
+@media (max-width: 1080px) { .main { grid-template-columns: minmax(0, 1fr); } }
+.overlay { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; overflow: visible; z-index: 2; }
+.group-title { margin: 0 0 8px; font-size: 12px; text-transform: uppercase; letter-spacing: .08em; color: var(--faint); font-weight: 600; }
+.group-title .mono { text-transform: none; letter-spacing: 0; margin-left: 6px; }
+
+/* Layer view */
+#stack { position: relative; display: flex; flex-direction: column; gap: 52px; padding-top: 4px; }
+.row { display: flex; flex-wrap: wrap; justify-content: center; align-items: flex-start; gap: 24px; position: relative; }
+.tcard { position: relative; flex: 1 1 320px; max-width: 100%; background: var(--surface); border: 1px solid var(--border);
+  border-top: 4px solid var(--accent); border-radius: 10px; padding: 12px 14px 14px; box-shadow: var(--shadow); }
+.tcard.exe { max-width: 560px; }
+.tcard.lib { flex-basis: 100%; }
+.thead { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 10px; }
+.sym { font-size: 20px; color: var(--accent); width: 20px; text-align: center; }
+.tname { font-size: 18px; font-weight: 650; }
+.ttype { color: var(--muted); font-size: 12px; }
+.art { margin-left: auto; color: var(--faint); }
+.tdesc { margin: 4px 0 10px; color: var(--muted); }
+.subchips { display: flex; flex-wrap: wrap; gap: 6px; margin: -4px 0 10px; }
+.kids { display: flex; flex-wrap: wrap; gap: 10px; align-items: stretch; }
+.block { flex: 0 1 auto; width: var(--card-w, 220px); max-width: 100%; background: var(--surface-2); border: 1px solid var(--border); border-radius: 8px; padding: 9px 10px 10px; display: flex; flex-direction: column; }
+.block .block { background: var(--surface); }
+.block .block .block { background: var(--surface-2); }
+.bh { display: flex; width: 100%; align-items: baseline; gap: 8px; font-weight: 620; }
+.bh .cnt { margin-left: auto; color: var(--faint); font-weight: 400; font-size: 12px; white-space: nowrap; }
+.bd { margin: 2px 0 8px; color: var(--muted); font-size: 12.5px; contain: inline-size; }   /* text never widens a card */
+.block:has(> .kids) { width: auto; }
+.block.measure { width: max-content !important; }
+.block.measure > .files { display: flex !important; }
+.block.measure > .bd { display: none; }
+.block > .kids { margin-top: 2px; }
+.ftoggle { margin-top: 8px; color: var(--faint); font-size: 12px; }
+.ftoggle:hover { color: var(--text); }
+.files { display: none; flex-direction: column; gap: 2px; margin-top: 6px; }
+.block.open > .files, .tcard.open > .files { display: flex; }
+.file { display: flex; gap: 12px; justify-content: space-between; white-space: nowrap; padding: 2px 6px; border-radius: 5px; font-family: ui-monospace, "Cascadia Mono", Consolas, monospace; font-size: 12px; }
+.file:hover { background: var(--surface-3); }
+.file .loc { color: var(--faint); }
+.tcard > .files { margin-top: 10px; }
+.unassigned { --accent: var(--warn); border-style: dashed; }
+
+/* Small cards: externals, module bands */
+.mini-group { flex: 1 1 100%; }
+.mini-list { display: grid; grid-template-columns: repeat(auto-fill, var(--card-w, 220px)); gap: 10px; }
+.mini { background: var(--surface); border: 1px solid var(--border); border-left: 4px solid var(--accent, var(--ext)); border-radius: 8px; padding: 8px 10px; }
+.mini .en { font-weight: 620; display: flex; gap: 8px; align-items: baseline; }
+.mini .en .tag { margin-left: auto; color: var(--faint); font-weight: 400; font-size: 11px; }
+.mini .ed { color: var(--muted); font-size: 12.5px; margin: 2px 0 4px; }
+.mini .ei { color: var(--faint); font-size: 12px; }
+.mini.unused { border-left-color: var(--warn); }
+.mini.unused .ei { color: var(--warn); }
+
+/* Ownership view */
+#own { display: flex; flex-direction: column; gap: 28px; }
+.oroot-wrap { overflow-x: auto; padding: 4px 2px 10px; }
+.ocanvas { position: relative; display: inline-block; min-width: 100%; }
+.otree { --gap: 22px; --cy: 21px; }
+.otree ul { list-style: none; margin: 0 0 0 var(--gap); padding: 0; position: relative; display: flex; flex-direction: column; }
+.otree > ul { margin-left: 0; }
+.otree li { position: relative; display: flex; align-items: flex-start; padding: 4px 0 4px var(--gap); }
+.otree > ul > li { padding-left: 0; }
+.otree li.collapsed > ul { display: none; }
+.ocanvas > .overlay { z-index: 0; }   /* connectors run beneath cards and toggles */
+.onode { position: relative; width: var(--node-w, 186px); flex: none; background: var(--surface); border: 1.5px solid var(--border); border-radius: 9px; padding: 6px 9px 7px; box-shadow: var(--shadow); cursor: pointer; }
+.onode.local { border-style: dashed; }
+.onode.root { border-color: var(--exe); border-width: 2px; }
+.onode.warn { border-color: var(--err); }
+.orel { font-size: 11px; color: var(--faint); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.orel b { color: var(--muted); font-weight: 600; }
+.oname { font-weight: 650; display: flex; gap: 6px; align-items: baseline; }
+.oname .mult { font-size: 12px; color: var(--lib); font-weight: 600; }
+.oname .flag { margin-left: auto; font-size: 12px; }
+.odesc { font-size: 12px; color: var(--muted); margin-top: 1px; }
+.oinfo { font-size: 11px; color: var(--faint); margin-top: 3px; }
+.oinfo .borrow { color: var(--out); }
+.otoggle { position: absolute; right: -11px; top: calc(var(--cy, 21px) - 15px); width: 20px; height: 20px; border-radius: 50%; border: 1px solid var(--border); background: var(--surface-2); font-size: 10px; text-align: center; line-height: 18px; color: var(--muted); z-index: 1; }
+.oroot-head { display: flex; gap: 10px; align-items: baseline; margin-bottom: 6px; }
+.oroot-head .tname { font-size: 16px; }
+.order { color: var(--muted); margin-left: 5px; }
+.note { color: var(--muted); font-size: 13px; padding: 10px 12px; border: 1px dashed var(--border); border-radius: 8px; background: var(--surface); }
+
+/* Selection and relations (shared) */
+.sel { outline: 2px solid var(--text); outline-offset: 1px; }
+.rel-out { background: var(--out-bg) !important; border-color: var(--out) !important; }
+.rel-in { background: var(--in-bg) !important; border-color: var(--in) !important; }
+.rel-out.rel-in { background: linear-gradient(135deg, var(--out-bg) 50%, var(--in-bg) 50%) !important; border-color: var(--warn) !important; }
+.file.rel-out, .file.rel-in { border: 1px solid; }
+
+/* Detail panel */
+#panel.empty { visibility: hidden; }
+#panel { position: sticky; top: 12px; max-height: calc(100vh - 24px); overflow: auto; background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 14px; }
+#panel h2 { margin: 0 0 2px; font-size: 17px; word-break: break-word; }
+#panel h4 { margin: 14px 0 4px; font-size: 11px; text-transform: uppercase; letter-spacing: .08em; color: var(--faint); }
+#panel p { margin: 4px 0; }
+#panel ul { margin: 0; padding-left: 16px; }
+#panel li { margin: 1px 0; word-break: break-word; }
+#panel .muted { color: var(--muted); }
+#panel .jump { margin-top: 10px; }
+.kv { display: grid; grid-template-columns: auto 1fr; gap: 2px 10px; font-size: 13px; }
+.kv dt { color: var(--faint); }
+.kv dd { margin: 0; word-break: break-word; }
+.tag-out { color: var(--out); } .tag-in { color: var(--in); }
+
+/* Lower sections */
+section.extra { margin-top: 28px; }
+section.extra h2 { font-size: 15px; margin: 0 0 10px; }
+.cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 10px; }
+.card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 10px 12px; }
+.card.error { border-left: 4px solid var(--err); }
+.card.warning { border-left: 4px solid var(--warn); }
+.card.ok { border-left: 4px solid var(--ok); }
+.card .ev { margin-top: 6px; font-size: 12px; color: var(--muted); }
+.card .ev code { display: block; margin-top: 2px; white-space: pre-wrap; word-break: break-word; color: var(--text); }
+footer { margin-top: 28px; color: var(--faint); font-size: 12px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1 id="title"></h1>
+    <div class="meta" id="meta"></div>
+  </header>
+  <nav class="tabs" id="tabs" role="tablist" hidden></nav>
+  <div class="toolbar">
+    <div class="legend" id="legend"></div>
+    <div class="actions">
+      <button class="btn" id="toggle-files" aria-pressed="false"></button>
+    </div>
+  </div>
+  <div class="main">
+    <div>
+      <div data-view="layers"><div id="stack"><svg class="overlay" id="wires" aria-hidden="true"></svg></div></div>
+      <div data-view="own" hidden><div id="own"></div></div>
+    </div>
+    <aside id="panel" aria-live="polite"></aside>
+  </div>
+  <section class="extra" data-view="own" id="findings" hidden></section>
+  <footer id="footer"></footer>
+</div>
+<script type="application/json" id="overview-data">{"title": "VK_Endevaour", "repo": {"name": "VK_Endevaour", "root": "C:/Dev/VK_Endevaour"}, "git": {"branch": "main", "commit": "f292a82"}, "build": {"source": "cmake-file-api", "dir": "Build/Debug", "config": "Debug", "generator": "Ninja", "compiler": "clang++.exe"}, "generated": "2026-10-06 15:12", "linkBase": "..", "targets": [{"name": "Engine", "type": "STATIC_LIBRARY", "sourceDir": "Engine", "artifacts": ["Engine.lib"], "test": false, "deps": [], "label": "Engine", "description": "Engine library: platform, core, debug, graphics.", "order": 1000, "tree": {"path": "Engine", "label": "Engine", "description": "", "order": 1000, "files": [], "children": [{"path": "Engine/Platform", "label": "Platform", "description": "GLFW window and surface.", "order": 1, "files": ["Engine/Platform/Window.cpp", "Engine/Platform/Window.hpp"], "children": []}, {"path": "Engine/Core", "label": "Core", "description": "Types, ownership aliases, timer, utilities.", "order": 2, "files": ["Engine/Core/Memory.hpp", "Engine/Core/Timer.cpp", "Engine/Core/Timer.hpp", "Engine/Core/Types.hpp", "Engine/Core/Utility.cpp", "Engine/Core/Utility.hpp"], "children": []}, {"path": "Engine/Graphics", "label": "Graphics", "description": "Import, resources, UI, Vulkan backend.", "order": 3, "files": [], "children": [{"path": "Engine/Graphics/Import", "label": "Import", "description": "OBJ import.", "order": 1, "files": ["Engine/Graphics/Import/ObjLoader.cpp", "Engine/Graphics/Import/ObjLoader.hpp"], "children": []}, {"path": "Engine/Graphics/Resources", "label": "Resources", "description": "CPU mesh.", "order": 2, "files": ["Engine/Graphics/Resources/Mesh.hpp"], "children": []}, {"path": "Engine/Graphics/UI", "label": "UI", "description": "ImGui layer and profiler.", "order": 3, "files": ["Engine/Graphics/UI/ImGuiLayer.cpp", "Engine/Graphics/UI/ImGuiLayer.hpp", "Engine/Graphics/UI/ProfilerPanel.cpp", "Engine/Graphics/UI/ProfilerPanel.hpp"], "children": []}, {"path": "Engine/Graphics/Vulkan", "label": "Vulkan", "description": "Vulkan backend and renderer.", "order": 4, "files": ["Engine/Graphics/Vulkan/VulkanAllocationStructs.hpp", "Engine/Graphics/Vulkan/VulkanAllocator.cpp", "Engine/Graphics/Vulkan/VulkanAllocator.hpp", "Engine/Graphics/Vulkan/VulkanAssert.hpp", "Engine/Graphics/Vulkan/VulkanContext.cpp", "Engine/Graphics/Vulkan/VulkanContext.hpp", "Engine/Graphics/Vulkan/VulkanDebug.cpp", "Engine/Graphics/Vulkan/VulkanDebug.hpp", "Engine/Graphics/Vulkan/VulkanDescriptorPool.cpp", "Engine/Graphics/Vulkan/VulkanDescriptorPool.hpp", "Engine/Graphics/Vulkan/VulkanDescriptorSetLayout.cpp", "Engine/Graphics/Vulkan/VulkanDescriptorSetLayout.hpp", "Engine/Graphics/Vulkan/VulkanDevice.cpp", "Engine/Graphics/Vulkan/VulkanDevice.hpp", "Engine/Graphics/Vulkan/VulkanGlobals.hpp", "Engine/Graphics/Vulkan/VulkanGlobalUniforms.cpp", "Engine/Graphics/Vulkan/VulkanGlobalUniforms.hpp", "Engine/Graphics/Vulkan/VulkanModel.cpp", "Engine/Graphics/Vulkan/VulkanModel.hpp", "Engine/Graphics/Vulkan/VulkanPhysicalDevice.cpp", "Engine/Graphics/Vulkan/VulkanPhysicalDevice.hpp", "Engine/Graphics/Vulkan/VulkanPipeline.cpp", "Engine/Graphics/Vulkan/VulkanPipeline.hpp", "Engine/Graphics/Vulkan/VulkanRenderer.cpp", "Engine/Graphics/Vulkan/VulkanRenderer.hpp", "Engine/Graphics/Vulkan/VulkanRendererStructs.hpp", "Engine/Graphics/Vulkan/VulkanRenderTarget.cpp", "Engine/Graphics/Vulkan/VulkanRenderTarget.hpp", "Engine/Graphics/Vulkan/VulkanShader.cpp", "Engine/Graphics/Vulkan/VulkanShader.hpp", "Engine/Graphics/Vulkan/VulkanSwapchain.cpp", "Engine/Graphics/Vulkan/VulkanSwapchain.hpp", "Engine/Graphics/Vulkan/VulkanSwapchainStructs.hpp", "Engine/Graphics/Vulkan/VulkanSwapchainUtils.cpp", "Engine/Graphics/Vulkan/VulkanSwapchainUtils.hpp"], "children": []}]}, {"path": "Engine/Debug", "label": "Debug", "description": "Logging and ASSERT macros.", "order": 4, "files": ["Engine/Debug/Log.hpp", "Engine/Debug/LogTable.hpp"], "children": []}]}}, {"name": "EngineTests", "type": "EXECUTABLE", "sourceDir": "Tests", "artifacts": ["EngineTests.exe", "EngineTests.pdb"], "test": true, "deps": ["Engine"], "label": "EngineTests", "description": "doctest black-box tests.", "order": 2, "tree": {"path": "Tests", "label": "Tests", "description": "", "order": 1000, "files": ["Tests/TestMain.cpp", "Tests/TestMesh.cpp", "Tests/TestObjLoader.cpp", "Tests/TestVulkanSwapchainUtils.cpp"], "children": []}}, {"name": "Sandbox", "type": "EXECUTABLE", "sourceDir": "Applications/Sandbox", "artifacts": ["Sandbox.exe", "Sandbox.pdb"], "test": false, "deps": ["Engine", "Shaders"], "label": "Sandbox", "description": "Demo app: loads assets, runs the frame loop.", "order": 1, "tree": {"path": "Applications/Sandbox", "label": "Sandbox", "description": "", "order": 1000, "files": ["Applications/Sandbox/SandboxApp.cpp", "Applications/Sandbox/SandboxApp.hpp", "Applications/Sandbox/SandboxEntry.cpp"], "children": [{"path": "Applications/Sandbox/Shaders", "label": "Shaders", "description": "GLSL, compiled by the Shaders target.", "order": 1000, "files": ["Applications/Sandbox/Shaders/Frag.glsl", "Applications/Sandbox/Shaders/Vert.glsl"], "children": []}]}}, {"name": "Shaders", "type": "UTILITY", "sourceDir": "Applications/Sandbox", "artifacts": [], "test": false, "deps": [], "label": "Shaders", "description": "", "order": 1000, "tree": null}], "unassigned": [], "files": {"Applications/Sandbox/SandboxApp.cpp": {"path": "Applications/Sandbox/SandboxApp.cpp", "kind": "source", "loc": 97, "types": [], "includes": ["Applications/Sandbox/SandboxApp.hpp", "Engine/Core/Timer.hpp", "Engine/Debug/Log.hpp", "Engine/Graphics/Import/ObjLoader.hpp", "Engine/Graphics/Vulkan/VulkanRenderer.hpp", "Engine/Platform/Window.hpp"], "externals": [], "implements": [], "target": "Sandbox", "alsoIn": []}, "Applications/Sandbox/SandboxApp.hpp": {"path": "Applications/Sandbox/SandboxApp.hpp", "kind": "header", "loc": 10, "types": ["Sandbox"], "includes": [], "externals": [], "implements": [], "target": "Sandbox"}, "Applications/Sandbox/SandboxEntry.cpp": {"path": "Applications/Sandbox/SandboxEntry.cpp", "kind": "source", "loc": 10, "types": [], "includes": ["Applications/Sandbox/SandboxApp.hpp"], "externals": [], "implements": [], "target": "Sandbox", "alsoIn": []}, "Applications/Sandbox/Shaders/Frag.glsl": {"path": "Applications/Sandbox/Shaders/Frag.glsl", "kind": "shader", "loc": 12, "types": [], "includes": [], "externals": [], "implements": [], "target": "Sandbox"}, "Applications/Sandbox/Shaders/Vert.glsl": {"path": "Applications/Sandbox/Shaders/Vert.glsl", "kind": "shader", "loc": 21, "types": [], "includes": [], "externals": [], "implements": [], "target": "Sandbox"}, "Engine/Core/Memory.hpp": {"path": "Engine/Core/Memory.hpp", "kind": "header", "loc": 25, "types": [], "includes": [], "externals": [], "implements": [], "target": "Engine"}, "Engine/Core/Timer.cpp": {"path": "Engine/Core/Timer.cpp", "kind": "source", "loc": 112, "types": [], "includes": ["Engine/Core/Timer.hpp", "Engine/Core/Utility.hpp", "Engine/Debug/Log.hpp"], "externals": [], "implements": [], "target": "Engine", "alsoIn": []}, "Engine/Core/Timer.hpp": {"path": "Engine/Core/Timer.hpp", "kind": "header", "loc": 76, "types": ["FrameBenchmark", "FrameTiming", "Timer"], "includes": ["Engine/Core/Types.hpp"], "externals": [], "implements": [], "target": "Engine"}, "Engine/Core/Types.hpp": {"path": "Engine/Core/Types.hpp", "kind": "header", "loc": 25, "types": [], "includes": [], "externals": [], "implements": [], "target": "Engine"}, "Engine/Core/Utility.cpp": {"path": "Engine/Core/Utility.cpp", "kind": "source", "loc": 79, "types": [], "includes": ["Engine/Core/Utility.hpp", "Engine/Debug/Log.hpp"], "externals": [], "implements": [], "target": "Engine", "alsoIn": []}, "Engine/Core/Utility.hpp": {"path": "Engine/Core/Utility.hpp", "kind": "header", "loc": 25, "types": ["Utility"], "includes": ["Engine/Core/Types.hpp"], "externals": ["glm"], "implements": [], "target": "Engine"}, "Engine/Debug/Log.hpp": {"path": "Engine/Debug/Log.hpp", "kind": "header", "loc": 53, "types": [], "includes": [], "externals": ["fmt"], "implements": [], "target": "Engine"}, "Engine/Debug/LogTable.hpp": {"path": "Engine/Debug/LogTable.hpp", "kind": "header", "loc": 108, "types": ["LogTable"], "includes": ["Engine/Core/Types.hpp", "Engine/Debug/Log.hpp"], "externals": [], "implements": [], "target": "Engine"}, "Engine/Graphics/Import/ObjLoader.cpp": {"path": "Engine/Graphics/Import/ObjLoader.cpp", "kind": "source", "loc": 147, "types": [], "includes": ["Engine/Core/Utility.hpp", "Engine/Debug/Log.hpp", "Engine/Debug/LogTable.hpp", "Engine/Graphics/Import/ObjLoader.hpp"], "externals": ["tinyobjloader"], "implements": ["tinyobjloader"], "target": "Engine", "alsoIn": []}, "Engine/Graphics/Import/ObjLoader.hpp": {"path": "Engine/Graphics/Import/ObjLoader.hpp", "kind": "header", "loc": 23, "types": ["ImportMode", "ObjLoader"], "includes": ["Engine/Graphics/Resources/Mesh.hpp"], "externals": [], "implements": [], "target": "Engine"}, "Engine/Graphics/Resources/Mesh.hpp": {"path": "Engine/Graphics/Resources/Mesh.hpp", "kind": "header", "loc": 84, "types": ["Vertex", "Mesh"], "includes": ["Engine/Core/Types.hpp"], "externals": ["glm"], "implements": [], "target": "Engine"}, "Engine/Graphics/UI/ImGuiLayer.cpp": {"path": "Engine/Graphics/UI/ImGuiLayer.cpp", "kind": "source", "loc": 266, "types": [], "includes": ["Engine/Debug/Log.hpp", "Engine/Graphics/UI/ImGuiLayer.hpp", "Engine/Graphics/Vulkan/VulkanContext.hpp", "Engine/Graphics/Vulkan/VulkanDescriptorPool.hpp", "Engine/Graphics/Vulkan/VulkanDevice.hpp", "Engine/Graphics/Vulkan/VulkanGlobals.hpp", "Engine/Graphics/Vulkan/VulkanSwapchain.hpp", "Engine/Platform/Window.hpp"], "externals": ["imgui"], "implements": [], "target": "Engine", "alsoIn": []}, "Engine/Graphics/UI/ImGuiLayer.hpp": {"path": "Engine/Graphics/UI/ImGuiLayer.hpp", "kind": "header", "loc": 36, "types": ["ImGuiLayer"], "includes": ["Engine/Core/Memory.hpp"], "externals": [], "implements": [], "target": "Engine"}, "Engine/Graphics/UI/ProfilerPanel.cpp": {"path": "Engine/Graphics/UI/ProfilerPanel.cpp", "kind": "source", "loc": 85, "types": [], "includes": ["Engine/Graphics/UI/ProfilerPanel.hpp", "Engine/Platform/Window.hpp"], "externals": ["imgui"], "implements": [], "target": "Engine", "alsoIn": []}, "Engine/Graphics/UI/ProfilerPanel.hpp": {"path": "Engine/Graphics/UI/ProfilerPanel.hpp", "kind": "header", "loc": 30, "types": ["ProfilerPanel"], "includes": ["Engine/Core/Timer.hpp", "Engine/Graphics/Vulkan/VulkanRendererStructs.hpp"], "externals": [], "implements": [], "target": "Engine"}, "Engine/Graphics/Vulkan/VulkanAllocationStructs.hpp": {"path": "Engine/Graphics/Vulkan/VulkanAllocationStructs.hpp", "kind": "header", "loc": 55, "types": ["MemoryUsage", "BufferAllocation", "BufferSpecification", "ImageAllocation", "ImageSpecification"], "includes": ["Engine/Core/Types.hpp"], "externals": [], "implements": [], "target": "Engine"}, "Engine/Graphics/Vulkan/VulkanAllocator.cpp": {"path": "Engine/Graphics/Vulkan/VulkanAllocator.cpp", "kind": "source", "loc": 207, "types": [], "includes": ["Engine/Core/Utility.hpp", "Engine/Graphics/Vulkan/VulkanAllocator.hpp", "Engine/Graphics/Vulkan/VulkanAssert.hpp", "Engine/Graphics/Vulkan/VulkanDevice.hpp"], "externals": ["VulkanMemoryAllocator"], "implements": ["VulkanMemoryAllocator"], "target": "Engine", "alsoIn": []}, "Engine/Graphics/Vulkan/VulkanAllocator.hpp": {"path": "Engine/Graphics/Vulkan/VulkanAllocator.hpp", "kind": "header", "loc": 30, "types": ["VulkanAllocator"], "includes": ["Engine/Graphics/Vulkan/VulkanAllocationStructs.hpp"], "externals": [], "implements": [], "target": "Engine"}, "Engine/Graphics/Vulkan/VulkanAssert.hpp": {"path": "Engine/Graphics/Vulkan/VulkanAssert.hpp", "kind": "header", "loc": 22, "types": [], "includes": ["Engine/Debug/Log.hpp"], "externals": [], "implements": [], "target": "Engine"}, "Engine/Graphics/Vulkan/VulkanContext.cpp": {"path": "Engine/Graphics/Vulkan/VulkanContext.cpp", "kind": "source", "loc": 135, "types": [], "includes": ["Engine/Core/Utility.hpp", "Engine/Graphics/Vulkan/VulkanAllocator.hpp", "Engine/Graphics/Vulkan/VulkanAssert.hpp", "Engine/Graphics/Vulkan/VulkanContext.hpp", "Engine/Graphics/Vulkan/VulkanDebug.hpp", "Engine/Graphics/Vulkan/VulkanDevice.hpp", "Engine/Graphics/Vulkan/VulkanGlobals.hpp", "Engine/Graphics/Vulkan/VulkanPhysicalDevice.hpp", "Engine/Graphics/Vulkan/VulkanSwapchain.hpp", "Engine/Platform/Window.hpp"], "externals": [], "implements": [], "target": "Engine", "alsoIn": []}, "Engine/Graphics/Vulkan/VulkanContext.hpp": {"path": "Engine/Graphics/Vulkan/VulkanContext.hpp", "kind": "header", "loc": 53, "types": ["VulkanContext"], "includes": ["Engine/Core/Memory.hpp", "Engine/Core/Types.hpp"], "externals": [], "implements": [], "target": "Engine"}, "Engine/Graphics/Vulkan/VulkanDebug.cpp": {"path": "Engine/Graphics/Vulkan/VulkanDebug.cpp", "kind": "source", "loc": 169, "types": [], "includes": ["Engine/Debug/Log.hpp", "Engine/Graphics/Vulkan/VulkanDebug.hpp", "Engine/Graphics/Vulkan/VulkanGlobals.hpp", "Engine/Platform/Window.hpp"], "externals": [], "implements": [], "target": "Engine", "alsoIn": []}, "Engine/Graphics/Vulkan/VulkanDebug.hpp": {"path": "Engine/Graphics/Vulkan/VulkanDebug.hpp", "kind": "header", "loc": 30, "types": ["VulkanDebug"], "includes": [], "externals": [], "implements": [], "target": "Engine"}, "Engine/Graphics/Vulkan/VulkanDescriptorPool.cpp": {"path": "Engine/Graphics/Vulkan/VulkanDescriptorPool.cpp", "kind": "source", "loc": 34, "types": [], "includes": ["Engine/Graphics/Vulkan/VulkanAssert.hpp", "Engine/Graphics/Vulkan/VulkanDescriptorPool.hpp"], "externals": [], "implements": [], "target": "Engine", "alsoIn": []}, "Engine/Graphics/Vulkan/VulkanDescriptorPool.hpp": {"path": "Engine/Graphics/Vulkan/VulkanDescriptorPool.hpp", "kind": "header", "loc": 34, "types": ["DescriptorPoolSpecification", "VulkanDescriptorPool"], "includes": ["Engine/Core/Types.hpp"], "externals": [], "implements": [], "target": "Engine"}, "Engine/Graphics/Vulkan/VulkanDescriptorSetLayout.cpp": {"path": "Engine/Graphics/Vulkan/VulkanDescriptorSetLayout.cpp", "kind": "source", "loc": 36, "types": [], "includes": ["Engine/Core/Types.hpp", "Engine/Graphics/Vulkan/VulkanAssert.hpp", "Engine/Graphics/Vulkan/VulkanDescriptorSetLayout.hpp"], "externals": [], "implements": [], "target": "Engine", "alsoIn": []}, "Engine/Graphics/Vulkan/VulkanDescriptorSetLayout.hpp": {"path": "Engine/Graphics/Vulkan/VulkanDescriptorSetLayout.hpp", "kind": "header", "loc": 33, "types": ["DescriptorSetLayoutSpecification", "VulkanDescriptorSetLayout"], "includes": [], "externals": [], "implements": [], "target": "Engine"}, "Engine/Graphics/Vulkan/VulkanDevice.cpp": {"path": "Engine/Graphics/Vulkan/VulkanDevice.cpp", "kind": "source", "loc": 91, "types": [], "includes": ["Engine/Graphics/Vulkan/VulkanAssert.hpp", "Engine/Graphics/Vulkan/VulkanDevice.hpp", "Engine/Graphics/Vulkan/VulkanGlobals.hpp"], "externals": [], "implements": [], "target": "Engine", "alsoIn": []}, "Engine/Graphics/Vulkan/VulkanDevice.hpp": {"path": "Engine/Graphics/Vulkan/VulkanDevice.hpp", "kind": "header", "loc": 35, "types": ["VulkanDevice"], "includes": ["Engine/Graphics/Vulkan/VulkanPhysicalDevice.hpp"], "externals": [], "implements": [], "target": "Engine"}, "Engine/Graphics/Vulkan/VulkanGlobalUniforms.cpp": {"path": "Engine/Graphics/Vulkan/VulkanGlobalUniforms.cpp", "kind": "source", "loc": 120, "types": [], "includes": ["Engine/Graphics/Vulkan/VulkanAllocator.hpp", "Engine/Graphics/Vulkan/VulkanAssert.hpp", "Engine/Graphics/Vulkan/VulkanContext.hpp", "Engine/Graphics/Vulkan/VulkanDescriptorPool.hpp", "Engine/Graphics/Vulkan/VulkanDescriptorSetLayout.hpp", "Engine/Graphics/Vulkan/VulkanDevice.hpp", "Engine/Graphics/Vulkan/VulkanGlobalUniforms.hpp"], "externals": [], "implements": [], "target": "Engine", "alsoIn": []}, "Engine/Graphics/Vulkan/VulkanGlobalUniforms.hpp": {"path": "Engine/Graphics/Vulkan/VulkanGlobalUniforms.hpp", "kind": "header", "loc": 75, "types": ["GlobalUniformData", "VulkanGlobalUniforms"], "includes": ["Engine/Core/Memory.hpp", "Engine/Core/Types.hpp", "Engine/Graphics/Vulkan/VulkanAllocationStructs.hpp", "Engine/Graphics/Vulkan/VulkanGlobals.hpp"], "externals": ["glm"], "implements": [], "target": "Engine"}, "Engine/Graphics/Vulkan/VulkanGlobals.hpp": {"path": "Engine/Graphics/Vulkan/VulkanGlobals.hpp", "kind": "header", "loc": 47, "types": [], "includes": ["Engine/Core/Types.hpp"], "externals": [], "implements": [], "target": "Engine"}, "Engine/Graphics/Vulkan/VulkanModel.cpp": {"path": "Engine/Graphics/Vulkan/VulkanModel.cpp", "kind": "source", "loc": 106, "types": [], "includes": ["Engine/Debug/Log.hpp", "Engine/Graphics/Vulkan/VulkanAllocator.hpp", "Engine/Graphics/Vulkan/VulkanContext.hpp", "Engine/Graphics/Vulkan/VulkanModel.hpp"], "externals": [], "implements": [], "target": "Engine", "alsoIn": []}, "Engine/Graphics/Vulkan/VulkanModel.hpp": {"path": "Engine/Graphics/Vulkan/VulkanModel.hpp", "kind": "header", "loc": 44, "types": ["VulkanModel"], "includes": ["Engine/Graphics/Resources/Mesh.hpp", "Engine/Graphics/Vulkan/VulkanAllocationStructs.hpp"], "externals": [], "implements": [], "target": "Engine"}, "Engine/Graphics/Vulkan/VulkanPhysicalDevice.cpp": {"path": "Engine/Graphics/Vulkan/VulkanPhysicalDevice.cpp", "kind": "source", "loc": 225, "types": [], "includes": ["Engine/Debug/Log.hpp", "Engine/Graphics/Vulkan/VulkanAssert.hpp", "Engine/Graphics/Vulkan/VulkanGlobals.hpp", "Engine/Graphics/Vulkan/VulkanPhysicalDevice.hpp"], "externals": [], "implements": [], "target": "Engine", "alsoIn": []}, "Engine/Graphics/Vulkan/VulkanPhysicalDevice.hpp": {"path": "Engine/Graphics/Vulkan/VulkanPhysicalDevice.hpp", "kind": "header", "loc": 47, "types": ["QueueFamilyIndices", "VulkanPhysicalDevice"], "includes": ["Engine/Core/Types.hpp", "Engine/Graphics/Vulkan/VulkanSwapchainStructs.hpp"], "externals": [], "implements": [], "target": "Engine"}, "Engine/Graphics/Vulkan/VulkanPipeline.cpp": {"path": "Engine/Graphics/Vulkan/VulkanPipeline.cpp", "kind": "source", "loc": 142, "types": [], "includes": ["Engine/Graphics/Resources/Mesh.hpp", "Engine/Graphics/Vulkan/VulkanAssert.hpp", "Engine/Graphics/Vulkan/VulkanContext.hpp", "Engine/Graphics/Vulkan/VulkanDevice.hpp", "Engine/Graphics/Vulkan/VulkanPipeline.hpp", "Engine/Graphics/Vulkan/VulkanShader.hpp", "Engine/Graphics/Vulkan/VulkanSwapchain.hpp"], "externals": [], "implements": [], "target": "Engine", "alsoIn": []}, "Engine/Graphics/Vulkan/VulkanPipeline.hpp": {"path": "Engine/Graphics/Vulkan/VulkanPipeline.hpp", "kind": "header", "loc": 51, "types": ["PipelineSpecification", "VulkanPipeline"], "includes": ["Engine/Core/Types.hpp", "Engine/Graphics/Vulkan/VulkanGlobals.hpp"], "externals": [], "implements": [], "target": "Engine"}, "Engine/Graphics/Vulkan/VulkanRenderTarget.cpp": {"path": "Engine/Graphics/Vulkan/VulkanRenderTarget.cpp", "kind": "source", "loc": 113, "types": [], "includes": ["Engine/Graphics/Vulkan/VulkanAllocator.hpp", "Engine/Graphics/Vulkan/VulkanAssert.hpp", "Engine/Graphics/Vulkan/VulkanRenderTarget.hpp"], "externals": [], "implements": [], "target": "Engine", "alsoIn": []}, "Engine/Graphics/Vulkan/VulkanRenderTarget.hpp": {"path": "Engine/Graphics/Vulkan/VulkanRenderTarget.hpp", "kind": "header", "loc": 44, "types": ["VulkanRenderTargetCreateInfo", "VulkanRenderTarget"], "includes": ["Engine/Graphics/Vulkan/VulkanAllocationStructs.hpp"], "externals": [], "implements": [], "target": "Engine"}, "Engine/Graphics/Vulkan/VulkanRenderer.cpp": {"path": "Engine/Graphics/Vulkan/VulkanRenderer.cpp", "kind": "source", "loc": 187, "types": [], "includes": ["Engine/Debug/Log.hpp", "Engine/Graphics/UI/ImGuiLayer.hpp", "Engine/Graphics/UI/ProfilerPanel.hpp", "Engine/Graphics/Vulkan/VulkanContext.hpp", "Engine/Graphics/Vulkan/VulkanDescriptorSetLayout.hpp", "Engine/Graphics/Vulkan/VulkanDevice.hpp", "Engine/Graphics/Vulkan/VulkanModel.hpp", "Engine/Graphics/Vulkan/VulkanPipeline.hpp", "Engine/Graphics/Vulkan/VulkanRenderer.hpp", "Engine/Graphics/Vulkan/VulkanShader.hpp", "Engine/Graphics/Vulkan/VulkanSwapchain.hpp"], "externals": [], "implements": [], "target": "Engine", "alsoIn": []}, "Engine/Graphics/Vulkan/VulkanRenderer.hpp": {"path": "Engine/Graphics/Vulkan/VulkanRenderer.hpp", "kind": "header", "loc": 75, "types": ["VulkanRenderer"], "includes": ["Engine/Core/Memory.hpp", "Engine/Core/Timer.hpp", "Engine/Core/Types.hpp", "Engine/Graphics/Vulkan/VulkanGlobalUniforms.hpp", "Engine/Graphics/Vulkan/VulkanGlobals.hpp", "Engine/Graphics/Vulkan/VulkanRendererStructs.hpp"], "externals": [], "implements": [], "target": "Engine"}, "Engine/Graphics/Vulkan/VulkanRendererStructs.hpp": {"path": "Engine/Graphics/Vulkan/VulkanRendererStructs.hpp", "kind": "header", "loc": 25, "types": ["RenderPacket", "RenderStats"], "includes": ["Engine/Graphics/Vulkan/VulkanSwapchainStructs.hpp"], "externals": [], "implements": [], "target": "Engine"}, "Engine/Graphics/Vulkan/VulkanShader.cpp": {"path": "Engine/Graphics/Vulkan/VulkanShader.cpp", "kind": "source", "loc": 44, "types": [], "includes": ["Engine/Core/Types.hpp", "Engine/Core/Utility.hpp", "Engine/Debug/Log.hpp", "Engine/Graphics/Vulkan/VulkanAssert.hpp", "Engine/Graphics/Vulkan/VulkanShader.hpp"], "externals": [], "implements": [], "target": "Engine", "alsoIn": []}, "Engine/Graphics/Vulkan/VulkanShader.hpp": {"path": "Engine/Graphics/Vulkan/VulkanShader.hpp", "kind": "header", "loc": 29, "types": ["VulkanShader"], "includes": [], "externals": [], "implements": [], "target": "Engine"}, "Engine/Graphics/Vulkan/VulkanSwapchain.cpp": {"path": "Engine/Graphics/Vulkan/VulkanSwapchain.cpp", "kind": "source", "loc": 479, "types": [], "includes": ["Engine/Debug/LogTable.hpp", "Engine/Graphics/Vulkan/VulkanAssert.hpp", "Engine/Graphics/Vulkan/VulkanDevice.hpp", "Engine/Graphics/Vulkan/VulkanSwapchain.hpp", "Engine/Graphics/Vulkan/VulkanSwapchainUtils.hpp", "Engine/Platform/Window.hpp"], "externals": [], "implements": [], "target": "Engine", "alsoIn": []}, "Engine/Graphics/Vulkan/VulkanSwapchain.hpp": {"path": "Engine/Graphics/Vulkan/VulkanSwapchain.hpp", "kind": "header", "loc": 73, "types": ["VulkanSwapchain"], "includes": ["Engine/Graphics/Vulkan/VulkanGlobals.hpp", "Engine/Graphics/Vulkan/VulkanSwapchainStructs.hpp"], "externals": ["glm"], "implements": [], "target": "Engine"}, "Engine/Graphics/Vulkan/VulkanSwapchainStructs.hpp": {"path": "Engine/Graphics/Vulkan/VulkanSwapchainStructs.hpp", "kind": "header", "loc": 90, "types": ["SwapchainSupport", "SwapchainProperties", "SwapchainImage", "VulkanFrameResources", "SwapchainFrame"], "includes": ["Engine/Core/Types.hpp", "Engine/Graphics/Vulkan/VulkanRenderTarget.hpp"], "externals": [], "implements": [], "target": "Engine"}, "Engine/Graphics/Vulkan/VulkanSwapchainUtils.cpp": {"path": "Engine/Graphics/Vulkan/VulkanSwapchainUtils.cpp", "kind": "source", "loc": 112, "types": [], "includes": ["Engine/Debug/Log.hpp", "Engine/Graphics/Vulkan/VulkanSwapchainUtils.hpp", "Engine/Platform/Window.hpp"], "externals": [], "implements": [], "target": "Engine", "alsoIn": []}, "Engine/Graphics/Vulkan/VulkanSwapchainUtils.hpp": {"path": "Engine/Graphics/Vulkan/VulkanSwapchainUtils.hpp", "kind": "header", "loc": 26, "types": ["VulkanSwapchainUtils"], "includes": [], "externals": [], "implements": [], "target": "Engine"}, "Engine/Platform/Window.cpp": {"path": "Engine/Platform/Window.cpp", "kind": "source", "loc": 134, "types": [], "includes": ["Engine/Debug/Log.hpp", "Engine/Graphics/Vulkan/VulkanAssert.hpp", "Engine/Platform/Window.hpp"], "externals": ["glfw"], "implements": [], "target": "Engine", "alsoIn": []}, "Engine/Platform/Window.hpp": {"path": "Engine/Platform/Window.hpp", "kind": "header", "loc": 68, "types": ["WindowSpecification", "Window"], "includes": ["Engine/Core/Types.hpp"], "externals": [], "implements": [], "target": "Engine"}, "Tests/TestMain.cpp": {"path": "Tests/TestMain.cpp", "kind": "source", "loc": 3, "types": [], "includes": [], "externals": ["doctest"], "implements": [], "target": "EngineTests", "alsoIn": []}, "Tests/TestMesh.cpp": {"path": "Tests/TestMesh.cpp", "kind": "source", "loc": 189, "types": ["DifferenceCase"], "includes": ["Engine/Graphics/Resources/Mesh.hpp"], "externals": ["doctest"], "implements": [], "target": "EngineTests", "alsoIn": []}, "Tests/TestObjLoader.cpp": {"path": "Tests/TestObjLoader.cpp", "kind": "source", "loc": 525, "types": ["TempObjFile", "ExpectedPosition", "ExpectedTexCoord", "ExpectedColor"], "includes": ["Engine/Graphics/Import/ObjLoader.hpp"], "externals": ["doctest"], "implements": [], "target": "EngineTests", "alsoIn": []}, "Tests/TestVulkanSwapchainUtils.cpp": {"path": "Tests/TestVulkanSwapchainUtils.cpp", "kind": "source", "loc": 176, "types": ["ClampCase", "FormatCase", "PresentCase"], "includes": ["Engine/Graphics/Vulkan/VulkanSwapchainUtils.hpp", "Engine/Platform/Window.hpp"], "externals": ["doctest"], "implements": [], "target": "EngineTests", "alsoIn": []}}, "externals": [{"name": "VulkanMemoryAllocator", "kind": "vendored", "path": "Engine/Vendor/VulkanMemoryAllocator", "cmakeTargets": [], "linkedBy": [], "compiledInto": [], "implementedIn": ["Engine/Graphics/Vulkan/VulkanAllocator.cpp"], "includedBy": {"Engine": ["Engine/Graphics/Vulkan/VulkanAllocator.cpp"]}, "description": "GPU memory allocation."}, {"name": "doctest", "kind": "vendored", "path": "Engine/Vendor/doctest", "cmakeTargets": [], "linkedBy": [], "compiledInto": [], "implementedIn": [], "includedBy": {"EngineTests": ["Tests/TestMain.cpp", "Tests/TestMesh.cpp", "Tests/TestObjLoader.cpp", "Tests/TestVulkanSwapchainUtils.cpp"]}, "description": "Test framework."}, {"name": "fmt", "kind": "vendored", "path": "Engine/Vendor/fmt", "cmakeTargets": ["fmt"], "linkedBy": ["Engine"], "compiledInto": [], "implementedIn": [], "includedBy": {"Engine": ["Engine/Debug/Log.hpp"]}, "description": "Formatting and logging."}, {"name": "glfw", "kind": "vendored", "path": "Engine/Vendor/glfw", "cmakeTargets": ["glfw"], "linkedBy": ["Engine"], "compiledInto": [], "implementedIn": [], "includedBy": {"Engine": ["Engine/Platform/Window.cpp"]}, "description": "Window and input."}, {"name": "glm", "kind": "vendored", "path": "Engine/Vendor/glm", "cmakeTargets": [], "linkedBy": [], "compiledInto": ["Engine"], "implementedIn": [], "includedBy": {"Engine": ["Engine/Core/Utility.hpp", "Engine/Graphics/Resources/Mesh.hpp", "Engine/Graphics/Vulkan/VulkanGlobalUniforms.hpp", "Engine/Graphics/Vulkan/VulkanSwapchain.hpp"]}, "description": "Math; detail/glm.cpp is compiled in."}, {"name": "imgui", "kind": "vendored", "path": "Engine/Vendor/imgui", "cmakeTargets": [], "linkedBy": [], "compiledInto": ["Engine"], "implementedIn": [], "includedBy": {"Engine": ["Engine/Graphics/UI/ImGuiLayer.cpp", "Engine/Graphics/UI/ProfilerPanel.cpp"]}, "description": "Immediate-mode GUI."}, {"name": "stb_image", "kind": "vendored", "path": "Engine/Vendor/stb_image", "cmakeTargets": [], "linkedBy": [], "compiledInto": [], "implementedIn": [], "includedBy": {}, "description": "Image loader."}, {"name": "tinyobjloader", "kind": "vendored", "path": "Engine/Vendor/tinyobjloader", "cmakeTargets": [], "linkedBy": [], "compiledInto": [], "implementedIn": ["Engine/Graphics/Import/ObjLoader.cpp"], "includedBy": {"Engine": ["Engine/Graphics/Import/ObjLoader.cpp"]}, "description": "OBJ parser."}], "warnings": [], "own": {"schema": 1, "generated": "2026-10-06 15:12", "compileDb": "Build/Debug/compile_commands.json", "translationUnits": 23, "cachedUnits": 23, "seconds": 0.2, "modules": {"Applications/Sandbox/SandboxApp": {"key": "Applications/Sandbox/SandboxApp", "name": "SandboxApp", "files": ["Applications/Sandbox/SandboxApp.cpp", "Applications/Sandbox/SandboxApp.hpp"], "records": [{"qname": "Sandbox", "name": "Sandbox", "line": 3, "behavioral": true, "methods": 1}], "data": [], "localData": [{"func": "Run", "var": "cowMesh", "targetRecord": "Engine::Graphics::Mesh", "mult": "1", "file": "Applications/Sandbox/SandboxApp.cpp", "line": 41}, {"func": "Run", "var": "triangleMesh", "targetRecord": "Engine::Graphics::Mesh", "mult": "1", "file": "Applications/Sandbox/SandboxApp.cpp", "line": 45}, {"func": "Run", "var": "frame", "targetRecord": "Engine::Graphics::RenderPacket", "mult": "1", "file": "Applications/Sandbox/SandboxApp.cpp", "line": 80}], "handles": [], "owns": [], "borrows": [], "static": [], "calls": {"Engine/Platform/Window": ["Window::Init", "Window::Shutdown", "Window::ShouldClose", "Window::PollEvents", "Window::IsMinimized", "Window::WaitEvents"], "Engine/Graphics/Vulkan/VulkanRenderer": ["VulkanRenderer::LoadShader", "VulkanRenderer::CreatePipeline", "VulkanRenderer::CreateModel", "VulkanRenderer::AssignModelToPipeline", "VulkanRenderer::BeginFrame", "VulkanRenderer::DrawFrame", "VulkanRenderer::WaitForDevice"], "Engine/Graphics/Import/ObjLoader": ["ObjLoader::LoadMeshFromFile"], "Engine/Core/Timer": ["Timer::GetEngineTotalRuntimeString", "Timer::SyncFrame", "Timer::Tick", "Timer::GetFrameTiming"], "Engine/Graphics/Vulkan/VulkanRendererStructs": ["RenderPacket::IsValid"]}, "lifecycle": {"startedBy": [], "stoppedBy": []}, "functions": 3, "kind": "instanced", "description": "Window lifecycle and frame loop.", "target": "Sandbox"}, "Applications/Sandbox/SandboxEntry": {"key": "Applications/Sandbox/SandboxEntry", "name": "SandboxEntry", "files": ["Applications/Sandbox/SandboxEntry.cpp"], "records": [], "data": [], "localData": [], "handles": [], "owns": [], "borrows": [], "static": [], "calls": {"Applications/Sandbox/SandboxApp": ["Sandbox::Run"]}, "lifecycle": {"startedBy": [], "stoppedBy": []}, "functions": 1, "kind": "data", "description": "Entry point.", "target": "Sandbox"}, "Engine/Core/Memory": {"key": "Engine/Core/Memory", "name": "Memory", "files": ["Engine/Core/Memory.hpp"], "records": [], "data": [], "localData": [], "handles": [], "owns": [], "borrows": [], "static": [], "calls": {}, "lifecycle": {"startedBy": [], "stoppedBy": []}, "functions": 2, "kind": "stateless", "description": "Scope/Ref ownership aliases.", "target": "Engine"}, "Engine/Core/Timer": {"key": "Engine/Core/Timer", "name": "Timer", "files": ["Engine/Core/Timer.cpp", "Engine/Core/Timer.hpp"], "records": [{"qname": "Engine::Core::FrameBenchmark", "name": "FrameBenchmark", "line": 10, "behavioral": false, "methods": 0}, {"qname": "Engine::Core::FrameTiming", "name": "FrameTiming", "line": 19, "behavioral": false, "methods": 0}, {"qname": "Engine::Core::Timer", "name": "Timer", "line": 35, "behavioral": true, "methods": 7}], "data": [{"record": "FrameTiming", "recordQ": "Engine::Core::FrameTiming", "field": "Benchmark", "type": "FrameBenchmark", "mult": "1", "line": 32, "file": "Engine/Core/Timer.hpp", "decl": 6, "targetRecord": "Engine::Core::FrameBenchmark"}, {"record": "Timer", "recordQ": "Engine::Core::Timer", "field": "m_FrameTiming", "type": "FrameTiming", "mult": "1", "line": 73, "file": "Engine/Core/Timer.hpp", "decl": 4, "targetRecord": "Engine::Core::FrameTiming"}], "localData": [], "handles": [], "owns": [], "borrows": [], "static": [], "calls": {"Engine/Core/Utility": ["Utility::MillisecondsToString", "Utility::FPSToString"]}, "lifecycle": {"startedBy": [], "stoppedBy": []}, "functions": 8, "kind": "instanced", "description": "Frame timing.", "target": "Engine"}, "Engine/Core/Utility": {"key": "Engine/Core/Utility", "name": "Utility", "files": ["Engine/Core/Utility.cpp", "Engine/Core/Utility.hpp"], "records": [{"qname": "Engine::Core::Utility", "name": "Utility", "line": 12, "behavioral": true, "methods": 5}], "data": [], "localData": [], "handles": [], "owns": [], "borrows": [], "static": [], "calls": {}, "lifecycle": {"startedBy": [], "stoppedBy": []}, "functions": 5, "kind": "stateless", "description": "File and format helpers.", "target": "Engine"}, "Engine/Debug/LogTable": {"key": "Engine/Debug/LogTable", "name": "LogTable", "files": ["Engine/Debug/LogTable.hpp"], "records": [{"qname": "Engine::Debug::LogTable", "name": "LogTable", "line": 13, "behavioral": false, "methods": 0}], "data": [], "localData": [], "handles": [], "owns": [], "borrows": [], "static": [], "calls": {}, "lifecycle": {"startedBy": [], "stoppedBy": []}, "functions": 3, "kind": "stateless", "description": "Tabular log output.", "target": "Engine"}, "Engine/Graphics/Import/ObjLoader": {"key": "Engine/Graphics/Import/ObjLoader", "name": "ObjLoader", "files": ["Engine/Graphics/Import/ObjLoader.cpp", "Engine/Graphics/Import/ObjLoader.hpp"], "records": [{"qname": "Engine::Graphics::ObjLoader", "name": "ObjLoader", "line": 15, "behavioral": true, "methods": 1}], "data": [], "localData": [{"func": "LoadMeshFromFile", "var": "logTable", "targetRecord": "Engine::Debug::LogTable", "mult": "1", "file": "Engine/Graphics/Import/ObjLoader.cpp", "line": 47}, {"func": "LoadMeshFromFile", "var": "mesh", "targetRecord": "Engine::Graphics::Mesh", "mult": "1", "file": "Engine/Graphics/Import/ObjLoader.cpp", "line": 62}, {"func": "LoadMeshFromFile", "var": "vertex", "targetRecord": "Engine::Graphics::Vertex", "mult": "1", "file": "Engine/Graphics/Import/ObjLoader.cpp", "line": 71}], "handles": [], "owns": [], "borrows": [], "static": [{"record": null, "name": "s_UniqueVertices", "type": "std::unordered_map<Engine::Graphics::Vertex, unsigned int>", "file": "Engine/Graphics/Import/ObjLoader.cpp", "line": 16}], "calls": {"Engine/Debug/LogTable": ["Engine::Debug::LogTableBegin", "Engine::Debug::LogTableAddColumn", "Engine::Debug::LogTablePrint"], "Engine/Core/Utility": ["Utility::GetRandomVec3"]}, "lifecycle": {"startedBy": [], "stoppedBy": []}, "functions": 1, "kind": "static", "description": "OBJ to CPU mesh.", "target": "Engine"}, "Engine/Graphics/UI/ImGuiLayer": {"key": "Engine/Graphics/UI/ImGuiLayer", "name": "ImGuiLayer", "files": ["Engine/Graphics/UI/ImGuiLayer.cpp", "Engine/Graphics/UI/ImGuiLayer.hpp"], "records": [{"qname": "Engine::Graphics::ImGuiLayer", "name": "ImGuiLayer", "line": 15, "behavioral": true, "methods": 6}], "data": [], "localData": [{"func": "CreateDescriptorPool", "var": "spec", "targetRecord": "Engine::Graphics::DescriptorPoolSpecification", "mult": "1", "file": "Engine/Graphics/UI/ImGuiLayer.cpp", "line": 68}], "handles": [], "owns": [{"record": "ImGuiLayer", "recordQ": "Engine::Graphics::ImGuiLayer", "field": "m_DescriptorPool", "type": "std::unique_ptr<Engine::Graphics::VulkanDescriptorPool>", "mult": "1", "line": 33, "file": "Engine/Graphics/UI/ImGuiLayer.hpp", "decl": 1, "target": "Engine/Graphics/Vulkan/VulkanDescriptorPool", "targetRecord": "Engine::Graphics::VulkanDescriptorPool", "rel": "own", "order": 2}], "borrows": [{"record": "ImGuiLayer", "recordQ": "Engine::Graphics::ImGuiLayer", "field": "m_Context", "type": "VulkanContext *", "mult": "1", "line": 32, "file": "Engine/Graphics/UI/ImGuiLayer.hpp", "decl": 0, "target": "Engine/Graphics/Vulkan/VulkanContext", "targetRecord": "Engine::Graphics::VulkanContext", "rel": "borrow"}], "static": [], "calls": {"Engine/Core/Memory": ["Engine::MakeScope"], "Engine/Graphics/Vulkan/VulkanDevice": ["VulkanDevice::GetHandle", "VulkanDevice::GetPhysicalDevice", "VulkanDevice::GetGraphicsQueueFamily", "VulkanDevice::GetGraphicsQueue"], "Engine/Graphics/Vulkan/VulkanContext": ["VulkanContext::GetDevice", "VulkanContext::GetSwapchain", "VulkanContext::GetApiVersion", "VulkanContext::GetInstance"], "Engine/Graphics/Vulkan/VulkanSwapchain": ["VulkanSwapchain::GetProperties", "VulkanSwapchain::GetImageCount"], "Engine/Graphics/Vulkan/VulkanPhysicalDevice": ["VulkanPhysicalDevice::GetHandle"], "Engine/Graphics/Vulkan/VulkanDescriptorPool": ["VulkanDescriptorPool::GetHandle"], "Engine/Platform/Window": ["Window::GetHandle"]}, "lifecycle": {"startedBy": [], "stoppedBy": []}, "functions": 8, "kind": "instanced", "description": "ImGui on GLFW/Vulkan.", "target": "Engine"}, "Engine/Graphics/UI/ProfilerPanel": {"key": "Engine/Graphics/UI/ProfilerPanel", "name": "ProfilerPanel", "files": ["Engine/Graphics/UI/ProfilerPanel.cpp", "Engine/Graphics/UI/ProfilerPanel.hpp"], "records": [{"qname": "Engine::Graphics::ProfilerPanel", "name": "ProfilerPanel", "line": 11, "behavioral": true, "methods": 2}], "data": [], "localData": [], "handles": [], "owns": [], "borrows": [], "static": [], "calls": {"Engine/Platform/Window": ["Window::GetWidth", "Window::GetHeight"]}, "lifecycle": {"startedBy": [], "stoppedBy": []}, "functions": 2, "kind": "instanced", "description": "Timing and render stats.", "target": "Engine"}, "Engine/Graphics/Vulkan/VulkanAllocator": {"key": "Engine/Graphics/Vulkan/VulkanAllocator", "name": "VulkanAllocator", "files": ["Engine/Graphics/Vulkan/VulkanAllocator.cpp", "Engine/Graphics/Vulkan/VulkanAllocator.hpp"], "records": [{"qname": "Engine::Graphics::VulkanAllocator", "name": "VulkanAllocator", "line": 12, "behavioral": true, "methods": 8}], "data": [], "localData": [], "handles": [], "owns": [], "borrows": [], "static": [{"record": null, "name": "s_Allocator", "type": "struct VmaAllocator_T *", "file": "Engine/Graphics/Vulkan/VulkanAllocator.cpp", "line": 25}, {"record": null, "name": "s_TotalMemory", "type": "unsigned long long", "file": "Engine/Graphics/Vulkan/VulkanAllocator.cpp", "line": 26}], "calls": {"Engine/Graphics/Vulkan/VulkanPhysicalDevice": ["VulkanPhysicalDevice::GetHandle"], "Engine/Graphics/Vulkan/VulkanDevice": ["VulkanDevice::GetPhysicalDevice", "VulkanDevice::GetHandle"], "Engine/Core/Utility": ["Utility::BytesToString"]}, "lifecycle": {"startedBy": [{"module": "Engine/Graphics/Vulkan/VulkanContext", "func": "VulkanContext", "caller": "VulkanContext::VulkanContext()", "call": "VulkanAllocator::Init", "file": "Engine/Graphics/Vulkan/VulkanContext.cpp", "line": 32}], "stoppedBy": [{"module": "Engine/Graphics/Vulkan/VulkanContext", "func": "~VulkanContext", "caller": "VulkanContext::~VulkanContext()", "call": "VulkanAllocator::Shutdown", "file": "Engine/Graphics/Vulkan/VulkanContext.cpp", "line": 43}]}, "functions": 10, "kind": "static", "description": "VMA buffer and image allocation.", "target": "Engine"}, "Engine/Graphics/Vulkan/VulkanContext": {"key": "Engine/Graphics/Vulkan/VulkanContext", "name": "VulkanContext", "files": ["Engine/Graphics/Vulkan/VulkanContext.cpp", "Engine/Graphics/Vulkan/VulkanContext.hpp"], "records": [{"qname": "Engine::Graphics::VulkanContext", "name": "VulkanContext", "line": 17, "behavioral": true, "methods": 12}], "data": [], "localData": [], "handles": [{"record": "VulkanContext", "recordQ": "Engine::Graphics::VulkanContext", "field": "m_Instance", "type": "vk::Instance", "mult": "1", "line": 43, "file": "Engine/Graphics/Vulkan/VulkanContext.hpp", "decl": 1, "handle": "vk::Instance"}, {"record": "VulkanContext", "recordQ": "Engine::Graphics::VulkanContext", "field": "m_Surface", "type": "vk::SurfaceKHR", "mult": "1", "line": 44, "file": "Engine/Graphics/Vulkan/VulkanContext.hpp", "decl": 2, "handle": "vk::SurfaceKHR"}, {"record": "VulkanContext", "recordQ": "Engine::Graphics::VulkanContext", "field": "m_DebugMessenger", "type": "vk::DebugUtilsMessengerEXT", "mult": "1", "line": 45, "file": "Engine/Graphics/Vulkan/VulkanContext.hpp", "decl": 3, "handle": "vk::DebugUtilsMessengerEXT"}, {"record": "VulkanContext", "recordQ": "Engine::Graphics::VulkanContext", "field": "m_DispatchLoader", "type": "vk::detail::DispatchLoaderDynamic", "mult": "1", "line": 50, "file": "Engine/Graphics/Vulkan/VulkanContext.hpp", "decl": 7, "handle": "vk::detail::DispatchLoaderDynamic"}], "owns": [{"record": "VulkanContext", "recordQ": "Engine::Graphics::VulkanContext", "field": "m_PhysicalDevice", "type": "std::unique_ptr<Engine::Graphics::VulkanPhysicalDevice>", "mult": "1", "line": 46, "file": "Engine/Graphics/Vulkan/VulkanContext.hpp", "decl": 4, "target": "Engine/Graphics/Vulkan/VulkanPhysicalDevice", "targetRecord": "Engine::Graphics::VulkanPhysicalDevice", "rel": "own", "order": 5}, {"record": "VulkanContext", "recordQ": "Engine::Graphics::VulkanContext", "field": "m_Device", "type": "std::unique_ptr<Engine::Graphics::VulkanDevice>", "mult": "1", "line": 47, "file": "Engine/Graphics/Vulkan/VulkanContext.hpp", "decl": 5, "target": "Engine/Graphics/Vulkan/VulkanDevice", "targetRecord": "Engine::Graphics::VulkanDevice", "rel": "own", "order": 6}, {"record": "VulkanContext", "recordQ": "Engine::Graphics::VulkanContext", "field": "m_Swapchain", "type": "std::unique_ptr<Engine::Graphics::VulkanSwapchain>", "mult": "1", "line": 48, "file": "Engine/Graphics/Vulkan/VulkanContext.hpp", "decl": 6, "target": "Engine/Graphics/Vulkan/VulkanSwapchain", "targetRecord": "Engine::Graphics::VulkanSwapchain", "rel": "own", "order": 7}], "borrows": [], "static": [], "calls": {"Engine/Core/Memory": ["Engine::MakeScope"], "Engine/Graphics/Vulkan/VulkanAllocator": ["VulkanAllocator::Init", "VulkanAllocator::Shutdown"], "Engine/Graphics/Vulkan/VulkanSwapchain": ["VulkanSwapchain::CreateTransferCommandBuffer", "VulkanSwapchain::SubmitTransferCommandBuffer"], "Engine/Core/Utility": ["Utility::BytesToString"], "Engine/Graphics/Vulkan/VulkanDebug": ["VulkanDebug::CheckValidationLayerSupport", "VulkanDebug::GetInstanceExtensions", "VulkanDebug::GetDebugCreateInfo", "VulkanDebug::LoadDebugExtensionFunctions"], "Engine/Platform/Window": ["Window::GetTitle", "Window::CreateVulkanSurface"], "Engine/Graphics/Vulkan/VulkanDevice": ["VulkanDevice::GetHandle"]}, "lifecycle": {"startedBy": [], "stoppedBy": []}, "functions": 14, "kind": "instanced", "description": "Instance, surface, devices, swapchain.", "target": "Engine"}, "Engine/Graphics/Vulkan/VulkanDebug": {"key": "Engine/Graphics/Vulkan/VulkanDebug", "name": "VulkanDebug", "files": ["Engine/Graphics/Vulkan/VulkanDebug.cpp", "Engine/Graphics/Vulkan/VulkanDebug.hpp"], "records": [{"qname": "Engine::Graphics::VulkanDebug", "name": "VulkanDebug", "line": 7, "behavioral": true, "methods": 5}], "data": [], "localData": [], "handles": [], "owns": [], "borrows": [], "static": [{"record": null, "name": "pfnVkCreateDebugUtilsMessengerEXT", "type": "VkResult (*)(VkInstance, const VkDebugUtilsMessengerCreateInfoEXT *, const VkAllocationCallbacks *, VkDebugUtilsMessengerEXT *) __attribute__((stdcall))", "file": "Engine/Graphics/Vulkan/VulkanDebug.cpp", "line": 12}, {"record": null, "name": "pfnVkDestroyDebugUtilsMessengerEXT", "type": "void (*)(VkInstance, VkDebugUtilsMessengerEXT, const VkAllocationCallbacks *) __attribute__((stdcall))", "file": "Engine/Graphics/Vulkan/VulkanDebug.cpp", "line": 13}], "calls": {"Engine/Platform/Window": ["Window::GetInstanceExtensions"]}, "lifecycle": {"startedBy": [], "stoppedBy": []}, "functions": 7, "kind": "static", "description": "Validation layers and messenger.", "target": "Engine"}, "Engine/Graphics/Vulkan/VulkanDescriptorPool": {"key": "Engine/Graphics/Vulkan/VulkanDescriptorPool", "name": "VulkanDescriptorPool", "files": ["Engine/Graphics/Vulkan/VulkanDescriptorPool.cpp", "Engine/Graphics/Vulkan/VulkanDescriptorPool.hpp"], "records": [{"qname": "Engine::Graphics::DescriptorPoolSpecification", "name": "DescriptorPoolSpecification", "line": 9, "behavioral": false, "methods": 0}, {"qname": "Engine::Graphics::VulkanDescriptorPool", "name": "VulkanDescriptorPool", "line": 16, "behavioral": true, "methods": 3}], "data": [], "localData": [], "handles": [{"record": "DescriptorPoolSpecification", "recordQ": "Engine::Graphics::DescriptorPoolSpecification", "field": "Flags", "type": "vk::Flags<vk::DescriptorPoolCreateFlagBits>", "mult": "1", "line": 11, "file": "Engine/Graphics/Vulkan/VulkanDescriptorPool.hpp", "decl": 0, "handle": "vk::Flags"}, {"record": "DescriptorPoolSpecification", "recordQ": "Engine::Graphics::DescriptorPoolSpecification", "field": "PoolSizes", "type": "std::vector<vk::DescriptorPoolSize>", "mult": "n", "line": 13, "file": "Engine/Graphics/Vulkan/VulkanDescriptorPool.hpp", "decl": 2, "handle": "vk::DescriptorPoolSize"}, {"record": "VulkanDescriptorPool", "recordQ": "Engine::Graphics::VulkanDescriptorPool", "field": "m_Device", "type": "vk::Device", "mult": "1", "line": 30, "file": "Engine/Graphics/Vulkan/VulkanDescriptorPool.hpp", "decl": 0, "handle": "vk::Device"}, {"record": "VulkanDescriptorPool", "recordQ": "Engine::Graphics::VulkanDescriptorPool", "field": "m_Pool", "type": "vk::DescriptorPool", "mult": "1", "line": 31, "file": "Engine/Graphics/Vulkan/VulkanDescriptorPool.hpp", "decl": 1, "handle": "vk::DescriptorPool"}], "owns": [], "borrows": [], "static": [], "calls": {}, "lifecycle": {"startedBy": [], "stoppedBy": []}, "functions": 4, "kind": "instanced", "description": "Descriptor pool (RAII).", "target": "Engine"}, "Engine/Graphics/Vulkan/VulkanDescriptorSetLayout": {"key": "Engine/Graphics/Vulkan/VulkanDescriptorSetLayout", "name": "VulkanDescriptorSetLayout", "files": ["Engine/Graphics/Vulkan/VulkanDescriptorSetLayout.cpp", "Engine/Graphics/Vulkan/VulkanDescriptorSetLayout.hpp"], "records": [{"qname": "Engine::Graphics::DescriptorSetLayoutSpecification", "name": "DescriptorSetLayoutSpecification", "line": 9, "behavioral": false, "methods": 0}, {"qname": "Engine::Graphics::VulkanDescriptorSetLayout", "name": "VulkanDescriptorSetLayout", "line": 15, "behavioral": true, "methods": 3}], "data": [], "localData": [], "handles": [{"record": "DescriptorSetLayoutSpecification", "recordQ": "Engine::Graphics::DescriptorSetLayoutSpecification", "field": "Flags", "type": "vk::Flags<vk::DescriptorSetLayoutCreateFlagBits>", "mult": "1", "line": 11, "file": "Engine/Graphics/Vulkan/VulkanDescriptorSetLayout.hpp", "decl": 0, "handle": "vk::Flags"}, {"record": "DescriptorSetLayoutSpecification", "recordQ": "Engine::Graphics::DescriptorSetLayoutSpecification", "field": "Bindings", "type": "std::vector<vk::DescriptorSetLayoutBinding>", "mult": "n", "line": 12, "file": "Engine/Graphics/Vulkan/VulkanDescriptorSetLayout.hpp", "decl": 1, "handle": "vk::DescriptorSetLayoutBinding"}, {"record": "VulkanDescriptorSetLayout", "recordQ": "Engine::Graphics::VulkanDescriptorSetLayout", "field": "m_Device", "type": "vk::Device", "mult": "1", "line": 29, "file": "Engine/Graphics/Vulkan/VulkanDescriptorSetLayout.hpp", "decl": 0, "handle": "vk::Device"}, {"record": "VulkanDescriptorSetLayout", "recordQ": "Engine::Graphics::VulkanDescriptorSetLayout", "field": "m_Layout", "type": "vk::DescriptorSetLayout", "mult": "1", "line": 30, "file": "Engine/Graphics/Vulkan/VulkanDescriptorSetLayout.hpp", "decl": 1, "handle": "vk::DescriptorSetLayout"}], "owns": [], "borrows": [], "static": [], "calls": {}, "lifecycle": {"startedBy": [], "stoppedBy": []}, "functions": 4, "kind": "instanced", "description": "Descriptor set layout (RAII).", "target": "Engine"}, "Engine/Graphics/Vulkan/VulkanDevice": {"key": "Engine/Graphics/Vulkan/VulkanDevice", "name": "VulkanDevice", "files": ["Engine/Graphics/Vulkan/VulkanDevice.cpp", "Engine/Graphics/Vulkan/VulkanDevice.hpp"], "records": [{"qname": "Engine::Graphics::VulkanDevice", "name": "VulkanDevice", "line": 7, "behavioral": true, "methods": 9}], "data": [], "localData": [], "handles": [{"record": "VulkanDevice", "recordQ": "Engine::Graphics::VulkanDevice", "field": "m_Device", "type": "vk::Device", "mult": "1", "line": 29, "file": "Engine/Graphics/Vulkan/VulkanDevice.hpp", "decl": 0, "handle": "vk::Device"}, {"record": "VulkanDevice", "recordQ": "Engine::Graphics::VulkanDevice", "field": "m_GraphicsQueue", "type": "vk::Queue", "mult": "1", "line": 30, "file": "Engine/Graphics/Vulkan/VulkanDevice.hpp", "decl": 1, "handle": "vk::Queue"}, {"record": "VulkanDevice", "recordQ": "Engine::Graphics::VulkanDevice", "field": "m_TransferQueue", "type": "vk::Queue", "mult": "1", "line": 31, "file": "Engine/Graphics/Vulkan/VulkanDevice.hpp", "decl": 2, "handle": "vk::Queue"}], "owns": [], "borrows": [{"record": "VulkanDevice", "recordQ": "Engine::Graphics::VulkanDevice", "field": "m_PhysicalDevice", "type": "const VulkanPhysicalDevice *", "mult": "1", "line": 32, "file": "Engine/Graphics/Vulkan/VulkanDevice.hpp", "decl": 3, "target": "Engine/Graphics/Vulkan/VulkanPhysicalDevice", "targetRecord": "Engine::Graphics::VulkanPhysicalDevice", "rel": "borrow"}], "static": [], "calls": {"Engine/Graphics/Vulkan/VulkanPhysicalDevice": ["VulkanPhysicalDevice::GetQueueFamilies", "VulkanPhysicalDevice::GetHandle"]}, "lifecycle": {"startedBy": [], "stoppedBy": []}, "functions": 10, "kind": "instanced", "description": "Logical device and queues.", "target": "Engine"}, "Engine/Graphics/Vulkan/VulkanGlobalUniforms": {"key": "Engine/Graphics/Vulkan/VulkanGlobalUniforms", "name": "VulkanGlobalUniforms", "files": ["Engine/Graphics/Vulkan/VulkanGlobalUniforms.cpp", "Engine/Graphics/Vulkan/VulkanGlobalUniforms.hpp"], "records": [{"qname": "Engine::Graphics::GlobalUniformData", "name": "GlobalUniformData", "line": 22, "behavioral": false, "methods": 0}, {"qname": "Engine::Graphics::VulkanGlobalUniforms", "name": "VulkanGlobalUniforms", "line": 29, "behavioral": true, "methods": 9}], "data": [{"record": "VulkanGlobalUniforms", "recordQ": "Engine::Graphics::VulkanGlobalUniforms", "field": "m_BufferAllocs", "type": "std::array<Engine::Graphics::BufferAllocation, 3>", "mult": "3", "line": 71, "file": "Engine/Graphics/Vulkan/VulkanGlobalUniforms.hpp", "decl": 3, "targetRecord": "Engine::Graphics::BufferAllocation"}], "localData": [{"func": "CreatePool", "var": "spec", "targetRecord": "Engine::Graphics::DescriptorPoolSpecification", "mult": "1", "file": "Engine/Graphics/Vulkan/VulkanGlobalUniforms.cpp", "line": 50}, {"func": "CreateLayout", "var": "spec", "targetRecord": "Engine::Graphics::DescriptorSetLayoutSpecification", "mult": "1", "file": "Engine/Graphics/Vulkan/VulkanGlobalUniforms.cpp", "line": 67}, {"func": "AllocateBuffers", "var": "spec", "targetRecord": "Engine::Graphics::BufferSpecification", "mult": "1", "file": "Engine/Graphics/Vulkan/VulkanGlobalUniforms.cpp", "line": 74}], "handles": [{"record": "GlobalUniformData", "recordQ": "Engine::Graphics::GlobalUniformData", "field": "Model", "type": "glm::mat<4, 4, float>", "mult": "1", "line": 24, "file": "Engine/Graphics/Vulkan/VulkanGlobalUniforms.hpp", "decl": 0, "handle": "glm::mat"}, {"record": "GlobalUniformData", "recordQ": "Engine::Graphics::GlobalUniformData", "field": "View", "type": "glm::mat<4, 4, float>", "mult": "1", "line": 25, "file": "Engine/Graphics/Vulkan/VulkanGlobalUniforms.hpp", "decl": 1, "handle": "glm::mat"}, {"record": "GlobalUniformData", "recordQ": "Engine::Graphics::GlobalUniformData", "field": "Projection", "type": "glm::mat<4, 4, float>", "mult": "1", "line": 26, "file": "Engine/Graphics/Vulkan/VulkanGlobalUniforms.hpp", "decl": 2, "handle": "glm::mat"}, {"record": "VulkanGlobalUniforms", "recordQ": "Engine::Graphics::VulkanGlobalUniforms", "field": "m_DescriptorSets", "type": "std::array<vk::DescriptorSet, 3>", "mult": "3", "line": 72, "file": "Engine/Graphics/Vulkan/VulkanGlobalUniforms.hpp", "decl": 4, "handle": "vk::DescriptorSet"}], "owns": [{"record": "VulkanGlobalUniforms", "recordQ": "Engine::Graphics::VulkanGlobalUniforms", "field": "m_DescriptorPool", "type": "std::unique_ptr<Engine::Graphics::VulkanDescriptorPool>", "mult": "1", "line": 68, "file": "Engine/Graphics/Vulkan/VulkanGlobalUniforms.hpp", "decl": 1, "target": "Engine/Graphics/Vulkan/VulkanDescriptorPool", "targetRecord": "Engine::Graphics::VulkanDescriptorPool", "rel": "own", "order": 2}, {"record": "VulkanGlobalUniforms", "recordQ": "Engine::Graphics::VulkanGlobalUniforms", "field": "m_DescriptorLayout", "type": "std::unique_ptr<Engine::Graphics::VulkanDescriptorSetLayout>", "mult": "1", "line": 69, "file": "Engine/Graphics/Vulkan/VulkanGlobalUniforms.hpp", "decl": 2, "target": "Engine/Graphics/Vulkan/VulkanDescriptorSetLayout", "targetRecord": "Engine::Graphics::VulkanDescriptorSetLayout", "rel": "own", "order": 3}], "borrows": [{"record": "VulkanGlobalUniforms", "recordQ": "Engine::Graphics::VulkanGlobalUniforms", "field": "m_Context", "type": "VulkanContext *", "mult": "1", "line": 66, "file": "Engine/Graphics/Vulkan/VulkanGlobalUniforms.hpp", "decl": 0, "target": "Engine/Graphics/Vulkan/VulkanContext", "targetRecord": "Engine::Graphics::VulkanContext", "rel": "borrow"}], "static": [], "calls": {"Engine/Graphics/Vulkan/VulkanAllocator": ["VulkanAllocator::DestroyBuffer", "VulkanAllocator::MapMemory", "VulkanAllocator::UnmapMemory", "VulkanAllocator::AllocateBuffer"], "Engine/Core/Memory": ["Engine::MakeScope"], "Engine/Graphics/Vulkan/VulkanDevice": ["VulkanDevice::GetHandle"], "Engine/Graphics/Vulkan/VulkanContext": ["VulkanContext::GetDevice"], "Engine/Graphics/Vulkan/VulkanDescriptorSetLayout": ["VulkanDescriptorSetLayout::GetHandle"], "Engine/Graphics/Vulkan/VulkanDescriptorPool": ["VulkanDescriptorPool::GetHandle"]}, "lifecycle": {"startedBy": [], "stoppedBy": []}, "functions": 10, "kind": "instanced", "description": "Per-frame uniform buffers.", "target": "Engine"}, "Engine/Graphics/Vulkan/VulkanModel": {"key": "Engine/Graphics/Vulkan/VulkanModel", "name": "VulkanModel", "files": ["Engine/Graphics/Vulkan/VulkanModel.cpp", "Engine/Graphics/Vulkan/VulkanModel.hpp"], "records": [{"qname": "Engine::Graphics::VulkanModel", "name": "VulkanModel", "line": 14, "behavioral": true, "methods": 10}], "data": [{"record": "VulkanModel", "recordQ": "Engine::Graphics::VulkanModel", "field": "m_VertexBufferAlloc", "type": "BufferAllocation", "mult": "1", "line": 38, "file": "Engine/Graphics/Vulkan/VulkanModel.hpp", "decl": 1, "targetRecord": "Engine::Graphics::BufferAllocation"}, {"record": "VulkanModel", "recordQ": "Engine::Graphics::VulkanModel", "field": "m_IndexBufferAlloc", "type": "BufferAllocation", "mult": "1", "line": 39, "file": "Engine/Graphics/Vulkan/VulkanModel.hpp", "decl": 2, "targetRecord": "Engine::Graphics::BufferAllocation"}], "localData": [{"func": "CreateVertexBuffer", "var": "vboSpec", "targetRecord": "Engine::Graphics::BufferSpecification", "mult": "1", "file": "Engine/Graphics/Vulkan/VulkanModel.cpp", "line": 39}, {"func": "CreateVertexBuffer", "var": "stagingSpec", "targetRecord": "Engine::Graphics::BufferSpecification", "mult": "1", "file": "Engine/Graphics/Vulkan/VulkanModel.cpp", "line": 48}, {"func": "CreateVertexBuffer", "var": "stagingBufferAlloc", "targetRecord": "Engine::Graphics::BufferAllocation", "mult": "1", "file": "Engine/Graphics/Vulkan/VulkanModel.cpp", "line": 54}, {"func": "CreateIndexBuffer", "var": "iboSpec", "targetRecord": "Engine::Graphics::BufferSpecification", "mult": "1", "file": "Engine/Graphics/Vulkan/VulkanModel.cpp", "line": 75}, {"func": "CreateIndexBuffer", "var": "stagingSpec", "targetRecord": "Engine::Graphics::BufferSpecification", "mult": "1", "file": "Engine/Graphics/Vulkan/VulkanModel.cpp", "line": 84}, {"func": "CreateIndexBuffer", "var": "stagingBufferAlloc", "targetRecord": "Engine::Graphics::BufferAllocation", "mult": "1", "file": "Engine/Graphics/Vulkan/VulkanModel.cpp", "line": 90}], "handles": [], "owns": [], "borrows": [{"record": "VulkanModel", "recordQ": "Engine::Graphics::VulkanModel", "field": "m_Context", "type": "VulkanContext *", "mult": "1", "line": 37, "file": "Engine/Graphics/Vulkan/VulkanModel.hpp", "decl": 0, "target": "Engine/Graphics/Vulkan/VulkanContext", "targetRecord": "Engine::Graphics::VulkanContext", "rel": "borrow"}], "static": [], "calls": {"Engine/Graphics/Vulkan/VulkanAllocator": ["VulkanAllocator::DestroyBuffer", "VulkanAllocator::AllocateBuffer", "VulkanAllocator::MapMemory", "VulkanAllocator::UnmapMemory"], "Engine/Graphics/Resources/Mesh": ["Mesh::GetVerticeSize", "Mesh::GetIndiceSize"], "Engine/Graphics/Vulkan/VulkanContext": ["VulkanContext::CopyBuffer"]}, "lifecycle": {"startedBy": [], "stoppedBy": []}, "functions": 11, "kind": "instanced", "description": "Vertex and index buffers.", "target": "Engine"}, "Engine/Graphics/Vulkan/VulkanPhysicalDevice": {"key": "Engine/Graphics/Vulkan/VulkanPhysicalDevice", "name": "VulkanPhysicalDevice", "files": ["Engine/Graphics/Vulkan/VulkanPhysicalDevice.cpp", "Engine/Graphics/Vulkan/VulkanPhysicalDevice.hpp"], "records": [{"qname": "Engine::Graphics::QueueFamilyIndices", "name": "QueueFamilyIndices", "line": 9, "behavioral": false, "methods": 3}, {"qname": "Engine::Graphics::VulkanPhysicalDevice", "name": "VulkanPhysicalDevice", "line": 22, "behavioral": true, "methods": 5}], "data": [{"record": "VulkanPhysicalDevice", "recordQ": "Engine::Graphics::VulkanPhysicalDevice", "field": "m_QueueFamilyIndices", "type": "QueueFamilyIndices", "mult": "1", "line": 43, "file": "Engine/Graphics/Vulkan/VulkanPhysicalDevice.hpp", "decl": 3, "targetRecord": "Engine::Graphics::QueueFamilyIndices"}], "localData": [{"func": "FindQueueFamilyIndices", "var": "queueFamilyIndices", "targetRecord": "Engine::Graphics::QueueFamilyIndices", "mult": "1", "file": "Engine/Graphics/Vulkan/VulkanPhysicalDevice.cpp", "line": 68}, {"func": "PickDevice", "var": "queueFamilies", "targetRecord": "Engine::Graphics::QueueFamilyIndices", "mult": "1", "file": "Engine/Graphics/Vulkan/VulkanPhysicalDevice.cpp", "line": 176}, {"func": "PickDevice", "var": "swapchainSupport", "targetRecord": "Engine::Graphics::SwapchainSupport", "mult": "1", "file": "Engine/Graphics/Vulkan/VulkanPhysicalDevice.cpp", "line": 177}, {"func": "QuerySwapchainSupport", "var": "swapchainSupport", "targetRecord": "Engine::Graphics::SwapchainSupport", "mult": "1", "file": "Engine/Graphics/Vulkan/VulkanPhysicalDevice.cpp", "line": 198}], "handles": [{"record": "VulkanPhysicalDevice", "recordQ": "Engine::Graphics::VulkanPhysicalDevice", "field": "m_PhysicalDevice", "type": "vk::PhysicalDevice", "mult": "1", "line": 42, "file": "Engine/Graphics/Vulkan/VulkanPhysicalDevice.hpp", "decl": 2, "handle": "vk::PhysicalDevice"}, {"record": "VulkanPhysicalDevice", "recordQ": "Engine::Graphics::VulkanPhysicalDevice", "field": "m_Properties", "type": "vk::PhysicalDeviceProperties", "mult": "1", "line": 44, "file": "Engine/Graphics/Vulkan/VulkanPhysicalDevice.hpp", "decl": 4, "handle": "vk::PhysicalDeviceProperties"}], "owns": [], "borrows": [], "static": [], "calls": {"Engine/Graphics/Vulkan/VulkanSwapchainStructs": ["SwapchainSupport::IsComplete"]}, "lifecycle": {"startedBy": [], "stoppedBy": []}, "functions": 15, "kind": "instanced", "description": "GPU selection and capabilities.", "target": "Engine"}, "Engine/Graphics/Vulkan/VulkanPipeline": {"key": "Engine/Graphics/Vulkan/VulkanPipeline", "name": "VulkanPipeline", "files": ["Engine/Graphics/Vulkan/VulkanPipeline.cpp", "Engine/Graphics/Vulkan/VulkanPipeline.hpp"], "records": [{"qname": "Engine::Graphics::PipelineSpecification", "name": "PipelineSpecification", "line": 17, "behavioral": false, "methods": 0}, {"qname": "Engine::Graphics::VulkanPipeline", "name": "VulkanPipeline", "line": 28, "behavioral": true, "methods": 5}], "data": [{"record": "VulkanPipeline", "recordQ": "Engine::Graphics::VulkanPipeline", "field": "m_Spec", "type": "PipelineSpecification", "mult": "1", "line": 48, "file": "Engine/Graphics/Vulkan/VulkanPipeline.hpp", "decl": 3, "targetRecord": "Engine::Graphics::PipelineSpecification"}], "localData": [], "handles": [{"record": "PipelineSpecification", "recordQ": "Engine::Graphics::PipelineSpecification", "field": "DescriptorSetLayout", "type": "vk::DescriptorSetLayout", "mult": "1", "line": 21, "file": "Engine/Graphics/Vulkan/VulkanPipeline.hpp", "decl": 2, "handle": "vk::DescriptorSetLayout"}, {"record": "PipelineSpecification", "recordQ": "Engine::Graphics::PipelineSpecification", "field": "DepthOperator", "type": "vk::CompareOp", "mult": "1", "line": 25, "file": "Engine/Graphics/Vulkan/VulkanPipeline.hpp", "decl": 6, "handle": "vk::CompareOp"}, {"record": "VulkanPipeline", "recordQ": "Engine::Graphics::VulkanPipeline", "field": "m_Layout", "type": "vk::PipelineLayout", "mult": "1", "line": 46, "file": "Engine/Graphics/Vulkan/VulkanPipeline.hpp", "decl": 1, "handle": "vk::PipelineLayout"}, {"record": "VulkanPipeline", "recordQ": "Engine::Graphics::VulkanPipeline", "field": "m_Pipeline", "type": "vk::Pipeline", "mult": "1", "line": 47, "file": "Engine/Graphics/Vulkan/VulkanPipeline.hpp", "decl": 2, "handle": "vk::Pipeline"}], "owns": [], "borrows": [{"record": "PipelineSpecification", "recordQ": "Engine::Graphics::PipelineSpecification", "field": "VertexShader", "type": "VulkanShader *", "mult": "1", "line": 19, "file": "Engine/Graphics/Vulkan/VulkanPipeline.hpp", "decl": 0, "target": "Engine/Graphics/Vulkan/VulkanShader", "targetRecord": "Engine::Graphics::VulkanShader", "rel": "borrow"}, {"record": "PipelineSpecification", "recordQ": "Engine::Graphics::PipelineSpecification", "field": "FragmentShader", "type": "VulkanShader *", "mult": "1", "line": 20, "file": "Engine/Graphics/Vulkan/VulkanPipeline.hpp", "decl": 1, "target": "Engine/Graphics/Vulkan/VulkanShader", "targetRecord": "Engine::Graphics::VulkanShader", "rel": "borrow"}, {"record": "VulkanPipeline", "recordQ": "Engine::Graphics::VulkanPipeline", "field": "m_Context", "type": "VulkanContext *", "mult": "1", "line": 45, "file": "Engine/Graphics/Vulkan/VulkanPipeline.hpp", "decl": 0, "target": "Engine/Graphics/Vulkan/VulkanContext", "targetRecord": "Engine::Graphics::VulkanContext", "rel": "borrow"}], "static": [], "calls": {"Engine/Graphics/Vulkan/VulkanDevice": ["VulkanDevice::GetHandle"], "Engine/Graphics/Vulkan/VulkanContext": ["VulkanContext::GetDevice", "VulkanContext::GetSwapchain"], "Engine/Graphics/Vulkan/VulkanSwapchain": ["VulkanSwapchain::GetProperties"], "Engine/Graphics/Vulkan/VulkanShader": ["VulkanShader::GetPipelineShaderStageCreateInfo"], "Engine/Graphics/Resources/Mesh": ["Vertex::GetBindingDescription", "Vertex::GetAttributeDescriptions"]}, "lifecycle": {"startedBy": [], "stoppedBy": []}, "functions": 6, "kind": "instanced", "description": "Graphics pipeline and layout.", "target": "Engine"}, "Engine/Graphics/Vulkan/VulkanRenderTarget": {"key": "Engine/Graphics/Vulkan/VulkanRenderTarget", "name": "VulkanRenderTarget", "files": ["Engine/Graphics/Vulkan/VulkanRenderTarget.cpp", "Engine/Graphics/Vulkan/VulkanRenderTarget.hpp"], "records": [{"qname": "Engine::Graphics::VulkanRenderTargetCreateInfo", "name": "VulkanRenderTargetCreateInfo", "line": 9, "behavioral": false, "methods": 0}, {"qname": "Engine::Graphics::VulkanRenderTarget", "name": "VulkanRenderTarget", "line": 19, "behavioral": true, "methods": 5}], "data": [{"record": "VulkanRenderTarget", "recordQ": "Engine::Graphics::VulkanRenderTarget", "field": "m_ImageAllocation", "type": "ImageAllocation", "mult": "1", "line": 41, "file": "Engine/Graphics/Vulkan/VulkanRenderTarget.hpp", "decl": 3, "targetRecord": "Engine::Graphics::ImageAllocation"}], "localData": [{"func": "Create", "var": "imageSpec", "targetRecord": "Engine::Graphics::ImageSpecification", "mult": "1", "file": "Engine/Graphics/Vulkan/VulkanRenderTarget.cpp", "line": 65}], "handles": [{"record": "VulkanRenderTargetCreateInfo", "recordQ": "Engine::Graphics::VulkanRenderTargetCreateInfo", "field": "Format", "type": "vk::Format", "mult": "1", "line": 11, "file": "Engine/Graphics/Vulkan/VulkanRenderTarget.hpp", "decl": 0, "handle": "vk::Format"}, {"record": "VulkanRenderTargetCreateInfo", "recordQ": "Engine::Graphics::VulkanRenderTargetCreateInfo", "field": "Extent", "type": "vk::Extent2D", "mult": "1", "line": 12, "file": "Engine/Graphics/Vulkan/VulkanRenderTarget.hpp", "decl": 1, "handle": "vk::Extent2D"}, {"record": "VulkanRenderTargetCreateInfo", "recordQ": "Engine::Graphics::VulkanRenderTargetCreateInfo", "field": "SampleCount", "type": "vk::SampleCountFlagBits", "mult": "1", "line": 13, "file": "Engine/Graphics/Vulkan/VulkanRenderTarget.hpp", "decl": 2, "handle": "vk::SampleCountFlagBits"}, {"record": "VulkanRenderTargetCreateInfo", "recordQ": "Engine::Graphics::VulkanRenderTargetCreateInfo", "field": "UsageFlags", "type": "vk::Flags<vk::ImageUsageFlagBits>", "mult": "1", "line": 14, "file": "Engine/Graphics/Vulkan/VulkanRenderTarget.hpp", "decl": 3, "handle": "vk::Flags"}, {"record": "VulkanRenderTargetCreateInfo", "recordQ": "Engine::Graphics::VulkanRenderTargetCreateInfo", "field": "AspectFlags", "type": "vk::Flags<vk::ImageAspectFlagBits>", "mult": "1", "line": 15, "file": "Engine/Graphics/Vulkan/VulkanRenderTarget.hpp", "decl": 4, "handle": "vk::Flags"}, {"record": "VulkanRenderTarget", "recordQ": "Engine::Graphics::VulkanRenderTarget", "field": "m_Device", "type": "vk::Device", "mult": "1", "line": 38, "file": "Engine/Graphics/Vulkan/VulkanRenderTarget.hpp", "decl": 0, "handle": "vk::Device"}, {"record": "VulkanRenderTarget", "recordQ": "Engine::Graphics::VulkanRenderTarget", "field": "m_Image", "type": "vk::Image", "mult": "1", "line": 39, "file": "Engine/Graphics/Vulkan/VulkanRenderTarget.hpp", "decl": 1, "handle": "vk::Image"}, {"record": "VulkanRenderTarget", "recordQ": "Engine::Graphics::VulkanRenderTarget", "field": "m_View", "type": "vk::ImageView", "mult": "1", "line": 40, "file": "Engine/Graphics/Vulkan/VulkanRenderTarget.hpp", "decl": 2, "handle": "vk::ImageView"}], "owns": [], "borrows": [], "static": [], "calls": {"Engine/Graphics/Vulkan/VulkanAllocator": ["VulkanAllocator::AllocateImage", "VulkanAllocator::DestroyImage"]}, "lifecycle": {"startedBy": [], "stoppedBy": []}, "functions": 8, "kind": "instanced", "description": "", "target": "Engine"}, "Engine/Graphics/Vulkan/VulkanRenderer": {"key": "Engine/Graphics/Vulkan/VulkanRenderer", "name": "VulkanRenderer", "files": ["Engine/Graphics/Vulkan/VulkanRenderer.cpp", "Engine/Graphics/Vulkan/VulkanRenderer.hpp"], "records": [{"qname": "Engine::Graphics::VulkanRenderer", "name": "VulkanRenderer", "line": 27, "behavioral": true, "methods": 12}], "data": [{"record": "VulkanRenderer", "recordQ": "Engine::Graphics::VulkanRenderer", "field": "m_GlobalUniformData", "type": "GlobalUniformData", "mult": "1", "line": 61, "file": "Engine/Graphics/Vulkan/VulkanRenderer.hpp", "decl": 5, "targetRecord": "Engine::Graphics::GlobalUniformData"}, {"record": "VulkanRenderer", "recordQ": "Engine::Graphics::VulkanRenderer", "field": "m_RenderStats", "type": "RenderStats", "mult": "1", "line": 72, "file": "Engine/Graphics/Vulkan/VulkanRenderer.hpp", "decl": 12, "targetRecord": "Engine::Graphics::RenderStats"}], "localData": [{"func": "CreatePipeline", "var": "spec", "targetRecord": "Engine::Graphics::PipelineSpecification", "mult": "1", "file": "Engine/Graphics/Vulkan/VulkanRenderer.cpp", "line": 62}, {"func": "DrawFrame", "var": "frame", "targetRecord": "Engine::Graphics::SwapchainFrame", "mult": "1", "file": "Engine/Graphics/Vulkan/VulkanRenderer.cpp", "line": 88}], "handles": [], "owns": [{"record": "VulkanRenderer", "recordQ": "Engine::Graphics::VulkanRenderer", "field": "m_Context", "type": "std::unique_ptr<Engine::Graphics::VulkanContext>", "mult": "1", "line": 54, "file": "Engine/Graphics/Vulkan/VulkanRenderer.hpp", "decl": 0, "target": "Engine/Graphics/Vulkan/VulkanContext", "targetRecord": "Engine::Graphics::VulkanContext", "rel": "own", "order": 1}, {"record": "VulkanRenderer", "recordQ": "Engine::Graphics::VulkanRenderer", "field": "m_ImGuiLayer", "type": "std::unique_ptr<Engine::Graphics::ImGuiLayer>", "mult": "1", "line": 55, "file": "Engine/Graphics/Vulkan/VulkanRenderer.hpp", "decl": 1, "target": "Engine/Graphics/UI/ImGuiLayer", "targetRecord": "Engine::Graphics::ImGuiLayer", "rel": "own", "order": 2}, {"record": "VulkanRenderer", "recordQ": "Engine::Graphics::VulkanRenderer", "field": "m_ProfilerPanel", "type": "std::unique_ptr<Engine::Graphics::ProfilerPanel>", "mult": "1", "line": 56, "file": "Engine/Graphics/Vulkan/VulkanRenderer.hpp", "decl": 2, "target": "Engine/Graphics/UI/ProfilerPanel", "targetRecord": "Engine::Graphics::ProfilerPanel", "rel": "own", "order": 3}, {"record": "VulkanRenderer", "recordQ": "Engine::Graphics::VulkanRenderer", "field": "m_VulkanGlobalUniforms", "type": "std::unique_ptr<Engine::Graphics::VulkanGlobalUniforms>", "mult": "1", "line": 60, "file": "Engine/Graphics/Vulkan/VulkanRenderer.hpp", "decl": 4, "target": "Engine/Graphics/Vulkan/VulkanGlobalUniforms", "targetRecord": "Engine::Graphics::VulkanGlobalUniforms", "rel": "own", "order": 5}, {"record": "VulkanRenderer", "recordQ": "Engine::Graphics::VulkanRenderer", "field": "m_Shaders", "type": "std::array<std::unique_ptr<Engine::Graphics::VulkanShader>, 2>", "mult": "2", "line": 64, "file": "Engine/Graphics/Vulkan/VulkanRenderer.hpp", "decl": 6, "target": "Engine/Graphics/Vulkan/VulkanShader", "targetRecord": "Engine::Graphics::VulkanShader", "rel": "own", "order": 7}, {"record": "VulkanRenderer", "recordQ": "Engine::Graphics::VulkanRenderer", "field": "m_Models", "type": "std::array<std::unique_ptr<Engine::Graphics::VulkanModel>, 2>", "mult": "2", "line": 65, "file": "Engine/Graphics/Vulkan/VulkanRenderer.hpp", "decl": 7, "target": "Engine/Graphics/Vulkan/VulkanModel", "targetRecord": "Engine::Graphics::VulkanModel", "rel": "own", "order": 8}, {"record": "VulkanRenderer", "recordQ": "Engine::Graphics::VulkanRenderer", "field": "m_Pipelines", "type": "std::array<std::unique_ptr<Engine::Graphics::VulkanPipeline>, 1>", "mult": "1", "line": 66, "file": "Engine/Graphics/Vulkan/VulkanRenderer.hpp", "decl": 8, "target": "Engine/Graphics/Vulkan/VulkanPipeline", "targetRecord": "Engine::Graphics::VulkanPipeline", "rel": "own", "order": 9}], "borrows": [{"record": "VulkanRenderer", "recordQ": "Engine::Graphics::VulkanRenderer", "field": "m_Swapchain", "type": "VulkanSwapchain *", "mult": "1", "line": 57, "file": "Engine/Graphics/Vulkan/VulkanRenderer.hpp", "decl": 3, "target": "Engine/Graphics/Vulkan/VulkanSwapchain", "targetRecord": "Engine::Graphics::VulkanSwapchain", "rel": "borrow"}], "static": [], "calls": {"Engine/Core/Memory": ["Engine::MakeScope"], "Engine/Graphics/Vulkan/VulkanContext": ["VulkanContext::GetSwapchain", "VulkanContext::GetDevice", "VulkanContext::GetLoader"], "Engine/Graphics/Vulkan/VulkanDevice": ["VulkanDevice::GetHandle", "VulkanDevice::WaitForIdle"], "Engine/Graphics/Vulkan/VulkanDescriptorSetLayout": ["VulkanDescriptorSetLayout::GetHandle"], "Engine/Graphics/Vulkan/VulkanGlobalUniforms": ["VulkanGlobalUniforms::GetLayout", "VulkanGlobalUniforms::Update", "VulkanGlobalUniforms::GetDescriptorSet"], "Engine/Graphics/Vulkan/VulkanModel": ["VulkanModel::AssignPipeline", "VulkanModel::GetPipelineID", "VulkanModel::Bind", "VulkanModel::GetIndexCount", "VulkanModel::GetVerticeCount"], "Engine/Graphics/Vulkan/VulkanSwapchain": ["VulkanSwapchain::BeginFrame", "VulkanSwapchain::BeginRendering", "VulkanSwapchain::EndRendering", "VulkanSwapchain::SubmitAndPresent"], "Engine/Graphics/Vulkan/VulkanPipeline": ["VulkanPipeline::Bind", "VulkanPipeline::GetLayout"], "Engine/Graphics/UI/ImGuiLayer": ["ImGuiLayer::BeginFrame", "ImGuiLayer::RenderFrame"], "Engine/Graphics/UI/ProfilerPanel": ["ProfilerPanel::Render"]}, "lifecycle": {"startedBy": [], "stoppedBy": []}, "functions": 13, "kind": "instanced", "description": "Backend facade.", "target": "Engine"}, "Engine/Graphics/Vulkan/VulkanShader": {"key": "Engine/Graphics/Vulkan/VulkanShader", "name": "VulkanShader", "files": ["Engine/Graphics/Vulkan/VulkanShader.cpp", "Engine/Graphics/Vulkan/VulkanShader.hpp"], "records": [{"qname": "Engine::Graphics::VulkanShader", "name": "VulkanShader", "line": 9, "behavioral": true, "methods": 3}], "data": [], "localData": [], "handles": [{"record": "VulkanShader", "recordQ": "Engine::Graphics::VulkanShader", "field": "m_Device", "type": "vk::Device", "mult": "1", "line": 23, "file": "Engine/Graphics/Vulkan/VulkanShader.hpp", "decl": 0, "handle": "vk::Device"}, {"record": "VulkanShader", "recordQ": "Engine::Graphics::VulkanShader", "field": "m_Module", "type": "vk::ShaderModule", "mult": "1", "line": 24, "file": "Engine/Graphics/Vulkan/VulkanShader.hpp", "decl": 1, "handle": "vk::ShaderModule"}, {"record": "VulkanShader", "recordQ": "Engine::Graphics::VulkanShader", "field": "m_Stage", "type": "vk::ShaderStageFlagBits", "mult": "1", "line": 25, "file": "Engine/Graphics/Vulkan/VulkanShader.hpp", "decl": 2, "handle": "vk::ShaderStageFlagBits"}], "owns": [], "borrows": [], "static": [], "calls": {"Engine/Core/Utility": ["Utility::ReadFileAsBytes"]}, "lifecycle": {"startedBy": [], "stoppedBy": []}, "functions": 4, "kind": "instanced", "description": "SPIR-V shader module.", "target": "Engine"}, "Engine/Graphics/Vulkan/VulkanSwapchain": {"key": "Engine/Graphics/Vulkan/VulkanSwapchain", "name": "VulkanSwapchain", "files": ["Engine/Graphics/Vulkan/VulkanSwapchain.cpp", "Engine/Graphics/Vulkan/VulkanSwapchain.hpp"], "records": [{"qname": "Engine::Graphics::VulkanSwapchain", "name": "VulkanSwapchain", "line": 17, "behavioral": true, "methods": 17}], "data": [{"record": "VulkanSwapchain", "recordQ": "Engine::Graphics::VulkanSwapchain", "field": "m_Properties", "type": "SwapchainProperties", "mult": "1", "line": 57, "file": "Engine/Graphics/Vulkan/VulkanSwapchain.hpp", "decl": 4, "targetRecord": "Engine::Graphics::SwapchainProperties"}, {"record": "VulkanSwapchain", "recordQ": "Engine::Graphics::VulkanSwapchain", "field": "m_Images", "type": "std::vector<Engine::Graphics::SwapchainImage>", "mult": "n", "line": 64, "file": "Engine/Graphics/Vulkan/VulkanSwapchain.hpp", "decl": 7, "targetRecord": "Engine::Graphics::SwapchainImage"}, {"record": "VulkanSwapchain", "recordQ": "Engine::Graphics::VulkanSwapchain", "field": "m_FrameResources", "type": "std::array<Engine::Graphics::VulkanFrameResources, 3>", "mult": "3", "line": 67, "file": "Engine/Graphics/Vulkan/VulkanSwapchain.hpp", "decl": 8, "targetRecord": "Engine::Graphics::VulkanFrameResources"}], "localData": [{"func": "GetSwapchainProperties", "var": "properties", "targetRecord": "Engine::Graphics::SwapchainProperties", "mult": "1", "file": "Engine/Graphics/Vulkan/VulkanSwapchain.cpp", "line": 18}, {"func": "GetSwapchainProperties", "var": "swapchainSupport", "targetRecord": "Engine::Graphics::SwapchainSupport", "mult": "1", "file": "Engine/Graphics/Vulkan/VulkanSwapchain.cpp", "line": 21}, {"func": "CreateSwapchain", "var": "logTable", "targetRecord": "Engine::Debug::LogTable", "mult": "1", "file": "Engine/Graphics/Vulkan/VulkanSwapchain.cpp", "line": 322}], "handles": [{"record": "VulkanSwapchain", "recordQ": "Engine::Graphics::VulkanSwapchain", "field": "m_CurrentSwapchain", "type": "vk::SwapchainKHR", "mult": "1", "line": 53, "file": "Engine/Graphics/Vulkan/VulkanSwapchain.hpp", "decl": 2, "handle": "vk::SwapchainKHR"}, {"record": "VulkanSwapchain", "recordQ": "Engine::Graphics::VulkanSwapchain", "field": "m_OldSwapchain", "type": "vk::SwapchainKHR", "mult": "1", "line": 54, "file": "Engine/Graphics/Vulkan/VulkanSwapchain.hpp", "decl": 3, "handle": "vk::SwapchainKHR"}, {"record": "VulkanSwapchain", "recordQ": "Engine::Graphics::VulkanSwapchain", "field": "m_GraphicsCommandPool", "type": "vk::CommandPool", "mult": "1", "line": 60, "file": "Engine/Graphics/Vulkan/VulkanSwapchain.hpp", "decl": 5, "handle": "vk::CommandPool"}, {"record": "VulkanSwapchain", "recordQ": "Engine::Graphics::VulkanSwapchain", "field": "m_TransferCommandPool", "type": "vk::CommandPool", "mult": "1", "line": 61, "file": "Engine/Graphics/Vulkan/VulkanSwapchain.hpp", "decl": 6, "handle": "vk::CommandPool"}], "owns": [], "borrows": [{"record": "VulkanSwapchain", "recordQ": "Engine::Graphics::VulkanSwapchain", "field": "m_Device", "type": "const VulkanDevice *", "mult": "1", "line": 50, "file": "Engine/Graphics/Vulkan/VulkanSwapchain.hpp", "decl": 0, "target": "Engine/Graphics/Vulkan/VulkanDevice", "targetRecord": "Engine::Graphics::VulkanDevice", "rel": "borrow"}], "static": [], "calls": {"Engine/Graphics/Vulkan/VulkanPhysicalDevice": ["VulkanPhysicalDevice::GetSwapchainSupport"], "Engine/Graphics/Vulkan/VulkanSwapchainUtils": ["VulkanSwapchainUtils::ChooseExtent", "VulkanSwapchainUtils::ChooseSurfaceFormat", "VulkanSwapchainUtils::ChoosePresentMode", "VulkanSwapchainUtils::TransitionImageLayout"], "Engine/Graphics/Vulkan/VulkanDevice": ["VulkanDevice::GetPhysicalDevice", "VulkanDevice::GetHandle", "VulkanDevice::GetTransferQueue", "VulkanDevice::GetGraphicsQueue", "VulkanDevice::WaitForIdle", "VulkanDevice::GetGraphicsQueueFamily", "VulkanDevice::GetTransferQueueFamily"], "Engine/Graphics/Vulkan/VulkanRenderTarget": ["VulkanRenderTarget::GetImage", "VulkanRenderTarget::GetView"], "Engine/Platform/Window": ["Window::GotResized", "Window::SetResizeFlag"], "Engine/Debug/LogTable": ["Engine::Debug::LogTableBegin", "Engine::Debug::LogTableAddColumn", "Engine::Debug::LogTablePrint"]}, "lifecycle": {"startedBy": [], "stoppedBy": []}, "functions": 19, "kind": "instanced", "description": "Images, render targets, frames, present.", "target": "Engine"}, "Engine/Graphics/Vulkan/VulkanSwapchainUtils": {"key": "Engine/Graphics/Vulkan/VulkanSwapchainUtils", "name": "VulkanSwapchainUtils", "files": ["Engine/Graphics/Vulkan/VulkanSwapchainUtils.cpp", "Engine/Graphics/Vulkan/VulkanSwapchainUtils.hpp"], "records": [{"qname": "Engine::Graphics::VulkanSwapchainUtils", "name": "VulkanSwapchainUtils", "line": 7, "behavioral": true, "methods": 4}], "data": [], "localData": [], "handles": [], "owns": [], "borrows": [], "static": [], "calls": {"Engine/Platform/Window": ["Window::GetWidth", "Window::GetHeight"]}, "lifecycle": {"startedBy": [], "stoppedBy": []}, "functions": 4, "kind": "stateless", "description": "Swapchain choices, layout transitions.", "target": "Engine"}, "Engine/Platform/Window": {"key": "Engine/Platform/Window", "name": "Window", "files": ["Engine/Platform/Window.cpp", "Engine/Platform/Window.hpp"], "records": [{"qname": "Engine::Platform::WindowSpecification", "name": "WindowSpecification", "line": 23, "behavioral": false, "methods": 0}, {"qname": "Engine::Platform::Window", "name": "Window", "line": 30, "behavioral": true, "methods": 19}], "data": [], "localData": [], "handles": [], "owns": [], "borrows": [], "static": [{"record": "Window", "name": "m_Window", "type": "GLFWwindow *", "line": 62, "const": false}, {"record": "Window", "name": "m_Spec", "type": "WindowSpecification", "line": 63, "const": false}, {"record": "Window", "name": "m_IsMinimized", "type": "bool", "line": 64, "const": false}, {"record": "Window", "name": "m_GotResized", "type": "bool", "line": 65, "const": false}], "calls": {}, "lifecycle": {"startedBy": [{"module": "Applications/Sandbox/SandboxApp", "func": "Sandbox", "caller": "Sandbox::Sandbox()", "call": "Window::Init", "file": "Applications/Sandbox/SandboxApp.cpp", "line": 15}], "stoppedBy": [{"module": "Applications/Sandbox/SandboxApp", "func": "~Sandbox", "caller": "Sandbox::~Sandbox()", "call": "Window::Shutdown", "file": "Applications/Sandbox/SandboxApp.cpp", "line": 20}]}, "functions": 19, "kind": "static", "description": "Process-wide GLFW window.", "target": "Engine"}}, "roots": [{"target": "Sandbox", "main": {"module": "Applications/Sandbox/SandboxEntry", "file": "Applications/Sandbox/SandboxEntry.cpp", "line": 3}, "children": [{"module": "Applications/Sandbox/SandboxApp", "edge": {"rel": "local", "via": "sandbox", "func": "main", "mult": "1", "file": "Applications/Sandbox/SandboxEntry.cpp", "line": 5}, "children": [{"module": "Engine/Core/Timer", "edge": {"rel": "local", "via": "timer", "func": "Run", "mult": "1", "file": "Applications/Sandbox/SandboxApp.cpp", "line": 26}, "children": []}, {"module": "Engine/Graphics/Vulkan/VulkanRenderer", "edge": {"rel": "local", "via": "vkRenderer", "func": "Run", "mult": "1", "file": "Applications/Sandbox/SandboxApp.cpp", "line": 29}, "children": [{"module": "Engine/Graphics/Vulkan/VulkanContext", "edge": {"rel": "own", "via": "m_Context", "mult": "1", "order": 1, "record": "VulkanRenderer", "file": "Engine/Graphics/Vulkan/VulkanRenderer.hpp", "line": 54}, "children": [{"module": "Engine/Graphics/Vulkan/VulkanPhysicalDevice", "edge": {"rel": "own", "via": "m_PhysicalDevice", "mult": "1", "order": 5, "record": "VulkanContext", "file": "Engine/Graphics/Vulkan/VulkanContext.hpp", "line": 46}, "children": []}, {"module": "Engine/Graphics/Vulkan/VulkanDevice", "edge": {"rel": "own", "via": "m_Device", "mult": "1", "order": 6, "record": "VulkanContext", "file": "Engine/Graphics/Vulkan/VulkanContext.hpp", "line": 47}, "children": []}, {"module": "Engine/Graphics/Vulkan/VulkanSwapchain", "edge": {"rel": "own", "via": "m_Swapchain", "mult": "1", "order": 7, "record": "VulkanContext", "file": "Engine/Graphics/Vulkan/VulkanContext.hpp", "line": 48}, "children": []}]}, {"module": "Engine/Graphics/UI/ImGuiLayer", "edge": {"rel": "own", "via": "m_ImGuiLayer", "mult": "1", "order": 2, "record": "VulkanRenderer", "file": "Engine/Graphics/Vulkan/VulkanRenderer.hpp", "line": 55}, "children": [{"module": "Engine/Graphics/Vulkan/VulkanDescriptorPool", "edge": {"rel": "own", "via": "m_DescriptorPool", "mult": "1", "order": 2, "record": "ImGuiLayer", "file": "Engine/Graphics/UI/ImGuiLayer.hpp", "line": 33}, "children": []}]}, {"module": "Engine/Graphics/UI/ProfilerPanel", "edge": {"rel": "own", "via": "m_ProfilerPanel", "mult": "1", "order": 3, "record": "VulkanRenderer", "file": "Engine/Graphics/Vulkan/VulkanRenderer.hpp", "line": 56}, "children": []}, {"module": "Engine/Graphics/Vulkan/VulkanGlobalUniforms", "edge": {"rel": "own", "via": "m_VulkanGlobalUniforms", "mult": "1", "order": 5, "record": "VulkanRenderer", "file": "Engine/Graphics/Vulkan/VulkanRenderer.hpp", "line": 60}, "children": [{"module": "Engine/Graphics/Vulkan/VulkanDescriptorPool", "edge": {"rel": "own", "via": "m_DescriptorPool", "mult": "1", "order": 2, "record": "VulkanGlobalUniforms", "file": "Engine/Graphics/Vulkan/VulkanGlobalUniforms.hpp", "line": 68}, "children": []}, {"module": "Engine/Graphics/Vulkan/VulkanDescriptorSetLayout", "edge": {"rel": "own", "via": "m_DescriptorLayout", "mult": "1", "order": 3, "record": "VulkanGlobalUniforms", "file": "Engine/Graphics/Vulkan/VulkanGlobalUniforms.hpp", "line": 69}, "children": []}]}, {"module": "Engine/Graphics/Vulkan/VulkanShader", "edge": {"rel": "own", "via": "m_Shaders", "mult": "2", "order": 7, "record": "VulkanRenderer", "file": "Engine/Graphics/Vulkan/VulkanRenderer.hpp", "line": 64}, "children": []}, {"module": "Engine/Graphics/Vulkan/VulkanModel", "edge": {"rel": "own", "via": "m_Models", "mult": "2", "order": 8, "record": "VulkanRenderer", "file": "Engine/Graphics/Vulkan/VulkanRenderer.hpp", "line": 65}, "children": []}, {"module": "Engine/Graphics/Vulkan/VulkanPipeline", "edge": {"rel": "own", "via": "m_Pipelines", "mult": "1", "order": 9, "record": "VulkanRenderer", "file": "Engine/Graphics/Vulkan/VulkanRenderer.hpp", "line": 66}, "children": []}]}]}]}], "bands": {"static": ["Engine/Graphics/Import/ObjLoader", "Engine/Graphics/Vulkan/VulkanAllocator", "Engine/Graphics/Vulkan/VulkanDebug", "Engine/Platform/Window"], "stateless": ["Engine/Core/Memory", "Engine/Core/Utility", "Engine/Debug/LogTable", "Engine/Graphics/Vulkan/VulkanSwapchainUtils"], "uninstanced": []}, "findings": [], "checks": 8, "warnings": []}}</script>
+<script type="application/json" id="overview-view">{
+ "title": "VK_Endevaour",
+ "targets": {
+  "Sandbox": {
+   "order": 1,
+   "description": "Demo app: loads assets, runs the frame loop."
+  },
+  "EngineTests": {
+   "order": 2,
+   "description": "doctest black-box tests."
+  },
+  "Engine": {
+   "description": "Engine library: platform, core, debug, graphics."
+  }
+ },
+ "dirs": {
+  "Engine/Platform": {
+   "order": 1,
+   "description": "GLFW window and surface."
+  },
+  "Engine/Core": {
+   "order": 2,
+   "description": "Types, ownership aliases, timer, utilities."
+  },
+  "Engine/Graphics": {
+   "order": 3,
+   "description": "Import, resources, UI, Vulkan backend."
+  },
+  "Engine/Debug": {
+   "order": 4,
+   "description": "Logging and ASSERT macros."
+  },
+  "Engine/Graphics/Import": {
+   "order": 1,
+   "description": "OBJ import."
+  },
+  "Engine/Graphics/Resources": {
+   "order": 2,
+   "description": "CPU mesh."
+  },
+  "Engine/Graphics/UI": {
+   "order": 3,
+   "description": "ImGui layer and profiler."
+  },
+  "Engine/Graphics/Vulkan": {
+   "order": 4,
+   "description": "Vulkan backend and renderer."
+  },
+  "Applications/Sandbox/Shaders": {
+   "description": "GLSL, compiled by the Shaders target."
+  }
+ },
+ "externals": {
+  "glfw": {
+   "description": "Window and input."
+  },
+  "fmt": {
+   "description": "Formatting and logging."
+  },
+  "imgui": {
+   "description": "Immediate-mode GUI."
+  },
+  "glm": {
+   "description": "Math; detail/glm.cpp is compiled in."
+  },
+  "VulkanMemoryAllocator": {
+   "description": "GPU memory allocation."
+  },
+  "tinyobjloader": {
+   "description": "OBJ parser."
+  },
+  "doctest": {
+   "description": "Test framework."
+  },
+  "stb_image": {
+   "description": "Image loader."
+  }
+ },
+ "modules": {
+  "Applications/Sandbox/SandboxEntry": {
+   "description": "Entry point."
+  },
+  "Applications/Sandbox/SandboxApp": {
+   "description": "Window lifecycle and frame loop."
+  },
+  "Engine/Core/Timer": {
+   "description": "Frame timing."
+  },
+  "Engine/Core/Memory": {
+   "description": "Scope/Ref ownership aliases."
+  },
+  "Engine/Core/Utility": {
+   "description": "File and format helpers."
+  },
+  "Engine/Debug/LogTable": {
+   "description": "Tabular log output."
+  },
+  "Engine/Graphics/Import/ObjLoader": {
+   "description": "OBJ to CPU mesh."
+  },
+  "Engine/Graphics/UI/ImGuiLayer": {
+   "description": "ImGui on GLFW/Vulkan."
+  },
+  "Engine/Graphics/UI/ProfilerPanel": {
+   "description": "Timing and render stats."
+  },
+  "Engine/Graphics/Vulkan/VulkanRenderer": {
+   "description": "Backend facade."
+  },
+  "Engine/Graphics/Vulkan/VulkanContext": {
+   "description": "Instance, surface, devices, swapchain."
+  },
+  "Engine/Graphics/Vulkan/VulkanPhysicalDevice": {
+   "description": "GPU selection and capabilities."
+  },
+  "Engine/Graphics/Vulkan/VulkanDevice": {
+   "description": "Logical device and queues."
+  },
+  "Engine/Graphics/Vulkan/VulkanSwapchain": {
+   "description": "Images, render targets, frames, present."
+  },
+  "Engine/Graphics/Vulkan/VulkanGlobalUniforms": {
+   "description": "Per-frame uniform buffers."
+  },
+  "Engine/Graphics/Vulkan/VulkanDescriptorPool": {
+   "description": "Descriptor pool (RAII)."
+  },
+  "Engine/Graphics/Vulkan/VulkanDescriptorSetLayout": {
+   "description": "Descriptor set layout (RAII)."
+  },
+  "Engine/Graphics/Vulkan/VulkanShader": {
+   "description": "SPIR-V shader module."
+  },
+  "Engine/Graphics/Vulkan/VulkanModel": {
+   "description": "Vertex and index buffers."
+  },
+  "Engine/Graphics/Vulkan/VulkanPipeline": {
+   "description": "Graphics pipeline and layout."
+  },
+  "Engine/Graphics/Vulkan/VulkanAllocator": {
+   "description": "VMA buffer and image allocation."
+  },
+  "Engine/Graphics/Vulkan/VulkanDebug": {
+   "description": "Validation layers and messenger."
+  },
+  "Engine/Graphics/Vulkan/VulkanSwapchainUtils": {
+   "description": "Swapchain choices, layout transitions."
+  },
+  "Engine/Platform/Window": {
+   "description": "Process-wide GLFW window."
+  }
+ }
+}</script>
+<script>
+"use strict";
+const D = JSON.parse(document.getElementById("overview-data").textContent);
+// UI text. Panel headings (h4) are uppercased by CSS, so fragments stay lowercase and read the same inline.
+const plural = (n, word) => `${n} ${word}${n === 1 ? "" : "s"}`;
+const L = {
+  EXECUTABLE: "executable", STATIC_LIBRARY: "static library", SHARED_LIBRARY: "shared library",
+  MODULE_LIBRARY: "module library", INTERFACE_LIBRARY: "interface library", OBJECT_LIBRARY: "object library",
+  LIBRARY: "library", UTILITY: "custom target",
+  tabLayers: "Layers", tabOwn: "Ownership", showFiles: "All files",
+  vendored: "vendored", system: "system / SDK", unassigned: "No build target",
+  files: "files", loc: "lines", kind: "kind", path: "path", types: "types", sourceDir: "source", artifacts: "artifacts",
+  uses: "includes", usedBy: "included by", usesExt: "external",
+  linksTo: "links", linkedBy: "linked by", buildDeps: "build dependencies", cmakeTargets: "CMake target",
+  compiledInto: "compiled into", includedIn: "included in", notUsed: "not included anywhere",
+  none: "–",
+  buildFrom: { "cmake-file-api": "CMake File API", "cmake-regex": "CMakeLists (regex)", none: "no build system" },
+  generated: "generated",
+  legendExe: "executable", legendLib: "static library", legendShared: "shared library", legendIface: "interface library",
+  legendArrow: "arrow: library → linking target", legendOut: "uses", legendIn: "used by", legendBoth: "both (cycle)",
+  legendOwned: "owned member", legendLocal: "created in function", legendMult: "count", legendOrder: "creation order",
+  legendBorrow: "borrows", legendFinding: "lifetime finding",
+  fileCount: n => plural(n, "file"), inFiles: n => plural(n, "file"), handleCount: n => plural(n, "handle"),
+  valueCount: n => plural(n, "value"),
+  header: "header", source: "source", shader: "shader",
+  entry: "entry", noMain: "No main() in project code, so no ownership tree.",
+  shared: "shared", recursive: "recursive",
+  bandStatic: "Global state", bandStateless: "Stateless", bandUninstanced: "Never instantiated",
+  kindLabel: { instanced: "component", static: "global state", stateless: "stateless", uninstanced: "never instantiated", data: "data" },
+  state: "state", startedBy: "started by", stoppedBy: "stopped by", calledBy: "called by",
+  instances: "owned by", owns: "owns", borrows: "borrows", data: "values", handles: "handles",
+  localData: "local values", staticState: "static state", lifecycle: "lifecycle", calls: "calls", callers: "called by",
+  modFindings: "findings", toLayers: "Show in Layers →", toOwn: "Show in Ownership →",
+  findings: "Lifetime check",
+  rules: "Rules: a borrowed sibling member is created first and destroyed last. Every Init has a Shutdown.",
+  noFindings: n => `No violations in ${plural(n, "checked relation")}.`,
+  stats: o => `${o.translationUnits} translation units (${o.cachedUnits} cached) · ${o.seconds} s · ${o.compileDb}`,
+  rule: {
+    "destroy-order": f => `${short(f.owner)}: ${f.b} is destroyed before ${f.a}, which borrows ${short(f.bType)}.`,
+    "create-order": f => `${short(f.owner)}: ${f.a} is created before ${f.b}, which it borrows (${short(f.bType)}).`,
+    "lifecycle-missing-stop": f => `${modName(f.modules[0])}: ${f.call} has no matching Shutdown.`,
+    "lifecycle-missing-start": f => `${modName(f.modules[0])}: ${f.call} has no matching Init.`,
+  },
+};
+
+const SYM = { EXECUTABLE: "✱", STATIC_LIBRARY: "△", LIBRARY: "△", SHARED_LIBRARY: "◇", MODULE_LIBRARY: "◇",
+  INTERFACE_LIBRARY: "○", OBJECT_LIBRARY: "▢", UTILITY: "⚙" };
+const ACCENT = { EXECUTABLE: "--exe", STATIC_LIBRARY: "--lib", LIBRARY: "--lib", SHARED_LIBRARY: "--shared",
+  MODULE_LIBRARY: "--shared", INTERFACE_LIBRARY: "--iface", OBJECT_LIBRARY: "--iface" };
+
+// ================================================================================================
+// Shared core: DOM helpers, panel, selection, marks, overlays, tabs
+// ================================================================================================
+const el = (tag, attrs = {}, ...kids) => {
+  const e = tag === "svg" ? document.createElementNS("http://www.w3.org/2000/svg", "svg") : document.createElement(tag);
+  for (const [k, v] of Object.entries(attrs)) {
+    if (v === undefined || v === null || v === false) continue;
+    if (k === "class") e.setAttribute("class", v); else if (k === "text") e.textContent = v;
+    else if (k.startsWith("on")) e.addEventListener(k.slice(2), v); else e.setAttribute(k, v);
+  }
+  for (const k of kids.flat()) if (k !== null && k !== undefined && k !== false) e.append(k);
+  return e;
+};
+const base = n => n.split("/").pop();
+const dir = p => p.includes("/") ? p.slice(0, p.lastIndexOf("/")) : "";
+const short = q => (q || "").split("::").pop();
+const camelBreak = s => s.replace(/([a-z0-9])([A-Z])/g, "$1​$2");   // wrap long names only at CamelCase boundaries
+const href = p => (D.linkBase ? D.linkBase + "/" : "") + p;
+const css = s => CSS.escape(s);
+const $ = s => document.querySelector(s);
+const $$ = s => [...document.querySelectorAll(s)];
+
+const panel = document.getElementById("panel");
+const list = (items, fmt) => items.length ? el("ul", {}, items.map(fmt)) : el("p", { class: "muted", text: L.none });
+const section = (title, items, fmt, cls) => [el("h4", { class: cls, text: title }), list(items, fmt)];
+const kv = pairs => el("dl", { class: "kv" }, pairs.filter(p => p && p[1] !== undefined && p[1] !== null && p[1] !== "")
+  .flatMap(([k, v, c]) => [el("dt", { text: k }), el("dd", { class: c, text: String(v) })]));
+const fileLink = p => el("a", { href: href(p), target: "_blank", class: "mono", text: p });
+const fileLinkLine = (p, line) => el("a", { href: href(p), target: "_blank", class: "mono", text: line ? `${p}:${line}` : p });
+const pick = (sel, cls) => $$(sel).forEach(e => e.classList.add(cls));
+
+// Kind of selection -> view it lives in, and its handler
+const VIEW_OF = { dir: "layers", file: "layers", target: "layers", ext: "layers", mod: "own" };
+const SELECT = {};
+const overlays = [];   // functions redrawing selection-dependent and static lines
+
+function clearMarks() {
+  $$(".sel, .rel-out, .rel-in").forEach(e => e.classList.remove("sel", "rel-out", "rel-in"));
+  highlights.length = 0;
+  extraLines.length = 0;
+}
+function select(kind, id) {
+  showView(VIEW_OF[kind]);
+  clearMarks();
+  try { history.replaceState(null, "", `#${kind}=${encodeURIComponent(id)}`); } catch (_) {}
+  panel.classList.remove("empty");
+  panel.replaceChildren(...SELECT[kind](id).flat().filter(Boolean));
+  redraw();
+}
+function resetPanel() {
+  clearMarks();
+  try { if (location.hash) history.replaceState(null, "", location.pathname + location.search); } catch (_) {}
+  panel.classList.add("empty");
+  panel.replaceChildren();
+  redraw();
+}
+const onSelect = (kind, id) => e => { e.stopPropagation(); select(kind, id); };
+
+// Lines: static ones (layer links, tree connectors) are always drawn and get highlighted when the
+// selection touches them; extra lines (borrows) exist only for the selection.
+const highlights = [];   // { from, to, color } matching a static line by its end elements
+const extraLines = [];   // { from, to, color, dashed }
+function route(a, b, box, style) {
+  if (style === "tree") {
+    const x1 = a.right - box.left, y1 = a.top + 21 - box.top, x2 = b.left - box.left;
+    // Straight when the parent's connector height already meets the child card; bend only to branch down
+    if (y1 >= b.top - box.top + 8 && y1 <= b.bottom - box.top - 8) return `M${x1},${y1} H${x2}`;
+    const y2 = b.top + 21 - box.top, xm = x1 + Math.min(22, (x2 - x1) / 2);
+    return `M${x1},${y1} H${xm} V${y2} H${x2}`;
+  }
+  if (style === "vertical") {
+    const cx = b.left + b.width / 2 - box.left;
+    const x = Math.min(Math.max(cx, a.left - box.left + 24), a.right - box.left - 24);
+    const y1 = a.top - box.top - 1, y2 = b.bottom - box.top + 6, mid = y2 + (y1 - y2) / 2;
+    return Math.abs(x - cx) < 1 ? `M${x},${y1} V${y2}` : `M${x},${y1} V${mid} H${cx} V${y2}`;
+  }
+  const y1 = a.top + Math.min(a.height / 2, 22) - box.top, y2 = b.top + Math.min(b.height / 2, 22) - box.top;
+  // Same column: loop out of the right edges so the curve never crosses the cards in between
+  if (b.left < a.right && a.left < b.right) {
+    const x1 = a.right - box.left, x2 = b.right + 6 - box.left, out = Math.max(x1, x2) + 46;
+    return `M${x1},${y1} C${out},${y1} ${out},${y2} ${x2},${y2}`;
+  }
+  const forward = b.left >= a.right;
+  const x1 = (forward ? a.right : a.left) - box.left, x2 = (forward ? b.left - 6 : b.right + 6) - box.left;
+  const bend = Math.max(40, Math.abs(x2 - x1) / 2) * (forward ? 1 : -1);
+  return `M${x1},${y1} C${x1 + bend},${y1} ${x2 - bend},${y2} ${x2},${y2}`;
+}
+function drawLines(svg, container, lines) {
+  const box = container.getBoundingClientRect();
+  const dashed = [], solid = [], lit = [];
+  for (const line of [...lines, ...extraLines.filter(l => container.contains(l.from) && container.contains(l.to))]) {
+    const a = line.from.getBoundingClientRect(), b = line.to.getBoundingClientRect();
+    if (!a.width || !b.width) continue;
+    const hl = highlights.find(h => h.from === line.from && h.to === line.to);
+    const color = hl ? hl.color : line.color;
+    // Whole pixels and fixed widths: shared trunk segments overlap exactly and keep one uniform thickness
+    const d = route(a, b, box, line.style).replace(/-?\d+(\.\d+)?/g, n => Math.round(Number(n)));
+    const path = `<path d="${d}" fill="none" stroke="var(${color})" stroke-width="${hl ? 3.5 : 2}"` +
+      `${line.dashed ? ' stroke-dasharray="5 4"' : ""}${line.arrow === false ? "" : ` marker-end="url(#ah${color.slice(2)})"`}/>`;
+    (hl || extraLines.includes(line) ? lit : line.dashed ? dashed : solid).push(path);
+  }
+  const paths = [...dashed, ...solid, ...lit];   // solid trunks over dashed ones, highlights on top
+  // Fixed-size arrow heads: highlighted (thicker) lines keep the same head
+  const marker = c => `<marker id="ah${c}" viewBox="0 0 10 10" refX="9" refY="5" markerUnits="userSpaceOnUse" markerWidth="11" markerHeight="11" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="var(--${c})"/></marker>`;
+  svg.innerHTML = `<defs>${["wire", "out", "in", "warn"].map(marker).join("")}</defs>` + paths.join("");
+}
+const redraw = () => requestAnimationFrame(() => overlays.forEach(f => f()));
+new ResizeObserver(redraw).observe(document.querySelector(".main"));
+
+// Tabs and per-view legend
+const LEGENDS = {};
+const ON_SHOW = {};   // per-view hooks that need a visible layout (measuring)
+function showView(view) {
+  if (!view || !document.querySelector(`[data-view="${view}"]`)) return;
+  $$("[data-view]").forEach(e => { e.hidden = e.dataset.view !== view; });
+  $$(".tab").forEach(t => t.setAttribute("aria-selected", String(t.dataset.tab === view)));
+  document.getElementById("legend").replaceChildren(...(LEGENDS[view] || []));
+  document.getElementById("toggle-files").hidden = view !== "layers";
+  document.body.dataset.activeView = view;
+  ON_SHOW[view]?.();
+  redraw();
+}
+const swatch = (style, label, cls = "sw") => el("span", {}, el("span", { class: cls, style }), label);
+const symbol = (sym, label, color) => el("span", {}, el("b", { style: color ? `color: var(${color})` : "", text: sym }), label);
+
+// ================================================================================================
+// Header
+// ================================================================================================
+document.getElementById("title").textContent = D.title;
+{
+  const meta = document.getElementById("meta");
+  if (D.git.commit) meta.append(el("span", { class: "chip mono", text: [D.git.branch, D.git.commit].filter(Boolean).join(" @ ") }));
+  const b = D.build;
+  meta.append(el("span", { class: "chip" + (b.source === "cmake-file-api" ? "" : " warn"),
+    text: [L.buildFrom[b.source], b.generator, b.config, b.compiler].filter(Boolean).join(" · ") }));
+  meta.append(el("span", { class: "chip", text: `${L.generated} ${D.generated}` }));
+}
+
+// ================================================================================================
+// Layer view
+// ================================================================================================
+const files = D.files;
+const includedBy = {};
+for (const f of Object.values(files)) for (const i of f.includes) (includedBy[i] ||= []).push(f.path);
+const targets = Object.fromEntries(D.targets.map(t => [t.name, t]));
+const isLinkable = t => t && t.type !== "UTILITY";
+const nodeFiles = new Map();
+const collect = n => { const all = [...n.files, ...n.children.flatMap(collect)]; nodeFiles.set(n.path, all); return all; };
+for (const t of D.targets) if (t.tree) collect(t.tree);
+const locOf = paths => [...paths].reduce((s, p) => s + (files[p]?.loc || 0), 0);
+
+LEGENDS.layers = [
+  symbol("✱", L.legendExe, "--exe"), symbol("△", L.legendLib, "--lib"), symbol("◇", L.legendShared, "--shared"),
+  symbol("○", L.legendIface, "--iface"), swatch("background: var(--out)", L.legendOut), swatch("background: var(--in)", L.legendIn),
+  swatch("background: linear-gradient(135deg, var(--out) 50%, var(--in) 50%)", L.legendBoth), el("span", { text: L.legendArrow })];
+
+const stack = document.getElementById("stack");
+const level = {};
+const levelOf = name => {
+  if (name in level) return level[name];
+  level[name] = 0;
+  const deps = targets[name].deps.filter(d => isLinkable(targets[d]));
+  return level[name] = deps.length ? 1 + Math.max(...deps.map(levelOf)) : 0;
+};
+const rowTargets = D.targets.filter(isLinkable);
+rowTargets.forEach(t => levelOf(t.name));
+
+function fileButton(path, fullPath) {
+  return el("button", { class: "file", "data-file": path, onclick: onSelect("file", path) },
+    el("span", { text: fullPath ? path : base(path) }), el("span", { class: "loc", text: files[path].loc }));
+}
+const fileLists = [];   // setters for every collapsible file list, used by "All files"
+function appendFiles(container, paths, fullPath = false) {
+  // Blocks already show their file count in the header
+  const count = container.classList.contains("block") ? L.files : L.fileCount(paths.length);
+  const toggle = el("button", { class: "ftoggle" });
+  const set = open => { container.classList.toggle("open", open); toggle.textContent = `${open ? "▾" : "▸"} ${count}`; };
+  set(false);
+  toggle.addEventListener("click", e => { e.stopPropagation(); set(!container.classList.contains("open")); redraw(); });
+  fileLists.push(set);
+  container.append(toggle, el("div", { class: "files" }, paths.map(p => fileButton(p, fullPath))));
+}
+function blockEl(n) {
+  const box = el("div", { class: "block", "data-path": n.path },
+    el("button", { class: "bh", onclick: onSelect("dir", n.path) },
+      el("span", { text: n.label }), el("span", { class: "cnt", text: L.fileCount(nodeFiles.get(n.path).length) })),
+    n.description ? el("p", { class: "bd", text: n.description }) : null,
+    n.children.length ? el("div", { class: "kids" }, n.children.map(blockEl)) : null);
+  if (n.files.length) appendFiles(box, n.files);
+  return box;
+}
+function targetCard(t) {
+  const utility = t.deps.filter(d => targets[d]?.type === "UTILITY");
+  const card = el("div", { class: `tcard ${t.type === "EXECUTABLE" ? "exe" : "lib"}`, "data-target": t.name, "data-path": t.tree.path,
+      style: `--accent: var(${ACCENT[t.type] || "--iface"})`, onclick: onSelect("target", t.name) },
+    el("div", { class: "thead" }, el("span", { class: "sym", text: SYM[t.type] || "△" }), el("span", { class: "tname", text: t.label }),
+      el("span", { class: "ttype", text: L[t.type] || t.type }),
+      el("span", { class: "art mono", text: t.artifacts.filter(a => !/\.(pdb|ilk|exp)$/i.test(a)).join(" ") })),
+    t.description ? el("p", { class: "tdesc", text: t.description }) : null,
+    utility.length ? el("div", { class: "subchips" }, utility.map(u => el("span", { class: "chip", text: `⚙ ${u} · ${L.UTILITY}` }))) : null,
+    t.tree.children.length ? el("div", { class: "kids" }, t.tree.children.map(blockEl)) : null);
+  if (t.tree.files.length) appendFiles(card, t.tree.files);
+  return card;
+}
+[...new Set(rowTargets.map(t => level[t.name]))].sort((a, b) => b - a).forEach(lv => {
+  const ts = rowTargets.filter(t => level[t.name] === lv).sort((a, b) => (a.order - b.order) || a.label.localeCompare(b.label));
+  stack.append(el("div", { class: "row" },
+    ts.map(targetCard)));
+});
+if (D.unassigned.length) {
+  const card = el("div", { class: "tcard lib unassigned" },
+    el("div", { class: "thead" }, el("span", { class: "sym", text: "?" }), el("span", { class: "tname", text: L.unassigned })));
+  appendFiles(card, D.unassigned, true);
+  stack.append(el("div", { class: "row" }, card));
+}
+// One phrase for card previews: how the dependency enters the build
+function integrationShort(e) {
+  const users = [...new Set([...e.linkedBy, ...e.compiledInto, ...Object.keys(e.includedBy)])].join(", ");
+  if (e.cmakeTargets.length) return `CMake target · ${users}`;
+  if (e.compiledInto.length) return `compiled into ${e.compiledInto.join(", ")}`;
+  if (e.implementedIn?.length) return `implemented in ${e.implementedIn.map(base).join(", ")}`;
+  if (e.linkedBy.length) return `linked by ${e.linkedBy.join(", ")}`;
+  if (users) return `header-only · ${users}`;
+  return L.notUsed;
+}
+function integration(e) {
+  const parts = [];
+  if (e.cmakeTargets.length) parts.push(`${L.cmakeTargets}: ${e.cmakeTargets.join(", ")}`);
+  if (e.linkedBy.length) parts.push(`${L.linkedBy} ${e.linkedBy.join(", ")}`);
+  if (e.compiledInto.length) parts.push(`${L.compiledInto} ${e.compiledInto.join(", ")}`);
+  if (e.implementedIn?.length) parts.push(`implemented in ${e.implementedIn.join(", ")}`);
+  const inc = Object.entries(e.includedBy);
+  if (inc.length) parts.push(`${L.includedIn} ${inc.map(([t, fs]) => `${t} (${L.inFiles(fs.length)})`).join(", ")}`);
+  return parts;
+}
+{
+  const extRow = el("div", { class: "row" });
+  for (const kind of ["vendored"]) {
+    const items = D.externals.filter(e => e.kind === kind);
+    if (!items.length) continue;
+    extRow.append(el("div", { class: "mini-group" },
+      el("h3", { class: "group-title" }, L[kind], kind === "vendored" && items[0].path ? el("span", { class: "mono", text: dir(items[0].path) + "/" }) : null),
+      el("div", { class: "mini-list" }, items.map(e => {
+        const parts = integration(e);
+        return el("div", { class: "mini" + (parts.length ? "" : " unused"), "data-ext": e.name, onclick: onSelect("ext", e.name) },
+          el("div", { class: "en", text: e.name }), e.description ? el("div", { class: "ed", text: e.description }) : null,
+          el("div", { class: "ei", text: integrationShort(e) }));
+      }))));
+  }
+  stack.append(extRow);
+}
+overlays.push(() => {
+  if (document.body.dataset.activeView !== "layers") return;
+  const lines = [];
+  for (const t of rowTargets) for (const d of t.deps.filter(d => isLinkable(targets[d]))) {
+    const from = stack.querySelector(`[data-target="${css(d)}"]`), to = stack.querySelector(`[data-target="${css(t.name)}"]`);
+    if (from && to) lines.push({ from, to, style: "vertical", color: "--wire" });
+  }
+  drawLines(document.getElementById("wires"), stack, lines);
+});
+
+// One card width for the layer view: the widest leaf block with its file list open, so opening a
+// list never changes a width and nothing is cut off. External cards use the same width.
+ON_SHOW.layers = () => {
+  if (document.documentElement.style.getPropertyValue("--card-w")) return;
+  const leaves = $$("#stack .block").filter(b => !b.querySelector(":scope > .kids"));
+  if (!leaves.length || !stack.offsetWidth) return;
+  leaves.forEach(b => b.classList.add("measure"));
+  const widest = Math.max(220, ...leaves.map(b => Math.ceil(b.getBoundingClientRect().width)));
+  leaves.forEach(b => b.classList.remove("measure"));
+  document.documentElement.style.setProperty("--card-w", `${widest}px`);
+};
+
+// Layer relations
+const countBy = (paths, key) => {
+  const m = {};
+  for (const p of paths) { const k = key(p); m[k] = (m[k] || 0) + 1; }
+  return Object.entries(m).sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]));
+};
+function relations(set) {
+  const out = new Set(), inn = new Set(), ext = new Set();
+  for (const p of set) {
+    files[p].includes.forEach(i => { if (!set.has(i)) out.add(i); });
+    (includedBy[p] || []).forEach(u => { if (!set.has(u)) inn.add(u); });
+    files[p].externals.forEach(e => ext.add(e));
+  }
+  return { out: [...out], inn: [...inn], ext: [...ext].sort() };
+}
+function markFiles(paths, cls) {
+  for (const p of paths) {
+    pick(`.block[data-path="${css(dir(p))}"], .tcard[data-path="${css(dir(p))}"]`, cls);
+    pick(`.file[data-file="${css(p)}"]`, cls);
+  }
+}
+const markExt = names => names.forEach(n => pick(`.mini[data-ext="${css(n)}"]`, "rel-out"));
+const dirList = (paths, cls) => list(countBy(paths, dir), ([d, n]) => el("li", {}, el("span", { class: cls, text: d || "." }), ` (${n})`));
+const typesLine = types => types.length ? el("p", { class: "mono", text: types.join(", ") }) : el("p", { class: "muted", text: L.none });
+
+SELECT.dir = id => {
+  const set = new Set(nodeFiles.get(id));
+  const node = $(`.block[data-path="${css(id)}"]`);
+  node.classList.add("sel");
+  const r = relations(set);
+  markFiles(r.out, "rel-out"); markFiles(r.inn, "rel-in"); markExt(r.ext);
+  return [el("h2", { text: node.querySelector(".bh span").textContent }), el("p", { class: "mono muted", text: id }),
+    node.querySelector(":scope > .bd") ? el("p", { text: node.querySelector(":scope > .bd").textContent }) : null,
+    kv([[L.files, set.size], [L.loc, locOf(set)]]),
+    el("h4", { class: "tag-out", text: L.uses }), dirList(r.out, "tag-out"),
+    el("h4", { class: "tag-in", text: L.usedBy }), dirList(r.inn, "tag-in"),
+    section(L.usesExt, r.ext, e => el("li", { text: e })),
+    el("h4", { text: L.types }), typesLine([...set].flatMap(p => files[p].types))];
+};
+SELECT.file = id => {
+  const f = files[id];
+  pick(`.file[data-file="${css(id)}"]`, "sel");
+  markFiles(f.includes, "rel-out"); markFiles(includedBy[id] || [], "rel-in"); markExt(f.externals);
+  const mod = moduleOfFile(id);
+  return [el("h2", { text: base(id) }), el("p", {}, fileLink(id)),
+    kv([[L.kind, L[f.kind]], [L.loc, f.loc], f.target && ["target", f.target + (f.alsoIn?.length ? `, ${f.alsoIn.join(", ")}` : "")]]),
+    el("h4", { text: L.types }), typesLine(f.types),
+    section(L.uses, f.includes, p => el("li", {}, fileLink(p)), "tag-out"),
+    section(L.usedBy, includedBy[id] || [], p => el("li", {}, fileLink(p)), "tag-in"),
+    section(L.usesExt, f.externals, e => el("li", { text: e })),
+    mod ? el("button", { class: "btn jump", onclick: onSelect("mod", mod), text: L.toOwn }) : null];
+};
+SELECT.target = id => {
+  const t = targets[id];
+  $(`.tcard[data-target="${css(id)}"]`).classList.add("sel");
+  const set = new Set(nodeFiles.get(t.tree.path));
+  const linkedBy = D.targets.filter(o => o.deps.includes(id)).map(o => o.name);
+  const ext = D.externals.filter(e => e.linkedBy.includes(id) || e.compiledInto.includes(id) || e.includedBy[id]);
+  t.deps.forEach(d => pick(`.tcard[data-target="${css(d)}"]`, "rel-out"));
+  linkedBy.forEach(d => pick(`.tcard[data-target="${css(d)}"]`, "rel-in"));
+  const card = name => $(`.tcard[data-target="${css(name)}"]`);
+  t.deps.forEach(d => card(d) && highlights.push({ from: card(d), to: card(id), color: "--out" }));
+  linkedBy.forEach(d => card(d) && highlights.push({ from: card(id), to: card(d), color: "--in" }));
+  markExt(ext.map(e => e.name));
+  return [el("h2", { text: `${SYM[t.type] || ""} ${t.label}` }), t.description ? el("p", { text: t.description }) : null,
+    kv([[L.kind, L[t.type] || t.type], [L.artifacts, t.artifacts.join(", ") || L.none, "mono"], [L.sourceDir, t.sourceDir, "mono"],
+      [L.files, set.size], [L.loc, locOf(set)]]),
+    section(L.linksTo, t.deps.filter(d => isLinkable(targets[d])), d => el("li", { text: d }), "tag-out"),
+    section(L.linkedBy, linkedBy, d => el("li", { text: d }), "tag-in"),
+    section(L.buildDeps, t.deps.filter(d => targets[d]?.type === "UTILITY"), d => el("li", { text: `${d} (${L.UTILITY})` })),
+    section(L.usesExt, ext, e => el("li", { text: e.name }))];
+};
+SELECT.ext = id => {
+  const e = D.externals.find(x => x.name === id);
+  $(`.mini[data-ext="${css(id)}"]`).classList.add("sel");
+  const users = Object.values(e.includedBy).flat();
+  markFiles(users, "rel-in");
+  [...e.linkedBy, ...e.compiledInto].forEach(t => pick(`.tcard[data-target="${css(t)}"]`, "rel-in"));
+  return [el("h2", { text: e.name }), e.description ? el("p", { text: e.description }) : null,
+    kv([[L.kind, L[e.kind]], e.path && [L.path, e.path, "mono"]]),
+    section("integration", integration(e), s => el("li", { text: s })),
+    section(L.usedBy, users, p => el("li", {}, fileLink(p)), "tag-in")];
+};
+
+// ================================================================================================
+// Ownership view
+// ================================================================================================
+const O = D.own;
+const mods = O ? O.modules : {};
+const modName = key => mods[key]?.name || base(key || "");
+const fileModule = {};
+for (const [key, m] of Object.entries(mods)) for (const f of m.files) fileModule[f] = key;
+function moduleOfFile(path) { return fileModule[path] && mods[fileModule[path]].kind !== "data" ? fileModule[path] : null; }
+const findingsOf = key => (O?.findings || []).filter(f => f.modules.includes(key));
+const callers = {};
+for (const [key, m] of Object.entries(mods)) for (const target of Object.keys(m.calls)) (callers[target] ||= []).push(key);
+const borrowers = {};
+for (const [key, m] of Object.entries(mods)) for (const b of m.borrows) (borrowers[b.target] ||= new Set()).add(key);
+
+if (O) {
+  LEGENDS.own = [
+    swatch("", L.legendOwned, "sw box"), swatch("", L.legendLocal, "sw box dashed"),
+    symbol("×2", " " + L.legendMult, "--lib"), symbol("#1", " " + L.legendOrder), symbol("⇢", " " + L.legendBorrow, "--out"),
+    swatch("background: var(--out)", L.legendOut), swatch("background: var(--in)", L.legendIn),
+    symbol("⚠", " " + L.legendFinding, "--err")];
+  const tabs = document.getElementById("tabs");
+  tabs.hidden = false;
+  for (const [view, label] of [["layers", L.tabLayers], ["own", L.tabOwn]])
+    tabs.append(el("button", { class: "tab", role: "tab", "data-tab": view, onclick: () => { resetPanel(); showView(view); }, text: label }));
+
+  const root = document.getElementById("own");
+
+  // One card width for the whole tree: the widest module name on one line, capped so five levels fit
+  ON_SHOW.own = () => {
+    if (root.style.getPropertyValue("--node-w")) return;
+    const names = $$("#own .onode .oname").filter(n => n.offsetWidth);
+    if (!names.length) return;
+    names.forEach(n => { n.style.whiteSpace = "nowrap"; });
+    const widest = Math.max(...names.map(n => n.scrollWidth));
+    names.forEach(n => { n.style.whiteSpace = ""; });
+    root.style.setProperty("--node-w", `${Math.min(200, Math.max(150, widest + 30))}px`);   // + padding, border, toggle
+  };
+  const instances = {};   // module -> [{node element, parent module, edge}]
+
+  function relText(edge) {
+    if (!edge) return null;
+    if (edge.rel === "local" || edge.rel === "new")
+      return el("span", {}, "◌ ", el("b", { text: `${edge.func}()` }), ` · ${edge.rel === "new" ? "new" : edge.via}`);
+    return el("span", {}, edge.rel === "share" ? "◇ " : "◆ ", el("b", { text: edge.via }), edge.order ? el("span", { class: "order", text: `#${edge.order}` }) : null);
+  }
+  const treeLines = [];   // { from: parent card, to: child card }
+  function nodeEl(n, parent, isRoot, parentCard = null) {
+    const m = mods[n.module] || { name: base(n.module), handles: [], data: [], borrows: [] };
+    const edge = n.edge;
+    const local = edge && (edge.rel === "local" || edge.rel === "new");
+    const warn = findingsOf(n.module).length > 0;
+    const info = [];
+    if (m.handles?.length) info.push(L.handleCount(m.handles.length));
+    const borrowsTxt = [...new Set((m.borrows || []).map(b => modName(b.target)))];
+    const card = el("div", { class: `onode${local ? " local" : ""}${isRoot ? " root" : ""}${warn ? " warn" : ""}`, "data-mod": n.module,
+        title: m.description || "", onclick: onSelect("mod", n.module) },
+      el("div", { class: "orel" }, isRoot ? el("span", {}, "✱ ", el("b", { text: "main()" }), ` · ${L.entry}`) : relText(edge)),
+      el("div", { class: "oname" }, el("span", { text: camelBreak(modName(n.module)) }),
+        edge && edge.mult && edge.mult !== "1" ? el("span", { class: "mult", text: `×${edge.mult}` }) : null,
+        n.recursive ? el("span", { class: "mult", text: `↺ ${L.recursive}` }) : null,
+        m.kind === "static" ? el("span", { class: "flag", title: L.kindLabel.static, text: "⏚" }) : null,
+        warn ? el("span", { class: "flag", style: "color: var(--err)", text: "⚠" }) : null),
+      m.description ? el("div", { class: "odesc", text: m.description }) : null,
+      info.length || borrowsTxt.length ? el("div", { class: "oinfo" }, info.join(" · "),
+        borrowsTxt.length ? el("span", { class: "borrow", text: `${info.length ? " · " : ""}⇢ ${borrowsTxt.join(", ")}` }) : null) : null);
+    (instances[n.module] ||= []).push({ card, parent, parentCard, edge });
+    if (parentCard) treeLines.push({ from: parentCard, to: card, style: "tree", color: "--wire", arrow: false, dashed: local });
+    const li = el("li", {}, card);
+    if (n.children.length) {
+      const toggle = el("button", { class: "otoggle", text: "−", title: String(n.children.length) });
+      toggle.addEventListener("click", e => { e.stopPropagation(); li.classList.toggle("collapsed");
+        toggle.textContent = li.classList.contains("collapsed") ? `+${n.children.length}` : "−"; redraw(); });
+      card.append(toggle);
+      li.append(el("ul", {}, n.children.map(c => nodeEl(c, n.module, false, card))));
+    }
+    return li;
+  }
+
+  for (const r of O.roots) {
+    const head = el("div", { class: "oroot-head" }, el("span", { class: "sym", style: "color: var(--exe)", text: "✱" }),
+      el("span", { class: "tname", text: targets[r.target]?.label || r.target }),
+      r.main ? el("span", { class: "mono muted", text: `main() · ${r.main.file}` }) : null);
+    if (!r.main) { root.append(el("div", {}, head, el("div", { class: "note", text: L.noMain }))); continue; }
+    const canvas = el("div", { class: "ocanvas" }, el("svg", { class: "overlay", "aria-hidden": "true" }),
+      el("div", { class: "otree" }, el("ul", {}, nodeEl({ module: r.main.module, edge: { file: r.main.file }, children: r.children }, null, true))));
+    root.append(el("div", {}, head, el("div", { class: "oroot-wrap" }, canvas)));
+  }
+
+  // Bands: modules outside the trees, grouped by kind
+  const bandOf = { static: L.bandStatic, stateless: L.bandStateless, uninstanced: L.bandUninstanced };
+  for (const kind of ["static", "stateless", "uninstanced"]) {
+    const keys = O.bands[kind] || [];
+    if (!keys.length) continue;
+    root.append(el("div", { class: "mini-group" }, el("h3", { class: "group-title", text: bandOf[kind] }),
+      el("div", { class: "mini-list" }, keys.map(key => {
+        const m = mods[key];
+        const lc = m.lifecycle;
+        const facts = [];
+        // Lifecycle in one phrase: "Init/Shutdown ← VulkanContext" when one class does both
+        const verb = list => list[0].call.split("::").pop();
+        const owners = list => [...new Set(list.map(s => s.caller.split("::")[0]))].join(", ");
+        if (lc.startedBy.length && lc.stoppedBy.length && owners(lc.startedBy) === owners(lc.stoppedBy))
+          facts.push(`${verb(lc.startedBy)}/${verb(lc.stoppedBy)} ← ${owners(lc.startedBy)}`);
+        else {
+          if (lc.startedBy.length) facts.push(`${verb(lc.startedBy)} ← ${owners(lc.startedBy)}`);
+          if (lc.stoppedBy.length) facts.push(`${verb(lc.stoppedBy)} ← ${owners(lc.stoppedBy)}`);
+        }
+        if (!facts.length && (callers[key] || []).length) facts.push(`${L.calledBy} ${plural(callers[key].length, "module")}`);
+        const warn = findingsOf(key).length > 0;
+        return el("div", { class: "mini" + (warn ? " unused" : ""), "data-mod": key, onclick: onSelect("mod", key),
+            style: `--accent: var(${kind === "static" ? "--shared" : kind === "stateless" ? "--iface" : "--warn"})` },
+          el("div", { class: "en" }, el("span", { text: (warn ? "⚠ " : "") + modName(key) }), el("span", { class: "tag", text: m.target || "" })),
+          m.description ? el("div", { class: "ed", text: m.description }) : null,
+          facts.length ? el("div", { class: "ei", text: facts.join(" · ") }) : null);
+      }))));
+  }
+
+  // Findings section
+  const fs = document.getElementById("findings");
+  fs.append(el("h2", { text: L.findings }), el("p", { class: "muted", style: "margin: -4px 0 10px; font-size: 12.5px", text: L.rules }),
+    el("div", { class: "cards" }, O.findings.length ? O.findings.map(f =>
+      el("div", { class: `card ${f.severity}`, onclick: onSelect("mod", f.modules[f.modules.length - 1]) },
+        el("div", { text: (L.rule[f.rule] || (() => f.rule))(f) }),
+        f.evidence.map(e => el("div", { class: "ev" }, fileLinkLine(e.path, e.line))))) :
+      [el("div", { class: "card ok", text: "✓ " + L.noFindings(O.checks) })]),
+    el("p", { class: "muted", style: "font-size: 12px; margin-top: 10px", text: L.stats(O) }));
+
+  // Selection overlay: borrow and lifecycle lines from the selected module's instances
+  overlays.push(() => {
+    if (document.body.dataset.activeView !== "own") return;
+    $$(".ocanvas").forEach(canvas => drawLines(canvas.querySelector(".overlay"), canvas,
+      treeLines.filter(l => canvas.contains(l.to))));
+  });
+
+  SELECT.mod = key => {
+    const m = mods[key];
+    const own = instances[key] || [];
+    own.forEach(i => i.card.classList.add("sel"));
+    pick(`.mini[data-mod="${css(key)}"]`, "sel");
+    const markMod = (k, cls) => { (instances[k] || []).forEach(i => i.card.classList.add(cls)); pick(`.mini[data-mod="${css(k)}"]`, cls); };
+    const borrowed = [...new Set(m.borrows.map(b => b.target))];
+    borrowed.forEach(k => markMod(k, "rel-out"));
+    Object.keys(m.calls).forEach(k => markMod(k, "rel-out"));
+    [...(borrowers[key] || [])].forEach(k => markMod(k, "rel-in"));
+    (callers[key] || []).forEach(k => markMod(k, "rel-in"));
+    for (const i of own) {
+      for (const k of borrowed) for (const t of instances[k] || []) extraLines.push({ from: i.card, to: t.card, color: "--out", dashed: true });
+      if (i.parentCard) highlights.push({ from: i.parentCard, to: i.card, color: "--in" });
+      treeLines.filter(l => l.from === i.card).forEach(l => highlights.push({ from: l.from, to: l.to, color: "--out" }));
+    }
+    const lc = m.lifecycle;
+    const first = mods[key].files.find(f => /\.(h|hh|hpp|hxx)$/.test(f)) || mods[key].files[0];
+    const owners = own.filter(i => i.parent).map(i => `${modName(i.parent)} · ${i.edge.rel === "local" || i.edge.rel === "new" ? `${i.edge.func}()` : i.edge.via}${i.edge.mult && i.edge.mult !== "1" ? ` ×${i.edge.mult}` : ""}`);
+    return [el("h2", { text: modName(key) }), m.files.map(f => el("p", {}, fileLink(f))),
+      m.description ? el("p", { text: m.description }) : null,
+      kv([[L.kind, L.kindLabel[m.kind] || m.kind], ["target", m.target], [L.types, m.records.map(r => r.name).join(", ")]]),
+      section(L.instances, [...new Set(owners)], s => el("li", { class: "tag-in", text: s })),
+      section(L.owns, m.owns, o => el("li", {}, el("span", { class: "mono", text: o.field }), ` → ${modName(o.target)}${o.mult !== "1" ? ` ×${o.mult}` : ""}${o.rel === "share" ? ` (${L.shared})` : ""}${o.order ? ` · #${o.order}` : ""}`)),
+      section(L.borrows, m.borrows, b => el("li", { class: "tag-out" }, el("span", { class: "mono", text: b.field }), ` → ${modName(b.target)}`)),
+      m.data.length ? section(L.data, m.data, d => el("li", {}, el("span", { class: "mono", text: d.field }), ` : ${short(d.targetRecord)}${d.mult !== "1" ? ` ×${d.mult}` : ""}`)) : null,
+      m.handles.length ? section(L.handles, m.handles, h => el("li", {}, el("span", { class: "mono", text: h.field }), ` : ${h.handle}`)) : null,
+      m.localData.length ? section(L.localData, m.localData, d => el("li", {}, `${d.func}(): `, el("span", { class: "mono", text: d.var }), ` : ${short(d.targetRecord)}`)) : null,
+      m.static.length ? section(L.staticState, m.static, s => el("li", {}, el("span", { class: "mono", text: s.name }), ` : ${s.type}`)) : null,
+      lc.startedBy.length || lc.stoppedBy.length ? section(L.lifecycle, [...lc.startedBy.map(s => [L.startedBy, s]), ...lc.stoppedBy.map(s => [L.stoppedBy, s])],
+        ([label, s]) => el("li", {}, `${label} ${s.caller} `, fileLinkLine(s.file, s.line))) : null,
+      section(L.calls, Object.entries(m.calls), ([k, names]) => el("li", { class: "tag-out" }, `${modName(k)}: `, el("span", { class: "mono", text: names.map(n => n.split("::").pop()).join(", ") }))),
+      section(L.callers, callers[key] || [], k => el("li", { class: "tag-in", text: modName(k) })),
+      findingsOf(key).length ? section(L.modFindings, findingsOf(key), f => el("li", { style: "color: var(--err)", text: (L.rule[f.rule] || (() => f.rule))(f) })) : null,
+      first ? el("button", { class: "btn jump", onclick: onSelect("file", first), text: L.toLayers }) : null];
+  };
+}
+
+// ================================================================================================
+// Toolbar, footer, startup
+// ================================================================================================
+document.getElementById("footer").append(
+  ...D.warnings.map(w => el("p", { style: "color: var(--warn)", text: "⚠ " + w })),
+  ...(O?.warnings || []).map(w => el("p", { style: "color: var(--warn)", text: "⚠ " + w })));
+{
+  const tf = document.getElementById("toggle-files");
+  tf.textContent = L.showFiles;
+  tf.addEventListener("click", () => {
+    const open = tf.getAttribute("aria-pressed") !== "true";
+    tf.setAttribute("aria-pressed", String(open));
+    fileLists.forEach(set => set(open));
+    redraw();
+  });
+}
+document.addEventListener("click", e => { if (!e.target.closest("#panel, .toolbar, .tabs, a")) resetPanel(); });
+
+// Deep link: #dir=…, #file=…, #target=…, #ext=…, #mod=…, #view=own
+{
+  const hash = location.hash;
+  showView("layers");
+  resetPanel();
+  const m = /^#(dir|file|target|ext|mod|view)=(.+)$/.exec(hash);
+  const id = m && decodeURIComponent(m[2]);
+  const known = m && ({ dir: !!$(`.block[data-path="${css(id)}"]`), file: id in files, target: id in targets,
+    ext: D.externals.some(e => e.name === id), mod: id in mods, view: false })[m[1]];
+  if (m && m[1] === "view") showView(id);
+  else if (known) select(m[1], id);
+}
+</script>
+</body>
+</html>
