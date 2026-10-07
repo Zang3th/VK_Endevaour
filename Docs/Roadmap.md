@@ -81,11 +81,111 @@
 #### ImGui
 - [x] ~`PipelineInfoMain.MSAASamples` auf den aktiven Color-/Depth-SampleCount setzen~
 
+## Math
+
+#Version
+- 0.2.4
+
+#Date
+- TBD
+
+### Math
+
+#Info
+- GLM wird ausschließlich über Core/Math.hpp inkludiert.
+- GLM_FORCE_*-Defines werden als PUBLIC Compile-Definitions am Engine-Target gesetzt.
+- Engine-Konventionen (RH, Z-up, Tiefe [0,1], Clip-Y-Flip) liegen ausschließlich in der Math-Fassade.
+
+#Warn
+- GLM-Konfiguration per Define in einzelnen Headern (Mesh.hpp) => Bei GLM_FORCE_*-Defines droht eine stille ODR-Verletzung
+- VulkanRenderer.cpp nutzt matrix_transform nur transitiv über Mesh.hpp → gtx/hash => Bricht bei Include-Änderungen
+- Vulkan-Konventionen (ZO, Y-Flip, Z-up) sind am Aufrufort verstreut => Werden mit der Camera dupliziert
+- std140-Alignment wird händisch gepflegt => Falsche UBO-Offsets fallen keinem Validation Layer auf
+
+#### Konfiguration
+- [ ] GLM_FORCE_*-Defines festlegen
+- [ ] Defines als PUBLIC Compile-Definitions am Engine-Target setzen
+- [ ] Core/Math.hpp mit gezielten GLM-Includes anlegen
+- [ ] Direkte GLM-Includes in Engine, Sandbox und Tests auf Core/Math.hpp umstellen
+- [ ] gtx/hash aus Mesh.hpp entfernen und Vertex-Hash ohne GLM implementieren
+- [ ] GLM_ENABLE_EXPERIMENTAL entfernen
+- [ ] glm::vec4 aus der Signatur von VulkanSwapchain::BeginRendering entfernen
+
+#### Typ-Aliase
+- [ ] Aliase für Vec2, Vec3, Vec4 und Mat4 in Core/Math.hpp definieren
+- [ ] Engine, Sandbox und Tests auf die Aliase umstellen
+
+#### Fassade
+- [ ] Minimale API überlegen
+- [ ] Weltachsen als constexpr-Konstanten
+- [ ] PerspectiveVulkan (RH, Tiefe [0,1], Clip-Y-Flip)
+- [ ] LookAt mit WorldUp
+- [ ] UpdateGlobalUniforms auf die Fassade umstellen
+
+#### Tests
+- [ ] static_assert für die Größen von Vec2, Vec3, Vec4 und Mat4
+- [ ] static_assert für exakte Vertex-Offsets und Stride
+- [ ] static_assert für die std140-Offsets von GlobalUniformData
+- [ ] Tests für PerspectiveVulkan (Near → 0, Far → 1, Y-Flip)
+- [ ] Tests für LookAt und Weltachsen
+
+### Improvements
+
+- [ ] Tests für Core::Utility ergänzen
+
+## Platform
+
+#Version
+- 0.2.5
+
+#Date
+- TBD
+
+### Platform
+
+#Info
+- Platform initialisiert GLFW, erzeugt das Window und pollt pro Frame die Events.
+- PollEvents liefert ein Input-Struct pro Frame an die Anwendung.
+- Window ist RAII und wird nicht-besitzend an den Renderer übergeben.
+- GLFW wird nur in Platform.cpp inkludiert.
+
+#Warn
+- Window ist vollständig statisch => Versteckter globaler Zustand, Abhängigkeiten an 6 Stellen nicht in Signaturen sichtbar
+- glfwInit und glfwTerminate liegen versteckt in Window::Init und Window::Shutdown
+- Swapchain liest und setzt das Resize-Flag per friend-Zugriff auf Window
+- Kein Input-Pfad zur Anwendung => ESC ist in ShouldClose fest verdrahtet, keine Grundlage für den CameraController
+
+#### Platform
+- [ ] Minimale API überlegen
+- [ ] glfwInit, glfwTerminate und Error-Callback aus Window nach Platform verschieben
+- [ ] Window-Erzeugung über Platform
+- [ ] PollEvents und WaitEvents nach Platform verschieben
+
+#### Window
+- [ ] Statischen Zustand durch RAII-Instanz ersetzen
+- [ ] GLFW-User-Pointer auf die Window-Instanz setzen
+- [ ] ESC-Abfrage aus ShouldClose in die Anwendung verschieben
+- [ ] Window-Referenz an VulkanRenderer übergeben
+- [ ] Zugriffe in VulkanContext, VulkanDebug, VulkanSwapchainUtils, ImGuiLayer und ProfilerPanel auf die Referenz umstellen
+
+#### Resize
+- [ ] Resize-Callback setzt nur Flag und Framebuffer-Extent im Window
+- [ ] Swapchain-Recreation nur in BeginFrame und SubmitAndPresent auslösen
+- [ ] Framebuffer-Extent explizit an ChooseExtent übergeben
+- [ ] friend VulkanSwapchain aus Window entfernen
+- [ ] Resize, Minimize und Restore unter Windows und Linux testen
+
+#### Input
+- [ ] Input-Struct pro Frame definieren (Tasten, Maustasten, Maus-Delta, Scroll-Delta)
+- [ ] Tasten und Mausposition in PollEvents per Polling erfassen
+- [ ] Scroll-Callback vor der ImGui-Initialisierung registrieren
+- [ ] ImGui-Input-Capture vom Renderer abfragen und Kamera-Input maskieren
+
 #Pin
 ## Camera
 
 #Version
-- 0.2.4
+- 0.2.6
 
 #Date
 - TBD
@@ -101,10 +201,6 @@ Die Projektion soll rechtshändig mit Z-up sein (entspricht Blender):
 - -Y = vorwärts
 - +Z = oben
 
-### Improvements
-
-- [ ] Tests für Core::Utility ergänzen
-
 ### Bugs
 
 - [ ] Lag-Spikes inspizieren
@@ -112,12 +208,21 @@ Die Projektion soll rechtshändig mit Z-up sein (entspricht Blender):
 ### Camera
 
 - [ ] Minimale API überlegen
-- [ ] Implementieren
+- [ ] Ablageort im Engine festlegen
+- [ ] View-Matrix für Z-up RH (Vorwärts = -Y) implementieren
+- [ ] CameraData-Struct an VulkanRenderer::DrawFrame übergeben
+- [ ] Projection im Renderer aus dem aktuellen Swapchain-Extent bauen
+- [ ] UpdateGlobalUniforms auf CameraData umstellen
+- [ ] Kameraparameter im ProfilerPanel anzeigen
+- [ ] Tests für View-Matrix und Basisvektoren
 
 ### CameraController
 
 - [ ] Minimale API überlegen
-- [ ] Implementieren
+- [ ] Translation über Tastatur
+- [ ] Rotation über Maus-Delta mit Pitch-Clamp
+- [ ] Bewegung mit DeltaSeconds skalieren
+- [ ] Tests mit synthetischem Input-Struct
 
 ### RenderControls
 
@@ -138,7 +243,7 @@ Optionen sollen via UI gesteuert werden.
 ## Model
 
 #Version
-- 0.2.5
+- 0.2.7
 
 #Date
 - TBD
@@ -173,7 +278,7 @@ Besteht aus einem Mesh-Handle (u32) und einem Transform-Struct.
 ## WorldGrid
 
 #Version
-- 0.2.6
+- 0.2.8
 
 #Date
 - TBD
