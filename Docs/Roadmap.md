@@ -99,7 +99,7 @@
 ### Improvements
 
 - [x] ~Tests für Math ergänzen~
-- [ ] Tests für Core::Utility ergänzen
+- [x] ~Tests für Core::Utility ergänzen~
 
 ### Math
 

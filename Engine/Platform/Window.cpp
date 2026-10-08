@@ -59,7 +59,7 @@ namespace Engine::Platform
 
     bool Window::ShouldClose()
     {
-        if ((glfwWindowShouldClose(m_Window)) || (glfwGetKey(m_Window, GLFW_KEY_ESCAPE) == GLFW_PRESS))
+        if (glfwWindowShouldClose(m_Window) || (glfwGetKey(m_Window, GLFW_KEY_ESCAPE) == GLFW_PRESS))
         {
             LOG_INFO("Closed GLFW window ...");
             return true;
@@ -88,28 +88,27 @@ namespace Engine::Platform
     void Window::GLFW_FramebufferResizeCallback(GLFWwindow* window, int width, int height)
     {
         // Only one window is supported
-        ASSERT(window == Engine::Platform::Window::GetHandle(),
-               "GLFW::FramebufferResizeCallback: Received the wrong window ...");
+        ASSERT(window == GetHandle(), "GLFW::FramebufferResizeCallback: Received the wrong window ...");
 
         if (width == 0 || height == 0)
         {
-            Engine::Platform::Window::SetMinimizeFlag(true);
+            // Set minimize flag. Gets reset on first call to this callback
+            SetMinimizeFlag(true);
             return;
         }
 
-        if (Engine::Platform::Window::IsMinimized())
+        if (IsMinimized())
         {
-            Engine::Platform::Window::SetMinimizeFlag(false);
+            SetMinimizeFlag(false);
         }
 
-        if (Engine::Platform::Window::GetWidth() != (Engine::u32)width
-            || Engine::Platform::Window::GetHeight() != (Engine::u32)height)
+        if (GetWidth() != (Engine::u32)width || GetHeight() != (Engine::u32)height)
         {
-            Engine::Platform::Window::SetWidth((Engine::u32)width);
-            Engine::Platform::Window::SetHeight((Engine::u32)height);
+            SetWidth((Engine::u32)width);
+            SetHeight((Engine::u32)height);
 
             // Set resize flag. Swapchain needs to reset this
-            Engine::Platform::Window::SetResizeFlag(true);
+            SetResizeFlag(true);
         }
     }
 
