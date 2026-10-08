@@ -3,7 +3,7 @@
 #include "Vendor/fmt/include/fmt/color.h"
 #include "Vendor/fmt/include/fmt/core.h"
 
-#include <source_location>
+#include <source_location> // IWYU pragma: keep
 
 #define LOG_LOCATION() std::source_location::current().file_name(), std::source_location::current().line()
 

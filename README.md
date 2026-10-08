@@ -36,6 +36,7 @@ VK_Endevaour/
 │   │   ├── Resources/          # Graphics resources (e.g., Mesh)
 │   │   ├── UI/                 # ImGui integration and UI tooling
 │   │   └── Vulkan/             # Vulkan backend
+│   ├── Math/                   # GLM entry point and engine conventions (axes, projection)
 │   ├── Platform/               # Platform abstraction (window, input)
 │   └── Vendor/                 # Third-party libraries
 ├── Scripts/                    # Helper scripts (format, build, analyze)

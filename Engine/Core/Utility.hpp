@@ -2,7 +2,7 @@
 
 #include "Core/Types.hpp"
 
-#include "Vendor/glm/vec3.hpp"
+#include "Math/Math.hpp"
 
 #include <filesystem>
 #include <vector>

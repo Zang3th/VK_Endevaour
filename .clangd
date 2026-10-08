@@ -1,6 +1,12 @@
 CompileFlags:
   CompilationDatabase: Build/Debug
 
+Diagnostics:
+  Includes:
+    IgnoreHeader:
+      - 'Math[/\\]Math\.hpp'
+      - 'Vendor[/\\].*'
+
 ---
 If:
   PathMatch: .*[\/\\]VulkanSDK[\/\\].*

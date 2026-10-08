@@ -127,13 +127,11 @@ namespace Engine::Graphics
     void VulkanRenderer::UpdateGlobalUniforms(vk::Extent2D extent, u32 frameIndex, const Core::FrameTiming& frameTiming)
     {
         // Update uniform data (later with real camera information)
-        m_GlobalUniformData.Model = glm::rotate(
-            glm::mat4(1.0f), (f32)frameTiming.TotalSeconds * glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-        m_GlobalUniformData.View =
-            glm::lookAt(glm::vec3(0.0f, 15.0f, 10.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+        m_GlobalUniformData.Model =
+            glm::rotate(glm::mat4(1.0f), (f32)frameTiming.TotalSeconds * glm::radians(90.0f), Math::WORLD_UP);
+        m_GlobalUniformData.View = Math::LookAt(glm::vec3(0.0f, -30.0f, 10.0f), glm::vec3(0.0f, 0.0f, 0.0f));
         m_GlobalUniformData.Projection =
-            glm::perspectiveRH_ZO(glm::radians(45.0f), (f32)extent.width / (f32)extent.height, 0.1f, 100.0f);
-        m_GlobalUniformData.Projection[1][1] *= -1; // Flip Y-Coordinate of clip coordinates because of legacy OpenGL
+            Math::Perspective(glm::radians(45.0f), (f32)extent.width / (f32)extent.height, 0.1f, 100.0f);
 
         // Inform global uniforms that the data has changed
         m_VulkanGlobalUniforms->Update(frameIndex, &m_GlobalUniformData);

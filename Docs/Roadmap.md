@@ -81,65 +81,41 @@
 #### ImGui
 - [x] ~`PipelineInfoMain.MSAASamples` auf den aktiven Color-/Depth-SampleCount setzen~
 
-## Math
+#Pin
+## Refactorings
 
 #Version
 - 0.2.4
 
 #Date
-- TBD
+- 08.10.26 - TBD
+
+### Allgemeines
+
+- [x] ~readability-trailing-comma in .clang-tidy deaktivieren~
+- [x] ~.clangd include-cleaner anpassen~
+- [x] ~Math/ in ProjectDefines.py und README ergänzen~
+
+### Improvements
+
+- [x] ~Tests für Math ergänzen~
+- [ ] Tests für Core::Utility ergänzen
 
 ### Math
 
 #Info
-- GLM wird ausschließlich über Core/Math.hpp inkludiert.
-- GLM_FORCE_*-Defines werden als PUBLIC Compile-Definitions am Engine-Target gesetzt.
-- Engine-Konventionen (RH, Z-up, Tiefe [0,1], Clip-Y-Flip) liegen ausschließlich in der Math-Fassade.
+GLM soll nur noch über Math/Math.hpp inkludiert werden.
 
-#Warn
-- GLM-Konfiguration per Define in einzelnen Headern (Mesh.hpp) => Bei GLM_FORCE_*-Defines droht eine stille ODR-Verletzung
-- VulkanRenderer.cpp nutzt matrix_transform nur transitiv über Mesh.hpp → gtx/hash => Bricht bei Include-Änderungen
-- Vulkan-Konventionen (ZO, Y-Flip, Z-up) sind am Aufrufort verstreut => Werden mit der Camera dupliziert
-- std140-Alignment wird händisch gepflegt => Falsche UBO-Offsets fallen keinem Validation Layer auf
+#### Includes
+- [x] ~Math/Math.hpp mit GLM-Includes anlegen~
+- [x] ~Include-Guard gegen direkte GLM-Includes ergänzen~
+- [x] ~GLM-Includes überall umstellen~
 
-#### Konfiguration
-- [ ] GLM_FORCE_*-Defines festlegen
-- [ ] Defines als PUBLIC Compile-Definitions am Engine-Target setzen
-- [ ] Core/Math.hpp mit gezielten GLM-Includes anlegen
-- [ ] Direkte GLM-Includes in Engine, Sandbox und Tests auf Core/Math.hpp umstellen
-- [ ] gtx/hash aus Mesh.hpp entfernen und Vertex-Hash ohne GLM implementieren
-- [ ] GLM_ENABLE_EXPERIMENTAL entfernen
-- [ ] glm::vec4 aus der Signatur von VulkanSwapchain::BeginRendering entfernen
-
-#### Typ-Aliase
-- [ ] Aliase für Vec2, Vec3, Vec4 und Mat4 in Core/Math.hpp definieren
-- [ ] Engine, Sandbox und Tests auf die Aliase umstellen
-
-#### Fassade
-- [ ] Minimale API überlegen
-- [ ] Weltachsen als constexpr-Konstanten
-- [ ] PerspectiveVulkan (RH, Tiefe [0,1], Clip-Y-Flip)
-- [ ] LookAt mit WorldUp
-- [ ] UpdateGlobalUniforms auf die Fassade umstellen
-
-#### Tests
-- [ ] static_assert für die Größen von Vec2, Vec3, Vec4 und Mat4
-- [ ] static_assert für exakte Vertex-Offsets und Stride
-- [ ] static_assert für die std140-Offsets von GlobalUniformData
-- [ ] Tests für PerspectiveVulkan (Near → 0, Far → 1, Y-Flip)
-- [ ] Tests für LookAt und Weltachsen
-
-### Improvements
-
-- [ ] Tests für Core::Utility ergänzen
-
-## Platform
-
-#Version
-- 0.2.5
-
-#Date
-- TBD
+#### API
+- [x] ~Minimale API überlegen~
+- [x] ~Weltachsen als constexpr-Konstanten~
+- [x] ~LookAt mit WorldUp und Asserts gegen degenerierte Blickrichtungen~
+- [x] ~UpdateGlobalUniforms auf die API umstellen~
 
 ### Platform
 
@@ -181,11 +157,10 @@
 - [ ] Scroll-Callback vor der ImGui-Initialisierung registrieren
 - [ ] ImGui-Input-Capture vom Renderer abfragen und Kamera-Input maskieren
 
-#Pin
 ## Camera
 
 #Version
-- 0.2.6
+- 0.2.5
 
 #Date
 - TBD
@@ -198,7 +173,7 @@ Zusätzlich werden die Kameraparameter im ProfilerPanel dargestellt.
 Die Projektion soll rechtshändig mit Z-up sein (entspricht Blender):
 
 - +X = rechts
-- -Y = vorwärts
+- +Y = vorwärts
 - +Z = oben
 
 ### Bugs
@@ -209,7 +184,7 @@ Die Projektion soll rechtshändig mit Z-up sein (entspricht Blender):
 
 - [ ] Minimale API überlegen
 - [ ] Ablageort im Engine festlegen
-- [ ] View-Matrix für Z-up RH (Vorwärts = -Y) implementieren
+- [ ] View-Matrix für Z-up RH (Vorwärts = +Y) implementieren
 - [ ] CameraData-Struct an VulkanRenderer::DrawFrame übergeben
 - [ ] Projection im Renderer aus dem aktuellen Swapchain-Extent bauen
 - [ ] UpdateGlobalUniforms auf CameraData umstellen
@@ -243,7 +218,7 @@ Optionen sollen via UI gesteuert werden.
 ## Model
 
 #Version
-- 0.2.7
+- 0.2.6
 
 #Date
 - TBD
@@ -278,7 +253,7 @@ Besteht aus einem Mesh-Handle (u32) und einem Transform-Struct.
 ## WorldGrid
 
 #Version
-- 0.2.8
+- 0.2.7
 
 #Date
 - TBD

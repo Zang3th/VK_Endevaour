@@ -6,7 +6,7 @@
 #include "Graphics/Vulkan/VulkanAllocationStructs.hpp"
 #include "Graphics/Vulkan/VulkanGlobals.hpp"
 
-#include "Vendor/glm/mat4x4.hpp"
+#include "Math/Math.hpp"
 
 #include <vulkan/vulkan.hpp>
 

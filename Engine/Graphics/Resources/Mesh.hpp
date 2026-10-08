@@ -2,10 +2,7 @@
 
 #include "Core/Types.hpp"
 
-#define GLM_ENABLE_EXPERIMENTAL
-#include "Vendor/glm/gtx/hash.hpp"
-#include "Vendor/glm/vec2.hpp"
-#include "Vendor/glm/vec3.hpp"
+#include "Math/Math.hpp"
 
 #include <vulkan/vulkan.hpp>
 
