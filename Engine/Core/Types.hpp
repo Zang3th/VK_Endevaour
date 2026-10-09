@@ -1,9 +1,12 @@
 #pragma once
 
 #include <cstdint>
+#include <limits>
 
 namespace Engine
 {
+    // Aliases
+
     using b8 = bool;
     using c8 = char8_t;
 
@@ -21,4 +24,11 @@ namespace Engine
     using f64 = double;
 
     using ull = unsigned long long;
+
+    // Platform assumptions
+
+    static_assert(sizeof(b8) == 1, "b8 must be 1 byte");
+    static_assert(sizeof(f32) == 4 && std::numeric_limits<f32>::is_iec559, "f32 must be IEEE-754 binary32");
+    static_assert(sizeof(f64) == 8 && std::numeric_limits<f64>::is_iec559, "f64 must be IEEE-754 binary64");
+    static_assert(sizeof(ull) == 8, "ull must be 64 bit");
 }

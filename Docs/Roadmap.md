@@ -100,6 +100,7 @@
 
 - [x] ~Tests für Math ergänzen~
 - [x] ~Tests für Core::Utility ergänzen~
+- [x] ~static_assert auf b8, f32, f64 und ull~
 
 ### Math
 
@@ -120,42 +121,33 @@ GLM soll nur noch über Math/Math.hpp inkludiert werden.
 ### Platform
 
 #Info
-- Platform initialisiert GLFW, erzeugt das Window und pollt pro Frame die Events.
-- PollEvents liefert ein Input-Struct pro Frame an die Anwendung.
-- Window ist RAII und wird nicht-besitzend an den Renderer übergeben.
-- GLFW wird nur in Platform.cpp inkludiert.
+- Das Backend initialisiert GLFW, erzeugt den Window und liefert pro Frame ein Input-Struct.
+- Der Window ist nun RAII, hält den Framebuffer-Extent und wird lesend an den Renderer übergeben.
 
 #Warn
-- Window ist vollständig statisch => Versteckter globaler Zustand, Abhängigkeiten an 6 Stellen nicht in Signaturen sichtbar
-- glfwInit und glfwTerminate liegen versteckt in Window::Init und Window::Shutdown
-- Swapchain liest und setzt das Resize-Flag per friend-Zugriff auf Window
-- Kein Input-Pfad zur Anwendung => ESC ist in ShouldClose fest verdrahtet, keine Grundlage für den CameraController
+- Unter Wayland: Minimize ist nicht erkennbar (Extent bleibt, GLFW_ICONIFIED ist immer false)
 
-#### Platform
-- [ ] Minimale API überlegen
-- [ ] glfwInit, glfwTerminate und Error-Callback aus Window nach Platform verschieben
-- [ ] Window-Erzeugung über Platform
-- [ ] PollEvents und WaitEvents nach Platform verschieben
+#### Backend
+- [x] ~API ausarbeiten~
+- [ ] GLFW-Lebenszyklus, Callbacks und Window-Erzeugung implementieren
+- [ ] PollEvents und WaitEvents implementieren
 
 #### Window
-- [ ] Statischen Zustand durch RAII-Instanz ersetzen
-- [ ] GLFW-User-Pointer auf die Window-Instanz setzen
-- [ ] ESC-Abfrage aus ShouldClose in die Anwendung verschieben
-- [ ] Window-Referenz an VulkanRenderer übergeben
-- [ ] Zugriffe in VulkanContext, VulkanDebug, VulkanSwapchainUtils, ImGuiLayer und ProfilerPanel auf die Referenz umstellen
-
-#### Resize
-- [ ] Resize-Callback setzt nur Flag und Framebuffer-Extent im Window
-- [ ] Swapchain-Recreation nur in BeginFrame und SubmitAndPresent auslösen
-- [ ] Framebuffer-Extent explizit an ChooseExtent übergeben
-- [ ] friend VulkanSwapchain aus Window entfernen
-- [ ] Resize, Minimize und Restore unter Windows und Linux testen
+- [x] ~API ausarbeiten~
+- [ ] Implementieren
+- [ ] ESC-Abfrage aus in die Anwendung verschieben
 
 #### Input
-- [ ] Input-Struct pro Frame definieren (Tasten, Maustasten, Maus-Delta, Scroll-Delta)
-- [ ] Tasten und Mausposition in PollEvents per Polling erfassen
-- [ ] Scroll-Callback vor der ImGui-Initialisierung registrieren
-- [ ] ImGui-Input-Capture vom Renderer abfragen und Kamera-Input maskieren
+- [x] ~Header ausarbeiten~
+- [ ] Key-Mapping auf GLFW mit static_assert auf KEY_COUNT
+- [ ] Tasten, Maustasten und Cursor per Polling erfassen
+- [ ] ImGui-Input-Capture abfragen und Kamera-Input maskieren
+
+#### Umbau
+- [ ] Window-Referenz an VulkanRenderer übergeben
+- [ ] VulkanContext, VulkanDebug, VulkanSwapchainUtils, ImGuiLayer und ProfilerPanel umstellen
+- [ ] Swapchain-Recreation per Extent-Vergleich nur in BeginFrame und SubmitAndPresent
+- [ ] Framebuffer-Extent explizit an ChooseExtent übergeben
 
 ## Camera
 

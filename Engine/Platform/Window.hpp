@@ -13,55 +13,50 @@ namespace vk
     class SurfaceKHR;
 }
 
-namespace Engine::Graphics
-{
-    class VulkanSwapchain;
-}
-
 namespace Engine::Platform
 {
     struct WindowSpecification
     {
-        std::string Title  = "DefaultWindowTitle";
-        u32         Width  = 0;
-        u32         Height = 0;
+        std::string Title = "DefaultWindowTitle";
+
+        // Screen coordinates, may differ from framebuffer pixels (DPI)
+        u32 Width  = 0;
+        u32 Height = 0;
+    };
+
+    struct FramebufferExtent
+    {
+        u32 Width  = 0;
+        u32 Height = 0;
+
+        b8                         operator==(const FramebufferExtent&) const = default;
+        [[nodiscard]] constexpr b8 IsEmpty() const { return Width == 0 || Height == 0; }
     };
 
     class Window
     {
     public:
-        Window() = delete;
-        static void Init(const WindowSpecification& spec);
-        static void CreateVulkanSurface(const vk::Instance& instance, vk::SurfaceKHR* surface);
-        static void Shutdown();
+        ~Window();
 
-        static void PollEvents();
-        static void WaitEvents();
-        static bool ShouldClose();
+        Window(const Window&)            = delete;
+        Window& operator=(const Window&) = delete;
+        Window(Window&&)                 = delete;
+        Window& operator=(Window&&)      = delete;
 
-        [[nodiscard]] static std::vector<const char*> GetInstanceExtensions();
+        void CreateVulkanSurface(const vk::Instance& instance, vk::SurfaceKHR* surface) const;
 
-        [[nodiscard]] static GLFWwindow*        GetHandle() { return m_Window; }
-        [[nodiscard]] static const std::string& GetTitle() { return m_Spec.Title; }
-        [[nodiscard]] static u32                GetWidth() { return m_Spec.Width; }
-        [[nodiscard]] static u32                GetHeight() { return m_Spec.Height; }
-        [[nodiscard]] static b8                 IsMinimized() { return m_IsMinimized; }
-        [[nodiscard]] static b8                 GotResized() { return m_GotResized; }
+        [[nodiscard]] std::vector<const char*>   GetRequiredInstanceExtensions() const;
+        [[nodiscard]] b8                         ShouldClose() const;
+        [[nodiscard]] FramebufferExtent          GetFramebufferExtent() const { return m_FramebufferExtent; }
+        [[nodiscard]] GLFWwindow*                GetGLFWHandle() const { return m_GLFWHandle; }
+        [[nodiscard]] const WindowSpecification& GetSpecification() const { return m_Spec; }
 
     private:
-        friend class Engine::Graphics::VulkanSwapchain;
+        friend class Backend;
+        explicit Window(const WindowSpecification& spec);
 
-        static void GLFW_ErrorCallback(Engine::i32 errorCode, const char* description);
-        static void GLFW_FramebufferResizeCallback(GLFWwindow* window, int width, int height);
-
-        static void SetMinimizeFlag(b8 flag);
-        static void SetResizeFlag(b8 flag);
-        static void SetWidth(u32 width) { m_Spec.Width = width; };
-        static void SetHeight(u32 height) { m_Spec.Height = height; };
-
-        inline static GLFWwindow*         m_Window      = nullptr;
-        inline static WindowSpecification m_Spec        = WindowSpecification();
-        inline static b8                  m_IsMinimized = false;
-        inline static b8                  m_GotResized  = false;
+        GLFWwindow*         m_GLFWHandle = nullptr;
+        WindowSpecification m_Spec;
+        FramebufferExtent   m_FramebufferExtent;
     };
 }
