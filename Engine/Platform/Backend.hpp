@@ -46,6 +46,7 @@ namespace Engine::Platform
         };
 
         Scope<Window>     m_Window;
+        GLFWwindow*       m_GLFWHandle = nullptr; // Gets managed by the window. Just here for quick access
         CursorTracker     m_CursorTracker;
         ScrollAccumulator m_ScrollAccumulator;
     };

@@ -82,7 +82,7 @@
 - [x] ~`PipelineInfoMain.MSAASamples` auf den aktiven Color-/Depth-SampleCount setzen~
 
 #Pin
-## Refactorings
+## Refactoring der Plattform
 
 #Version
 - 0.2.4
@@ -95,6 +95,7 @@
 - [x] ~readability-trailing-comma in .clang-tidy deaktivieren~
 - [x] ~.clangd include-cleaner anpassen~
 - [x] ~Math/ in ProjectDefines.py und README ergänzen~
+- [ ] `Docs/ArchitectureOverview.html` versionieren und neu erzeugen
 
 ### Improvements
 
@@ -129,21 +130,22 @@ GLM soll nur noch über Math/Math.hpp inkludiert werden.
 
 #### Backend
 - [x] ~API ausarbeiten~
-- [ ] GLFW-Lebenszyklus, Callbacks und Window-Erzeugung implementieren
-- [ ] PollEvents und WaitEvents implementieren
+- [x] ~GLFW-Initialisierung, Window-Erzeugung und Callbacks implementieren~
+- [x] ~PollEvents: Tasten, Maus und Cursor per Polling erfassen~
 
 #### Window
 - [x] ~API ausarbeiten~
-- [ ] Implementieren
-- [ ] ESC-Abfrage aus in die Anwendung verschieben
+- [x] ~Implementieren~
 
 #### Input
 - [x] ~Header ausarbeiten~
-- [ ] Key-Mapping auf GLFW mit static_assert auf KEY_COUNT
-- [ ] Tasten, Maustasten und Cursor per Polling erfassen
-- [ ] ImGui-Input-Capture abfragen und Kamera-Input maskieren
 
-#### Umbau
+#### Sandbox
+- [ ] Backend als Member
+- [ ] PollEvents liefert FrameInput (Key::Escape checken)
+- [ ] FramebufferExtent leer => WaitEvents
+
+#### Integration vom RAII-Window
 - [ ] Window-Referenz an VulkanRenderer übergeben
 - [ ] VulkanContext, VulkanDebug, VulkanSwapchainUtils, ImGuiLayer und ProfilerPanel umstellen
 - [ ] Swapchain-Recreation per Extent-Vergleich nur in BeginFrame und SubmitAndPresent

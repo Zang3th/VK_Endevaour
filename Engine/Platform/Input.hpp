@@ -35,10 +35,10 @@ namespace Engine::Platform
 
     struct FrameInput
     {
-        std::bitset<KEY_COUNT>          KeysDown;
-        std::bitset<MOUSE_BUTTON_COUNT> MouseButtonsDown;
+        std::bitset<KEY_COUNT>          KeysDown;         // Which keys are currently pressed
+        std::bitset<MOUSE_BUTTON_COUNT> MouseButtonsDown; // Which mouse buttons are currently pressed
         glm::vec2                       CursorPosition{}; // Screen coordinates
-        glm::vec2                       CursorDelta{};    // Delta since previous PollEvents
-        glm::vec2                       ScrollDelta{};    // Accumulated since previous PollEvents
+        glm::vec2                       CursorDelta{};    // Cursor delta since previous PollEvents
+        glm::vec2                       ScrollDelta{};    // Scroll delta since previous PollEvents
     };
 }
