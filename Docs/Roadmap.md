@@ -158,6 +158,8 @@ Die Projektion soll rechtshändig mit Z-up sein (entspricht Blender):
 
 ### Improvements
 
+- [ ] Logging vereinheitlichen und bündeln
+
 ### Bugs
 
 - [ ] Lag-Spikes inspizieren

@@ -72,7 +72,7 @@ namespace Engine::Graphics
 
         DestroyImages();
 
-        auto deviceHandle = m_Device->GetHandle();
+        const auto deviceHandle = m_Device->GetHandle();
 
         // Destroy sync objects
         for (size_t i = 0; i < FRAMES_IN_FLIGHT; i++)
@@ -126,7 +126,7 @@ namespace Engine::Graphics
         // Get current frame resources
         VulkanFrameResources* currentFrameResources = &m_FrameResources.at(m_CurrentFrameIndex);
 
-        auto deviceHandle = m_Device->GetHandle();
+        const auto deviceHandle = m_Device->GetHandle();
 
         // Wait for this frame-slot's previous submission to finish
         VK_VERIFY(deviceHandle.waitForFences(1, &currentFrameResources->InFlight, vk::True, UINT64_MAX));
@@ -342,7 +342,7 @@ namespace Engine::Graphics
     void VulkanSwapchain::DestroyImages()
     {
         // Destroy image views
-        for (auto& image : m_Images)
+        for (const auto& image : m_Images)
         {
             m_Device->GetHandle().destroyImageView(image.InternalView);
             m_Device->GetHandle().destroySemaphore(image.RenderFinished);
@@ -362,7 +362,7 @@ namespace Engine::Graphics
 
     void VulkanSwapchain::CreateImages()
     {
-        auto deviceHandle = m_Device->GetHandle();
+        const auto deviceHandle = m_Device->GetHandle();
 
         // Retrieve image handles
         auto [result, images] = deviceHandle.getSwapchainImagesKHR(m_CurrentSwapchain);
@@ -448,7 +448,7 @@ namespace Engine::Graphics
         // Define fence (in signaled state to avoid endless waiting for the first frame)
         const vk::FenceCreateInfo fenceInfo{ .flags = vk::FenceCreateFlagBits::eSignaled };
 
-        auto deviceHandle = m_Device->GetHandle();
+        const auto deviceHandle = m_Device->GetHandle();
 
         // Create sync objects
         for (u32 i = 0; i < FRAMES_IN_FLIGHT; i++)

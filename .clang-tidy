@@ -29,6 +29,7 @@ Checks:
   bugprone-*,
   -bugprone-easily-swappable-parameters,
   -bugprone-throwing-static-initialization,
+  -bugprone-signed-bitwise,
 
   performance-*,
 

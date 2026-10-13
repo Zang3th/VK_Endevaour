@@ -68,9 +68,9 @@ namespace Engine::Graphics
 #pragma clang diagnostic ignored "-Wmissing-designated-field-initializers"
         // Configure logical device
         const vk::DeviceCreateInfo deviceCreateInfo{ .pNext                   = &extDyn3Features,
-                                                     .queueCreateInfoCount    = (u32)(queueCreateInfos.size()),
+                                                     .queueCreateInfoCount    = (u32)queueCreateInfos.size(),
                                                      .pQueueCreateInfos       = queueCreateInfos.data(),
-                                                     .enabledExtensionCount   = (u32)(g_DeviceExtensions.size()),
+                                                     .enabledExtensionCount   = (u32)g_DeviceExtensions.size(),
                                                      .ppEnabledExtensionNames = g_DeviceExtensions.data(),
                                                      .pEnabledFeatures        = &deviceFeatures };
 #pragma clang diagnostic pop

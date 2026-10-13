@@ -26,7 +26,7 @@ namespace Engine::Graphics
     void VulkanDescriptorSetLayout::Create(const DescriptorSetLayoutSpecification& spec)
     {
         const vk::DescriptorSetLayoutCreateInfo layoutCreateInfo{ .flags        = spec.Flags,
-                                                                  .bindingCount = (u32)(spec.Bindings.size()),
+                                                                  .bindingCount = (u32)spec.Bindings.size(),
                                                                   .pBindings    = spec.Bindings.data() };
 
         VK_VERIFY(m_Device.createDescriptorSetLayout(&layoutCreateInfo, nullptr, &m_Layout));

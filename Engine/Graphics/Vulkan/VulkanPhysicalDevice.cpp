@@ -126,8 +126,8 @@ namespace
 
     [[nodiscard]] vk::SampleCountFlagBits FindSupportedSampleCount(vk::PhysicalDevice device)
     {
-        auto properties = device.getProperties();
-        auto supportedSampleCounts =
+        const auto properties = device.getProperties();
+        const auto supportedSampleCounts =
             properties.limits.framebufferColorSampleCounts & properties.limits.framebufferDepthSampleCounts;
 
         if (supportedSampleCounts & vk::SampleCountFlagBits::e4)

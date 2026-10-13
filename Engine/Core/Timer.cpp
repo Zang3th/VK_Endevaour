@@ -23,7 +23,7 @@ namespace Engine::Core
 
     [[nodiscard]] std::string Timer::GetEngineTotalRuntimeString() const
     {
-        auto deltaClock = Clock::now() - m_StartClock;
+        const auto deltaClock = Clock::now() - m_StartClock;
         return Utility::MillisecondsToString(std::chrono::duration<f64, std::milli>(deltaClock).count());
     }
 

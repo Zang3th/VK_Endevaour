@@ -51,12 +51,11 @@ namespace Engine::Graphics
         // ----- Construct the different states making up the pipeline (using dynamic rendering) -----
 
         // Dynamic rendering specification
-        const vk::Format                      format = m_Context->GetSwapchain()->GetProperties().SurfaceFormat.format;
-        const vk::PipelineRenderingCreateInfo renderingInfo{
-            .colorAttachmentCount    = GLOBAL_COLOR_ATTACHMENT_COUNT,
-            .pColorAttachmentFormats = &format,
-            .depthAttachmentFormat   = m_Context->GetSwapchain()->GetProperties().DepthFormat
-        };
+        const SwapchainProperties&            properties = m_Context->GetSwapchain()->GetProperties();
+        const vk::Format                      format     = properties.SurfaceFormat.format;
+        const vk::PipelineRenderingCreateInfo renderingInfo{ .colorAttachmentCount    = GLOBAL_COLOR_ATTACHMENT_COUNT,
+                                                             .pColorAttachmentFormats = &format,
+                                                             .depthAttachmentFormat   = properties.DepthFormat };
 
         // Shader stages
         std::array<vk::PipelineShaderStageCreateInfo, 2> shaderStages = {
@@ -65,12 +64,12 @@ namespace Engine::Graphics
         };
 
         // Vertex input state
-        auto                                         bindingDescription    = Vertex::GetBindingDescription();
-        auto                                         attributeDescriptions = Vertex::GetAttributeDescriptions();
+        const auto                                   bindingDescription    = Vertex::GetBindingDescription();
+        const auto                                   attributeDescriptions = Vertex::GetAttributeDescriptions();
         const vk::PipelineVertexInputStateCreateInfo vertexState{ .vertexBindingDescriptionCount = 1,
                                                                   .pVertexBindingDescriptions    = &bindingDescription,
                                                                   .vertexAttributeDescriptionCount =
-                                                                      (u32)(attributeDescriptions.size()),
+                                                                      (u32)attributeDescriptions.size(),
                                                                   .pVertexAttributeDescriptions =
                                                                       attributeDescriptions.data() };
 
@@ -89,10 +88,8 @@ namespace Engine::Graphics
                                                                         .lineWidth               = 1.0f };
 
         // Multisampling state
-        const vk::PipelineMultisampleStateCreateInfo multisampleState{
-            .rasterizationSamples = m_Context->GetSwapchain()->GetProperties().SampleCount,
-            .sampleShadingEnable  = vk::False
-        };
+        const vk::PipelineMultisampleStateCreateInfo multisampleState{ .rasterizationSamples = properties.SampleCount,
+                                                                       .sampleShadingEnable  = vk::False };
 
         // Depth stencil state
         const vk::PipelineDepthStencilStateCreateInfo depthStencilState{ .depthTestEnable       = m_Spec.DepthTest,
@@ -116,7 +113,7 @@ namespace Engine::Graphics
             vk::DynamicState::eViewport,          vk::DynamicState::eScissor,  vk::DynamicState::ePolygonModeEXT,
             vk::DynamicState::ePrimitiveTopology, vk::DynamicState::eCullMode, vk::DynamicState::eFrontFace
         };
-        const vk::PipelineDynamicStateCreateInfo dynamicState{ .dynamicStateCount = (u32)(dynamicStates.size()),
+        const vk::PipelineDynamicStateCreateInfo dynamicState{ .dynamicStateCount = (u32)dynamicStates.size(),
                                                                .pDynamicStates    = dynamicStates.data() };
 
         // ----- Finally: Create the pipeline -----

@@ -24,7 +24,7 @@ namespace Engine::Graphics
     {
         const vk::DescriptorPoolCreateInfo poolCreateInfo{ .flags         = spec.Flags,
                                                            .maxSets       = spec.MaxSets,
-                                                           .poolSizeCount = (u32)(spec.PoolSizes.size()),
+                                                           .poolSizeCount = (u32)spec.PoolSizes.size(),
                                                            .pPoolSizes    = spec.PoolSizes.data() };
 
         VK_VERIFY(m_Device.createDescriptorPool(&poolCreateInfo, nullptr, &m_Pool));

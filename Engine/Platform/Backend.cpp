@@ -122,7 +122,7 @@ namespace Engine::Platform
         f64 xPos = 0;
         f64 yPos = 0;
         glfwGetCursorPos(m_GLFWHandle, &xPos, &yPos);
-        glm::vec2 cursorPosition(xPos, yPos);
+        const glm::vec2 cursorPosition(xPos, yPos);
 
         // Calculate cursor delta
         glm::vec2 cursorDelta = cursorPosition - m_CursorTracker.PreviousPosition;
@@ -136,8 +136,8 @@ namespace Engine::Platform
         m_CursorTracker.PreviousPosition = cursorPosition;
 
         // Get scroll delta
-        glm::vec2 scrollDelta     = m_ScrollAccumulator.Delta;
-        m_ScrollAccumulator.Delta = { 0.0f, 0.0f };
+        const glm::vec2 scrollDelta = m_ScrollAccumulator.Delta;
+        m_ScrollAccumulator.Delta   = { 0.0f, 0.0f };
 
         return {
             .KeysDown         = keysDown,
