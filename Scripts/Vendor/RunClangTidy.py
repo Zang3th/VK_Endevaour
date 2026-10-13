@@ -1,5 +1,8 @@
 #!/usr/bin/env python3
 #
+# Vendored version: LLVM 23.1.3 (llvmorg-23.1.3), unmodified apart from this header
+# Source: https://github.com/llvm/llvm-project/blob/llvmorg-23.1.3/clang-tools-extra/clang-tidy/tool/run-clang-tidy.py
+#
 # ===-----------------------------------------------------------------------===#
 #
 # Part of the LLVM Project, under the Apache License v2.0 with LLVM Exceptions.
@@ -42,6 +45,7 @@ import json
 import multiprocessing
 import os
 import re
+import shlex
 import shutil
 import subprocess
 import sys
@@ -667,7 +671,7 @@ async def main() -> None:
         subprocess.check_call(
             invocation, stdout=subprocess.DEVNULL if args.quiet else None
         )
-    except:
+    except Exception:
         print("Unable to run clang-tidy.", file=sys.stderr)
         sys.exit(1)
 
@@ -681,7 +685,7 @@ async def main() -> None:
     if args.source_filter:
         try:
             source_filter_re = re.compile(args.source_filter)
-        except:
+        except Exception:
             print(
                 "Error: unable to compile regex from arg -source-filter:",
                 file=sys.stderr,
@@ -732,7 +736,7 @@ async def main() -> None:
             progress = f"[{i + 1: >{len(f'{len(files)}')}}/{len(files)}]"
             runtime = f"[{result.elapsed:.1f}s]"
             if not args.hide_progress:
-                print(f"{progress}{runtime} {' '.join(result.invocation)}")
+                print(f"{progress}{runtime} {shlex.join(result.invocation)}")
             if result.stdout:
                 print(result.stdout, end=("" if result.stderr else "\n"))
             if result.stderr:
@@ -764,7 +768,7 @@ async def main() -> None:
         try:
             assert export_fixes_dir
             merge_replacement_files(export_fixes_dir, args.export_fixes)
-        except:
+        except Exception:
             print("Error exporting fixes.\n", file=sys.stderr)
             traceback.print_exc()
             returncode = 1
@@ -775,7 +779,7 @@ async def main() -> None:
         try:
             assert export_fixes_dir
             apply_fixes(args, clang_apply_replacements_binary, export_fixes_dir)
-        except:
+        except Exception:
             print("Error applying fixes.\n", file=sys.stderr)
             traceback.print_exc()
             returncode = 1

@@ -48,7 +48,7 @@ VK_Endevaour/
 ### Requirements
 
 - C++20 compiler
-  - Tested with Clang 20.x
+  - Tested with Clang 23.x
 - CMake 3.25 or newer
 - Vulkan 1.4 compatible graphics card and driver
 - Vulkan SDK installation (platform dependent)
@@ -108,13 +108,13 @@ models, textures, configuration files).
 | **Library**                                                              | **Version** | **Updated in Engine** | **Functionality**           | **Type**       |
 |:------------------------------------------------------------------------:|:-----------:|:---------------------:|:---------------------------:|:--------------:|
 | [glfw](https://github.com/glfw/glfw)                                     | 3.5.1       | 27.08.2026            | Window and input            | Static library |
-| [vma](https://github.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator) | 3.4.0       | 08.06.2026            | Memory allocation           | Source include |
-| [imgui](https://github.com/ocornut/imgui)                                | 1.92.8      | 08.06.2026            | GUI                         | Source include |
-| [doctest](https://github.com/doctest/doctest)                            | 2.5.0       | 26.05.2026            | Testing                     | Source include |
-| [glm](https://github.com/g-truc/glm)                                     | 1.0.3       | 01.01.2026            | Mathematics                 | Source include |
+| [vma](https://github.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator) | 3.4.0       | 08.06.2026            | Memory allocation           | Single-Header  |
+| [imgui](https://github.com/ocornut/imgui)                                | 1.92.8      | 08.06.2026            | GUI                         | Static library |
+| [doctest](https://github.com/doctest/doctest)                            | 2.5.0       | 26.05.2026            | Testing                     | Single-Header  |
+| [glm](https://github.com/g-truc/glm)                                     | 1.0.3       | 01.01.2026            | Mathematics                 | Header-only    |
 | [fmt](https://github.com/fmtlib/fmt)                                     | 12.1.0      | 29.12.2025            | Formatting and logging      | Static library |
-| [tinyobjloader](https://github.com/tinyobjloader/tinyobjloader)          | 2.0.0       | 24.10.2024            | OBJ file loading            | Source include |
-| [stb_image](https://github.com/nothings/stb/blob/master/stb_image.h)     | 2.30        | 21.10.2024            | Image loading               | Source include |
+| [tinyobjloader](https://github.com/tinyobjloader/tinyobjloader)          | 2.0.0       | 24.10.2024            | OBJ file loading            | Single-Header  |
+| [stb_image](https://github.com/nothings/stb/blob/master/stb_image.h)     | 2.30        | 21.10.2024            | Image loading               | Single-Header  |
 
 ## License
 

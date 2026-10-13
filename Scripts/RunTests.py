@@ -1,12 +1,10 @@
 #!/usr/bin/env python3
 
-import argparse
-import subprocess
-import sys
+import os
 import xml.etree.ElementTree as ET
-from ProjectDefines import Paths, format_command
-from pathlib import Path
 from collections import defaultdict
+from pathlib import Path
+from ProjectDefines import Output, add_config_args, banner, create_parser, dump, error, info, run, run_script, selected_configs
 
 # ---------------------------------------------------------------------------
 
@@ -16,9 +14,7 @@ TEST_RESULTS_XML = "test-results.xml"
 # ---------------------------------------------------------------------------
 
 def executable_path(build_dir: Path) -> Path:
-    executable = build_dir / "Tests" / (TEST_EXECUTABLE + ".exe")
-
-    return executable if executable.exists() else build_dir / "Tests" / TEST_EXECUTABLE
+    return build_dir / "Tests" / (TEST_EXECUTABLE + (".exe" if os.name == "nt" else ""))
 
 # ---------------------------------------------------------------------------
 
@@ -32,7 +28,7 @@ def run_tests(build_dir: Path, verbose: bool) -> int:
     executable = executable_path(build_dir)
 
     if not executable.exists():
-        print(f"Test executable '{executable}' does not exist ...")
+        error(f"Test executable '{executable}' does not exist.")
         return 1
 
     results = results_path(build_dir)
@@ -41,35 +37,28 @@ def run_tests(build_dir: Path, verbose: bool) -> int:
         results.unlink()
 
     cmd = [
-        str(executable),
+        executable,
         "--reporters=xml",
         f"--out={results}",
     ]
 
-    print("\n> " + format_command(cmd) + "\n")
-
     # The engine logs to stdout and would bury the report, so its output is captured instead of inherited.
     # In verbose mode the streams are inherited, which keeps the output live and colored.
-    if verbose:
-        process = subprocess.run(cmd, cwd=build_dir)
-    else:
-        process = subprocess.run(
-            cmd,
-            cwd=build_dir,
-            capture_output=True,
-            encoding="utf-8",
-            errors="replace",
-        )
+    process = run(cmd, cwd=build_dir, output=Output.SHOW if verbose else Output.CAPTURE)
 
     if not results.exists():
         if not verbose:
-            print(process.stdout, end="")
-            print(process.stderr, end="")
+            dump(process.stdout)
+            dump(process.stderr)
 
-        print(f"> Test run produced no report (exit code {process.returncode}), aborting!\n")
+        error(f"Test run produced no report (exit code {process.returncode}).")
         return 1
 
-    print(f"Wrote report to '{results}' ...")
+    info(f"Wrote report to '{results}'.")
+
+    if process.returncode != 0:
+        error(f"Tests failed (exit code {process.returncode}).")
+
     return process.returncode
 
 # ---------------------------------------------------------------------------
@@ -107,95 +96,73 @@ def collect_failures(root: ET.Element) -> dict[str, list[tuple[int, str, str, st
 def print_test_results(build_dir: Path) -> None:
     results = results_path(build_dir)
 
-    if not results.exists():
-        print("No test results found. Run with '--test' first ...\n")
-        return
-
     try:
         root = ET.parse(results).getroot()
     except ET.ParseError:
-        print(f"Test report '{results}' is incomplete ... (The run probably crashed)\n")
+        error(f"Test report '{results}' is incomplete, the run probably crashed.")
         return
 
     grouped = collect_failures(root)
 
     for file in sorted(grouped.keys()):
         for line, name, expression, expanded in sorted(grouped[file]):
-            print(f"{file}:{line}")
-            print(f"  [{name}]")
-            print(f"    {expression}")
-            print(f"    -> {expanded}\n")
+            info(f"{file}:{line}")
+            info(f"  [{name}]")
+            info(f"    {expression}")
+            info(f"    -> {expanded}\n")
 
     if not grouped:
-        print("Found no failing assertions.\n")
+        info("Found no failing assertions.\n")
 
-    # Skipped cases are deliberate gaps, so they are listed instead of being reduced to a number
     skipped = [t.get("name") or "" for t in root.iter("TestCase") if t.get("skipped") == "true"]
 
     if skipped:
-        print("Skipped:")
+        info("Skipped:")
         for name in sorted(skipped):
-            print(f"  {name}")
-        print("")
+            info(f"  {name}")
+        info("")
 
     cases = root.find("OverallResultsTestCases")
     asserts = root.find("OverallResultsAsserts")
 
     if cases is not None:
-        print(f"Test cases: {cases.get('successes')} passed, "
-              f"{cases.get('failures')} failed, "
-              f"{cases.get('skipped')} skipped")
+        info(f"Test cases: {cases.get('successes')} passed, "
+             f"{cases.get('failures')} failed, "
+             f"{cases.get('skipped')} skipped")
 
     if asserts is not None:
-        print(f"Assertions: {asserts.get('successes')} passed, "
-              f"{asserts.get('failures')} failed")
+        info(f"Assertions: {asserts.get('successes')} passed, "
+             f"{asserts.get('failures')} failed")
 
 # ---------------------------------------------------------------------------
 
 def main() -> int:
-    parser = argparse.ArgumentParser(description="[VK_Endeavour] test helper")
-    parser.add_argument("-d", "--debug", action="store_true", help="Target the Debug build")
-    parser.add_argument("-r", "--release", action="store_true", help="Target the Release build")
+    parser = create_parser("Run the engine tests")
+    add_config_args(parser, "Run the tests of the {} build")
     parser.add_argument("-p", "--print", action="store_true", help="Print results")
     parser.add_argument("-v", "--verbose", action="store_true", help="Show the full engine output")
 
     args = parser.parse_args()
-
-    if not (args.debug or args.release):
-        print("> No build specified. Use '-h' or '--help' for usage information.")
-        return 1
-
-    print("")
-
-    build_dirs = []
-
-    if args.debug:
-        build_dirs.append(Paths.DEBUG)
-
-    if args.release:
-        build_dirs.append(Paths.RELEASE)
-
     exit_code = 0
 
-    for build_dir in build_dirs:
-        if not build_dir.exists():
-            print(f"Build directory '{build_dir}' does not exist ...")
+    for config in selected_configs(parser, args):
+        banner(f"Running tests ({config.name})")
+
+        if not config.directory.exists():
+            error(f"Build directory '{config.directory}' does not exist.")
             exit_code = 1
             continue
 
-        print(f"============ Running tests ({build_dir.name}) ============")
-        if run_tests(build_dir, args.verbose) != 0:
+        if run_tests(config.directory, args.verbose) != 0:
             exit_code = 1
 
-        if args.print:
-            print(f"\n============ Printing results ({build_dir.name}) ============\n")
-            print_test_results(build_dir)
-
-        print("")
+        if args.print and results_path(config.directory).exists():
+            banner(f"Printing results ({config.name})")
+            print_test_results(config.directory)
 
     return exit_code
 
 # ---------------------------------------------------------------------------
 
 if __name__ == "__main__":
-    sys.exit(main())
+    run_script(main)

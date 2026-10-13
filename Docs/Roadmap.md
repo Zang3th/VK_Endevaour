@@ -95,6 +95,8 @@
 - [x] ~readability-trailing-comma in .clang-tidy deaktivieren~
 - [x] ~.clangd include-cleaner anpassen~
 - [x] ~Math/ in ProjectDefines.py und README ergänzen~
+- [x] ~Auf LLVM 23 upgraden~
+- [x] ~Skripte aufräumen~
 - [ ] `Docs/ArchitectureOverview.html` versionieren und neu erzeugen
 
 ### Improvements
@@ -169,6 +171,13 @@ Die Projektion soll rechtshändig mit Z-up sein (entspricht Blender):
 - +X = rechts
 - +Y = vorwärts
 - +Z = oben
+
+### Allgemeines
+
+- [ ] Projekt mal wieder unter Linux kompilieren
+- [ ] `Docs/ArchitectureOverview.html` versionieren und neu erzeugen
+
+### Improvements
 
 ### Bugs
 

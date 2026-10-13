@@ -1,38 +1,38 @@
 #!/usr/bin/env python3
 
-from pathlib import Path
-from ProjectDefines import Paths, run, STANDARD_DIRS, STANDARD_EXTENSIONS
+from ProjectDefines import COMMAND_NOT_STARTED, FORMAT_DIRS, Paths, STANDARD_EXTENSIONS, banner, create_parser, error, info, iter_sources, run, run_script
 
 # ---------------------------------------------------------------------------
 
-def iter_source_files(root: Path):
-    for p in root.rglob("*"):
-        if not p.is_file():
-            continue
-        if p.suffix not in STANDARD_EXTENSIONS:
-            continue
-        yield p
+def main() -> int:
+    parser = create_parser("Format the sources with clang-format")
+    parser.add_argument("--check", action="store_true", help="Only report formatting violations, change nothing")
 
-# ---------------------------------------------------------------------------
+    args = parser.parse_args()
 
-def main():
-    print("\n============ Formatting files ============")
+    banner("Checking formatting" if args.check else "Formatting files")
 
-    files: list[Path] = []
-    for d in STANDARD_DIRS:
-        if not d.exists():
-            print(f"Warning: missing directory: {d}")
-            continue
-        files.extend(iter_source_files(d))
+    files = [path.relative_to(Paths.PROJECT_ROOT) for path in iter_sources(FORMAT_DIRS, STANDARD_EXTENSIONS)]
 
-        if not files:
-            print("No files found.")
-            return
+    if not files:
+        error("Found no files to format.")
+        return 1
 
-    run(["clang-format", "-i", *files], cwd=Paths.PROJECT_ROOT, delimiters=("C:"))
-    print(f"Formatted {len(files)} files.\n")
+    mode = ["--dry-run", "-Werror"] if args.check else ["-i"]
+
+    returncode = run(["clang-format", *mode, *files], cwd=Paths.PROJECT_ROOT).returncode
+
+    if returncode == COMMAND_NOT_STARTED:
+        return 1
+
+    if returncode != 0:
+        error("Found formatting violations." if args.check else "Formatting failed.")
+        return 1
+
+    info(f"Checked {len(files)} files." if args.check else f"Formatted {len(files)} files.")
+    return 0
 
 # ---------------------------------------------------------------------------
 
 if __name__ == "__main__":
-    main()
+    run_script(main)

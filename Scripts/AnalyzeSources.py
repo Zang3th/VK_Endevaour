@@ -1,48 +1,81 @@
 #!/usr/bin/env python3
 
-import argparse
 import json
 import os
 import re
 import shutil
-import subprocess
 import sys
 from collections import defaultdict
+from dataclasses import dataclass
 from pathlib import Path
 
 import yaml
 
-from ProjectDefines import Paths, run, STANDARD_FILTER, format_command
+from ProjectDefines import COMMAND_NOT_STARTED, Output, Paths, STANDARD_DIRS, STANDARD_FILTER, STANDARD_FILTER_RE, banner, create_parser, dump, error, info, run, run_script, warn
 
 # ---------------------------------------------------------------------------
 
-# Keep clang-tidy and clang-format on the same directory groundtruth.
+# Same directory groundtruth as clang-format, without the tests.
 SOURCE_FILTER = STANDARD_FILTER
 HEADER_FILTER = STANDARD_FILTER
-TIDY_FIXES_YAML = Paths.PROJECT_ROOT / "tidy-fixes.yaml"
-PVS_COMPILE_COMMANDS = Paths.DEBUG / "compile_commands.json"
+COMPILE_COMMANDS = Paths.DEBUG / "compile_commands.json"
+TIDY_CONFIG = Paths.PROJECT_ROOT / ".clang-tidy"
+TIDY_FIXES_YAML = Paths.DEBUG / "tidy-fixes.yaml"
 PVS_LOG = Paths.DEBUG / "PVS-Studio.log"
 PVS_REPORT = Paths.DEBUG / "PVS-Studio.json"
 PVS_RULES_CONFIG = Paths.PROJECT_ROOT / "PVS-Studio.pvsconfig"
-
-SOURCE_FILTER_RE = re.compile(SOURCE_FILTER, re.IGNORECASE)
+PVS_SUPPRESS_FILE = Paths.PROJECT_ROOT / "suppress_file.suppress.json"
 
 # ---------------------------------------------------------------------------
 
-def clang_tidy():
+def require_compile_commands() -> bool:
+    if COMPILE_COMMANDS.exists():
+        return True
+
+    error(f"Compilation database '{COMPILE_COMMANDS}' does not exist. Build Debug first.")
+    return False
+
+# ---------------------------------------------------------------------------
+
+def clang_tidy() -> int:
+    if not require_compile_commands():
+        return 1
+
     if TIDY_FIXES_YAML.exists():
         TIDY_FIXES_YAML.unlink()
 
     cmd = [
-        "python", str(Paths.SCRIPTS / "RunClangTidy.py"),
-        "-p", str(Paths.DEBUG),
-        "-config-file", str(Paths.PROJECT_ROOT / ".clang-tidy"),
+        sys.executable, Paths.SCRIPTS_VENDOR / "RunClangTidy.py",
+        "-p", Paths.DEBUG,
+        "-config-file", TIDY_CONFIG,
         "-quiet",
         "-source-filter", SOURCE_FILTER,
         "-header-filter", HEADER_FILTER,
         "-export-fixes", TIDY_FIXES_YAML,
     ]
-    return run(cmd, silent=True)
+
+    result = run(cmd, output=Output.CAPTURE)
+
+    if result.returncode == COMMAND_NOT_STARTED:
+        return 1
+
+    if not TIDY_FIXES_YAML.exists():
+        dump(result.stdout)
+        dump(result.stderr)
+        error(f"clang-tidy produced no report (exit code {result.returncode}).")
+        return 1
+
+    output = result.stdout + result.stderr
+    unprocessed = sorted(set(re.findall(r"^Error while processing (.+)\.$", output, re.MULTILINE)))
+
+    if unprocessed:
+        warn(f"clang-tidy could not compile {len(unprocessed)} files, their results are incomplete:")
+        for file in unprocessed:
+            info(f"  {file}")
+        info("")
+
+    info(f"Wrote report to '{TIDY_FIXES_YAML}'.")
+    return 0
 
 # ---------------------------------------------------------------------------
 
@@ -69,73 +102,55 @@ def find_pvs_tool(names: tuple[str, ...]) -> Path | None:
 
 # ---------------------------------------------------------------------------
 
-def run_pvs_command(cmd: list[str | Path], cwd: Path | None = None) -> int:
-    print("> " + format_command(cmd) + "\n", flush=True)
-    return subprocess.call(
-        list(map(str, cmd)),
-        cwd=cwd,
-        stdout=subprocess.DEVNULL,
-        stderr=subprocess.DEVNULL,
+@dataclass
+class PvsSetup:
+    analyzer: Path | None
+    converter: Path | None
+
+    def prerequisites(self) -> list[tuple[str, str, bool]]:
+        return [
+            ("Analyzer", str(self.analyzer or "CompilerCommandsAnalyzer.exe / pvs-studio-analyzer"), self.analyzer is not None),
+            ("Report converter", str(self.converter or "PlogConverter.exe / plog-converter"), self.converter is not None),
+            ("Compilation database", str(COMPILE_COMMANDS), COMPILE_COMMANDS.exists()),
+            ("Rules configuration", str(PVS_RULES_CONFIG), PVS_RULES_CONFIG.exists()),
+        ]
+
+def locate_pvs() -> PvsSetup:
+    return PvsSetup(
+        analyzer=find_pvs_tool(("CompilerCommandsAnalyzer.exe", "pvs-studio-analyzer")),
+        converter=find_pvs_tool(("PlogConverter.exe", "plog-converter")),
     )
 
 # ---------------------------------------------------------------------------
 
+def check_pvs_license(analyzer: Path, output: Output) -> bool:
+    result = run([analyzer, "lic-info"], output=output)
+
+    if result.returncode == 2:
+        warn("PVS-Studio license expires in less than one month.")
+
+    return result.returncode in (0, 2)
+
+# ---------------------------------------------------------------------------
+
 def verify_pvs() -> int:
-    analyzer = find_pvs_tool(("CompilerCommandsAnalyzer.exe", "pvs-studio-analyzer"))
-    converter = find_pvs_tool(("PlogConverter.exe", "plog-converter"))
+    setup = locate_pvs()
     valid = True
 
-    if analyzer:
-        print(f"Analyzer:             {analyzer}")
-    else:
-        print("Analyzer:             not found")
-        valid = False
+    for label, location, found in setup.prerequisites():
+        info(f"{label + ':':<22}{location if found else f'not found ({location})'}")
+        valid = valid and found
 
-    if converter:
-        print(f"Report converter:     {converter}")
-    else:
-        print("Report converter:     not found")
-        valid = False
+    info("")
 
-    if PVS_COMPILE_COMMANDS.exists():
-        print(f"Compilation database: {PVS_COMPILE_COMMANDS}")
-    else:
-        print(f"Compilation database: not found ({PVS_COMPILE_COMMANDS})")
-        valid = False
-
-    if PVS_RULES_CONFIG.exists():
-        print(f"Rules configuration:  {PVS_RULES_CONFIG}")
-    else:
-        print(f"Rules configuration:  not found ({PVS_RULES_CONFIG})")
-        valid = False
-
-    if not analyzer:
-        print("License:              not checked\n")
+    if not setup.analyzer:
+        error("PVS-Studio license not checked, the analyzer is missing.")
         return 1
 
-    license_result = subprocess.run(
-        [analyzer, "lic-info"],
-        capture_output=True,
-        text=True,
-        encoding="utf-8",
-        errors="replace",
-    )
-    license_info = (license_result.stdout or license_result.stderr).strip().splitlines()
-
-    if license_result.returncode in (0, 2):
-        print("License:              valid")
-        for line in license_info:
-            print(f"  {line}")
-
-        if license_result.returncode == 2:
-            print("  Warning: license expires in less than one month.")
-    else:
-        print("License:              missing or no longer valid")
-        for line in license_info:
-            print(f"  {line}")
+    if not check_pvs_license(setup.analyzer, Output.SHOW):
+        error("PVS-Studio license is missing or no longer valid.")
         valid = False
 
-    print("")
     return 0 if valid else 1
 
 # ---------------------------------------------------------------------------
@@ -145,41 +160,34 @@ def remove_pvs_reports() -> None:
         if report.exists():
             report.unlink()
 
+def remove_pvs_leftovers() -> None:
+    leftovers = [path for directory in STANDARD_DIRS for path in directory.rglob("*.PVS-Studio.cfg")]
+
+    for leftover in leftovers:
+        leftover.unlink()
+
+    if leftovers:
+        info(f"Removed {len(leftovers)} temporary PVS-Studio files from the source tree.\n")
+
 # ---------------------------------------------------------------------------
 
 def pvs_studio() -> int:
     remove_pvs_reports()
 
-    analyzer = find_pvs_tool(("CompilerCommandsAnalyzer.exe", "pvs-studio-analyzer"))
-    converter = find_pvs_tool(("PlogConverter.exe", "plog-converter"))
+    setup = locate_pvs()
+    missing = [label for label, _, found in setup.prerequisites() if not found]
 
-    if not analyzer:
-        print("> PVS-Studio analyzer CLI was not found. Install it or add it to PATH.\n")
+    if missing:
+        error(f"PVS-Studio setup is incomplete, missing: {', '.join(missing)}. Run with '--verify' for details.")
         return 1
 
-    if not converter:
-        print("> PVS-Studio report converter was not found. Install it or add it to PATH.\n")
+    if not check_pvs_license(setup.analyzer, Output.ON_FAILURE):
+        error("PVS-Studio license is missing or no longer valid.")
         return 1
-
-    if not PVS_COMPILE_COMMANDS.exists():
-        print(f"> Compilation database '{PVS_COMPILE_COMMANDS}' does not exist. Build Debug first.\n")
-        return 1
-
-    if not PVS_RULES_CONFIG.exists():
-        print(f"> PVS-Studio rules configuration '{PVS_RULES_CONFIG}' does not exist.\n")
-        return 1
-
-    license_result = run_pvs_command([analyzer, "lic-info"])
-    if license_result not in (0, 2):
-        print("> PVS-Studio license is missing or no longer valid.\n")
-        return 1
-
-    if license_result == 2:
-        print("> PVS-Studio license expires in less than one month.\n")
 
     cmd = [
-        analyzer, "analyze",
-        "-f", PVS_COMPILE_COMMANDS,
+        setup.analyzer, "analyze",
+        "-f", COMPILE_COMMANDS,
         "-o", PVS_LOG,
         "-e", Paths.ENGINE_VENDOR,
         "-e", Paths.TESTS,
@@ -191,25 +199,26 @@ def pvs_studio() -> int:
         "--project-root", Paths.PROJECT_ROOT,
     ]
 
-    suppress_file = Paths.PROJECT_ROOT / "suppress_file.suppress.json"
-    if suppress_file.exists():
-        cmd.extend(["-s", suppress_file])
+    if PVS_SUPPRESS_FILE.exists():
+        cmd.extend(["-s", PVS_SUPPRESS_FILE])
 
-    analysis_result = run_pvs_command(cmd, cwd=Paths.DEBUG)
+    analysis_result = run(cmd, cwd=Paths.DEBUG, output=Output.ON_FAILURE).returncode
+    remove_pvs_leftovers()
+
     if analysis_result == 5:
-        print("> PVS-Studio license is no longer valid.\n")
+        error("PVS-Studio license is no longer valid.")
         return 1
 
     if analysis_result not in (0, 2):
-        print(f"> PVS-Studio analysis failed with exit code {analysis_result}.\n")
+        error(f"PVS-Studio analysis failed with exit code {analysis_result}.")
         return 1
 
     if analysis_result == 2:
-        print("> PVS-Studio license expires in less than one month.\n")
+        warn("PVS-Studio license expires in less than one month.")
 
     if os.name == "nt":
         cmd = [
-            converter, PVS_LOG,
+            setup.converter, PVS_LOG,
             "-t", "JSON",
             "-o", Paths.DEBUG,
             "-n", PVS_REPORT.stem,
@@ -217,29 +226,38 @@ def pvs_studio() -> int:
         ]
     else:
         cmd = [
-            converter, PVS_LOG,
+            setup.converter, PVS_LOG,
             "-t", "json",
             "-a", "ALL",
             "-o", PVS_REPORT,
         ]
 
-    conversion_result = run_pvs_command(cmd, cwd=Paths.DEBUG)
+    conversion_result = run(cmd, cwd=Paths.DEBUG, output=Output.ON_FAILURE).returncode
     if conversion_result != 0 or not PVS_REPORT.exists():
-        print(f"> PVS-Studio report conversion failed with exit code {conversion_result}.\n")
+        error(f"PVS-Studio report conversion failed with exit code {conversion_result}.")
         return 1
 
     return 0
 
 # ---------------------------------------------------------------------------
 
-def verify_config():
+def verify_config() -> int:
     cmd = [
         "clang-tidy",
         "--verify-config",
-        "-config-file", str(Paths.PROJECT_ROOT / ".clang-tidy"),
+        "-config-file", TIDY_CONFIG,
     ]
-    print("> " + format_command(cmd) + "\n", flush=True)
-    return subprocess.call(cmd)
+
+    returncode = run(cmd).returncode
+
+    if returncode == COMMAND_NOT_STARTED:
+        return 1
+
+    if returncode != 0:
+        error("clang-tidy config is invalid.")
+        return 1
+
+    return 0
 
 # ---------------------------------------------------------------------------
 
@@ -251,18 +269,12 @@ def offset_to_line(path: Path, offset: int) -> int:
 
 def print_tidy_fixes() -> None:
     if not TIDY_FIXES_YAML.exists():
-        print("No clang-tidy report found. Run with '--tidy' first.\n")
+        info("No clang-tidy report found. Run with '--tidy' first.")
         return
 
     data = yaml.safe_load(TIDY_FIXES_YAML.read_text(encoding="utf-8"))
-
-    if not data or not data.get("Diagnostics"):
-        print("No clang-tidy diagnostics found.\n")
-        return
-
-    diags = data.get("Diagnostics", []) or []
+    diags = (data or {}).get("Diagnostics") or []
     grouped: dict[str, list[tuple[int, str, str]]] = defaultdict(list)
-    validResults = False
 
     for d in diags:
         msg = d.get("DiagnosticMessage") or {}
@@ -275,34 +287,35 @@ def print_tidy_fixes() -> None:
             continue
 
         normalized_file = Path(os.path.normpath(file)).resolve()
-        if not SOURCE_FILTER_RE.match(str(normalized_file)):
+        if not STANDARD_FILTER_RE.match(str(normalized_file)):
             continue
-
-        validResults = True
 
         line = offset_to_line(normalized_file, int(offset))
         grouped[str(normalized_file)].append((line, name, text))
 
-    for file in sorted(grouped.keys()):
-        for line, name, text in grouped[file]:
-            print(f"{file}:{line}")
-            print(f"  [{name}]")
-            print(f"    {text}\n")
+    if not grouped:
+        info("Found no clang-tidy diagnostics in the project sources.")
+        return
 
-    if not validResults:
-        print("Found no clang-tidy diagnostics in the project sources.\n")
+    for file in sorted(grouped.keys()):
+        for line, name, text in sorted(grouped[file]):
+            info(f"{file}:{line}")
+            info(f"  [{name}]")
+            info(f"    {text}\n")
+
+    info(f"clang-tidy diagnostics: {sum(map(len, grouped.values()))}")
 
 # ---------------------------------------------------------------------------
 
 def print_pvs_report() -> None:
     if not PVS_REPORT.exists():
-        print("No PVS-Studio report found. Run with '--pvs' first.\n")
+        info("No PVS-Studio report found. Run with '--pvs' first.")
         return
 
     try:
         data = json.loads(PVS_REPORT.read_text(encoding="utf-8-sig"))
-    except (json.JSONDecodeError, OSError) as error:
-        print(f"Could not read PVS-Studio report: {error}\n")
+    except (json.JSONDecodeError, OSError) as exception:
+        error(f"Could not read PVS-Studio report: {exception}")
         return
 
     warnings = data.get("warnings", []) if isinstance(data, dict) else []
@@ -323,7 +336,7 @@ def print_pvs_report() -> None:
             normalized_file = Paths.PROJECT_ROOT / normalized_file
         normalized_file = normalized_file.resolve()
 
-        if not SOURCE_FILTER_RE.match(str(normalized_file)):
+        if not STANDARD_FILTER_RE.match(str(normalized_file)):
             continue
 
         line = int(position.get("line") or position.get("Line") or 0)
@@ -335,7 +348,7 @@ def print_pvs_report() -> None:
         grouped[str(normalized_file)].append((line, column, code, level, text))
 
     if not grouped:
-        print("Found no PVS-Studio diagnostics in the project sources.\n")
+        info("Found no PVS-Studio diagnostics in the project sources.")
         return
 
     totals: dict[int, int] = defaultdict(int)
@@ -347,21 +360,21 @@ def print_pvs_report() -> None:
                 location += f":{column}"
 
             certainty = f", level {level}" if level else ""
-            print(location)
-            print(f"  [{code}{certainty}]")
-            print(f"    {text}\n")
+            info(location)
+            info(f"  [{code}{certainty}]")
+            info(f"    {text}\n")
             totals[level] += 1
 
     summary = ", ".join(
         f"level {level}: {count}" if level else f"unspecified: {count}"
         for level, count in sorted(totals.items())
     )
-    print(f"PVS-Studio diagnostics: {sum(totals.values())} ({summary})\n")
+    info(f"PVS-Studio diagnostics: {sum(totals.values())} ({summary})")
 
 # ---------------------------------------------------------------------------
 
 def main() -> int:
-    parser = argparse.ArgumentParser(description="[VK_Endeavour] Analyze Sources")
+    parser = create_parser("Analyze the sources with clang-tidy and PVS-Studio")
     parser.add_argument("-t", "--tidy", action="store_true", help="Run clang-tidy")
     parser.add_argument("--pvs", action="store_true", help="Run PVS-Studio")
     parser.add_argument("-p", "--print", action="store_true", help="Print results")
@@ -370,29 +383,26 @@ def main() -> int:
     args = parser.parse_args()
 
     if not (args.tidy or args.pvs or args.print or args.verify):
-        print("> No action specified. Use '-h' or '--help' for usage information.")
-        return 1
+        parser.error("no action specified, use -t, --pvs, -p and/or -v")
 
-    print("")
     exit_code = 0
 
     if args.verify:
-        print("============ Verifying clang-tidy config ============\n", flush=True)
+        banner("Verifying clang-tidy config")
         if verify_config() != 0:
             exit_code = 1
 
-        print("")
-        print("============ Verifying PVS-Studio setup ============\n")
+        banner("Verifying PVS-Studio setup")
         if verify_pvs() != 0:
             exit_code = 1
 
     if args.tidy:
-        print("============ Running clang-tidy ============")
+        banner("Running clang-tidy")
         if clang_tidy() != 0:
             exit_code = 1
 
     if args.pvs:
-        print("============ Running PVS-Studio ============\n")
+        banner("Running PVS-Studio")
         if pvs_studio() != 0:
             exit_code = 1
 
@@ -402,11 +412,11 @@ def main() -> int:
         print_pvs = args.pvs or print_all
 
         if print_tidy:
-            print("============ clang-tidy results ============\n")
+            banner("clang-tidy results")
             print_tidy_fixes()
 
         if print_pvs:
-            print("============ PVS-Studio results ============\n")
+            banner("PVS-Studio results")
             print_pvs_report()
 
     return exit_code
@@ -414,4 +424,4 @@ def main() -> int:
 # ---------------------------------------------------------------------------
 
 if __name__ == "__main__":
-    sys.exit(main())
+    run_script(main)

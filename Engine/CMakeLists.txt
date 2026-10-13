@@ -10,6 +10,9 @@ file(
     "${CMAKE_CURRENT_SOURCE_DIR}/*.cpp"
 )
 
+# Vendor libraries are built as their own targets or included header-only
+list(FILTER ENGINE_SOURCES EXCLUDE REGEX "/Vendor/")
+
 # Compile to a static library
 add_library(Engine STATIC ${ENGINE_SOURCES})
 
@@ -33,7 +36,7 @@ if(TARGET fmt)
 endif()
 
 # Important because I include everything myself
-# Needs to be defined here because Window and ImGui pull GLFW separately
+# Needs to be defined here because Window pulls GLFW separately
 target_compile_definitions(Engine PRIVATE GLFW_INCLUDE_NONE)
 
 # Configure glfw
@@ -55,8 +58,18 @@ if(TARGET glfw)
         $<$<COMPILE_LANGUAGE:C>:-Wno-format-nonliteral>
         $<$<COMPILE_LANGUAGE:C>:-Wno-missing-field-initializers>
         $<$<COMPILE_LANGUAGE:C>:-Wno-sign-compare>
-        $<$<COMPILE_LANGUAGE:C>:-Wno-format-nonliteral>
         $<$<COMPILE_LANGUAGE:C>:-Wno-incompatible-pointer-types-discards-qualifiers>
+    )
+endif()
+
+# Add imgui
+add_subdirectory("Vendor/imgui" EXCLUDE_FROM_ALL)
+
+# Remove specific warnings for imgui
+if(TARGET imgui)
+    target_compile_options(
+        imgui PRIVATE
+        $<$<COMPILE_LANGUAGE:CXX>:-Wno-unused-but-set-global>
     )
 endif()
 
@@ -65,7 +78,7 @@ find_package(Vulkan REQUIRED)
 message(STATUS "Vulkan SDK version: ${Vulkan_VERSION}")
 
 # Link against everything
-target_link_libraries(Engine PRIVATE fmt::fmt glfw PUBLIC Vulkan::Vulkan)
+target_link_libraries(Engine PRIVATE fmt::fmt glfw imgui PUBLIC Vulkan::Vulkan)
 
 # Add linker flags
 target_link_libraries(Engine PRIVATE ${ENGINE_LINKER_FLAGS})
