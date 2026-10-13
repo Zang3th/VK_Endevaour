@@ -2,6 +2,8 @@
 
 #include "Core/Types.hpp"
 
+#include "Debug/Log.hpp"
+
 #include "Math/Math.hpp"
 
 #include <bitset>
@@ -40,5 +42,17 @@ namespace Engine::Platform
         glm::vec2                       CursorPosition{}; // Screen coordinates
         glm::vec2                       CursorDelta{};    // Cursor delta since previous PollEvents
         glm::vec2                       ScrollDelta{};    // Scroll delta since previous PollEvents
+
+        [[nodiscard]] b8 IsKeyDown(Key key) const
+        {
+            ASSERT(key != Key::Count, "IsKeyDown: Key::Count is not a key!");
+            return KeysDown[(u8)key];
+        }
+
+        [[nodiscard]] b8 IsMouseButtonDown(MouseButton mouseButton) const
+        {
+            ASSERT(mouseButton != MouseButton::Count, "IsMouseButtonDown: MouseButton::Count is not a button!");
+            return MouseButtonsDown[(u8)mouseButton];
+        }
     };
 }

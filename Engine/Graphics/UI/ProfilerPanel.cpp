@@ -1,7 +1,5 @@
 #include "ProfilerPanel.hpp"
 
-#include "Platform/Window.hpp"
-
 #include "Vendor/imgui/imgui.h"
 
 namespace Engine::Graphics
@@ -44,7 +42,6 @@ namespace Engine::Graphics
         ImGui::SeparatorText("Application");
         ImGui::Text("%-8s %3.1f s", "Runtime", timing.TotalSeconds);
         ImGui::Text("%-8s %4llu", "Frames", (ull)timing.FrameCounter);
-        ImGui::Text("%-8s %4d x %-4d", "Window", Platform::Window::GetWidth(), Platform::Window::GetHeight());
         ImGui::NewLine();
 
         // Timing

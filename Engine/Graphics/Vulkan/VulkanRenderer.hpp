@@ -10,6 +10,11 @@
 
 #include <filesystem>
 
+namespace Engine::Platform
+{
+    class Window;
+}
+
 namespace Engine::Graphics
 {
     struct Mesh;
@@ -27,7 +32,7 @@ namespace Engine::Graphics
     class VulkanRenderer
     {
     public:
-        VulkanRenderer();
+        VulkanRenderer(const Platform::Window& window);
         ~VulkanRenderer();
 
         VulkanRenderer(const VulkanRenderer&)            = delete;

@@ -2,6 +2,11 @@
 
 #include <vulkan/vulkan.hpp>
 
+namespace Engine::Platform
+{
+    class Window;
+}
+
 namespace Engine::Graphics
 {
     class VulkanDebug
@@ -12,7 +17,7 @@ namespace Engine::Graphics
         static bool CheckValidationLayerSupport(const std::vector<const char*>& validationLayers);
 
         static void                     LoadDebugExtensionFunctions(vk::Instance instance);
-        static std::vector<const char*> GetInstanceExtensions();
+        static std::vector<const char*> GetInstanceExtensions(const Platform::Window& window);
 
         // clang-format off
         static VKAPI_ATTR VkBool32 VKAPI_CALL Callback

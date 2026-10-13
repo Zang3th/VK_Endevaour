@@ -60,7 +60,7 @@ namespace Engine::Platform
 
     // ----- Backend -----
 
-    Backend::Backend(const WindowSpecification& spec)
+    Backend::Backend(const WindowInitSpecification& initSpec)
     {
         // Initialize GLFW
         ASSERT(glfwSetErrorCallback(&GLFW_ErrorCallback) == nullptr, "Failed to set GLFW_ErrorCallback!");
@@ -68,7 +68,7 @@ namespace Engine::Platform
         LOG_INFO("Initialized GLFW ...");
 
         // Create window and set user pointer
-        m_Window     = Scope<Window>(new Window(spec));
+        m_Window     = Scope<Window>(new Window(initSpec));
         m_GLFWHandle = m_Window->m_GLFWHandle;
         glfwSetWindowUserPointer(m_GLFWHandle, this);
 
@@ -88,6 +88,7 @@ namespace Engine::Platform
 
     Backend::~Backend()
     {
+        LOG_INFO("Backend::Destructor() ...");
         m_Window.reset();
         glfwTerminate();
     }
@@ -169,17 +170,22 @@ namespace Engine::Platform
 
     // ----- Window -----
 
-    Window::Window(const WindowSpecification& spec) : m_Spec(spec)
+    Window::Window(const WindowInitSpecification& initSpec) : m_InitSpec(initSpec)
     {
-        ASSERT(m_Spec.Width > 0 && m_Spec.Height > 0, "Window width and height must be greater than zero!");
+        ASSERT(m_InitSpec.Width > 0 && m_InitSpec.Height > 0, "Window width and height must be greater than zero!");
         glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
-        m_GLFWHandle = glfwCreateWindow((int)m_Spec.Width, (int)m_Spec.Height, m_Spec.Title.c_str(), nullptr, nullptr);
+        m_GLFWHandle =
+            glfwCreateWindow((int)m_InitSpec.Width, (int)m_InitSpec.Height, m_InitSpec.Title.c_str(), nullptr, nullptr);
         ASSERT(m_GLFWHandle, "Failed to create GLFW window!");
-        LOG_INFO("Created GLFW window ... (Application: '{}', Size: {}x{})", m_Spec.Title, m_Spec.Width, m_Spec.Height);
+        LOG_INFO("Created GLFW window ... (Application: '{}', Size: {}x{})",
+                 m_InitSpec.Title,
+                 m_InitSpec.Width,
+                 m_InitSpec.Height);
     }
 
     Window::~Window()
     {
+        LOG_INFO("Window::Destructor() ...");
         glfwDestroyWindow(m_GLFWHandle);
     }
 

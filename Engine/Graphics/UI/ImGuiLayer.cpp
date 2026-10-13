@@ -32,9 +32,9 @@ namespace Engine::Graphics
 {
     // ----- Public -----
 
-    ImGuiLayer::ImGuiLayer(VulkanContext* context) : m_Context(context)
+    ImGuiLayer::ImGuiLayer(VulkanContext* context, const Platform::Window& window) : m_Context(context)
     {
-        Init();
+        Init(window);
         ConfigureStyle();
     }
 
@@ -84,7 +84,7 @@ namespace Engine::Graphics
         m_DescriptorPool = MakeScope<VulkanDescriptorPool>(m_Context->GetDevice()->GetHandle(), spec);
     }
 
-    void ImGuiLayer::Init()
+    void ImGuiLayer::Init(const Platform::Window& window)
     {
         CreateDescriptorPool();
 
@@ -134,8 +134,7 @@ namespace Engine::Graphics
                                             .CustomShaderVertCreateInfo = {},
                                             .CustomShaderFragCreateInfo = {} };
 
-        ASSERT(ImGui_ImplGlfw_InitForVulkan(Platform::Window::GetHandle(), true),
-               "ImGui_ImplGlfw_InitForVulkan failed!");
+        ASSERT(ImGui_ImplGlfw_InitForVulkan(window.GetGLFWHandle(), true), "ImGui_ImplGlfw_InitForVulkan failed!");
         ASSERT(ImGui_ImplVulkan_Init(&initInfo), "ImGui_ImplVulkan_Init failed!");
 
         LOG_INFO("Initialized ImGui ...");

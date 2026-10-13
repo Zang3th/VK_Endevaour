@@ -13,7 +13,8 @@ namespace
     // ----- Internal -----
 
     Engine::Graphics::SwapchainProperties GetSwapchainProperties(
-        const Engine::Graphics::VulkanPhysicalDevice* physicalDevice)
+        const Engine::Graphics::VulkanPhysicalDevice* physicalDevice,
+        const Engine::Platform::FramebufferExtent&    framebufferExtent)
     {
         Engine::Graphics::SwapchainProperties properties{};
 
@@ -21,7 +22,9 @@ namespace
         const Engine::Graphics::SwapchainSupport swapchainSupport = physicalDevice->GetSwapchainSupport();
 
         // Choose most optimal swapchain properties
-        properties.Extent = Engine::Graphics::VulkanSwapchainUtils::ChooseExtent(swapchainSupport.Capabilities);
+        properties.FramebufferExtent = Engine::Graphics::VulkanSwapchainUtils::ToVkExtent(framebufferExtent);
+        properties.Extent =
+            Engine::Graphics::VulkanSwapchainUtils::ChooseExtent(swapchainSupport.Capabilities, framebufferExtent);
         properties.SurfaceFormat =
             Engine::Graphics::VulkanSwapchainUtils::ChooseSurfaceFormat(swapchainSupport.Formats);
         properties.PresentMode =
@@ -51,10 +54,12 @@ namespace Engine::Graphics
 {
     // ----- Public -----
 
-    VulkanSwapchain::VulkanSwapchain(const VulkanDevice* device, const vk::SurfaceKHR& surface)
-        : m_Device(device), m_Surface(surface)
+    VulkanSwapchain::VulkanSwapchain(const VulkanDevice*     device,
+                                     const vk::SurfaceKHR&   surface,
+                                     const Platform::Window& window)
+        : m_Device(device), m_Surface(surface), m_Window(window)
     {
-        m_Properties = GetSwapchainProperties(device->GetPhysicalDevice());
+        m_Properties = GetSwapchainProperties(device->GetPhysicalDevice(), window.GetFramebufferExtent());
         CreateCommandPools();
         InitializeFrames();
         CreateSwapchain();
@@ -267,7 +272,7 @@ namespace Engine::Graphics
             .commandBufferCount   = 1,
             .pCommandBuffers      = &cmdBuffer,
             .signalSemaphoreCount = 1,
-            .pSignalSemaphores    = &(m_Images.at(frame.ImageIndex).RenderFinished) // Which semaphore to signal after
+            .pSignalSemaphores    = &m_Images.at(frame.ImageIndex).RenderFinished // Which semaphore to signal after
         };
 
         // Submit frame to queue
@@ -278,19 +283,17 @@ namespace Engine::Graphics
 
         // Create present info
         const vk::PresentInfoKHR presentInfo{ .waitSemaphoreCount = 1,
-                                              .pWaitSemaphores    = &(m_Images.at(frame.ImageIndex).RenderFinished),
+                                              .pWaitSemaphores    = &m_Images.at(frame.ImageIndex).RenderFinished,
                                               .swapchainCount     = 1,
                                               .pSwapchains        = &m_CurrentSwapchain,
                                               .pImageIndices      = &frame.ImageIndex };
 
         // Present
         const vk::Result res = m_Device->GetGraphicsQueue().presentKHR(&presentInfo);
-        if (res == vk::Result::eErrorOutOfDateKHR || res == vk::Result::eSuboptimalKHR
-            || Platform::Window::GotResized())
+        if (res == vk::Result::eErrorOutOfDateKHR || res == vk::Result::eSuboptimalKHR || WindowGotResized())
         {
-            LOG_WARN("vkQueuePresentKHR initialized swapchain recreation ...");
+            LOG_WARN("SubmitAndPresent initialized swapchain recreation ...");
             RecreateSwapchain();
-            Platform::Window::SetResizeFlag(false);
             return;
         }
         ASSERT(res == vk::Result::eSuccess, "Failed to present swapchain image!");
@@ -352,7 +355,7 @@ namespace Engine::Graphics
         // Wait for GPU
         m_Device->WaitForIdle();
 
-        m_Properties = GetSwapchainProperties(m_Device->GetPhysicalDevice());
+        m_Properties = GetSwapchainProperties(m_Device->GetPhysicalDevice(), m_Window.GetFramebufferExtent());
         CreateSwapchain();
         CreateImages();
     }
@@ -474,5 +477,11 @@ namespace Engine::Graphics
     void VulkanSwapchain::AdvanceFrameCount()
     {
         m_CurrentFrameIndex = (m_CurrentFrameIndex + 1) % FRAMES_IN_FLIGHT;
+    }
+
+    b8 VulkanSwapchain::WindowGotResized() const
+    {
+        return VulkanSwapchainUtils::ToFramebufferExtent(m_Properties.FramebufferExtent)
+               != m_Window.GetFramebufferExtent();
     }
 }

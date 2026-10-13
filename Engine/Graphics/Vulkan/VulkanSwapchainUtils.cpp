@@ -6,7 +6,18 @@
 
 namespace Engine::Graphics
 {
-    vk::Extent2D VulkanSwapchainUtils::ChooseExtent(const vk::SurfaceCapabilitiesKHR& capabilities)
+    vk::Extent2D VulkanSwapchainUtils::ToVkExtent(const Platform::FramebufferExtent& extent)
+    {
+        return { .width = extent.Width, .height = extent.Height };
+    }
+
+    Platform::FramebufferExtent VulkanSwapchainUtils::ToFramebufferExtent(const vk::Extent2D& extent)
+    {
+        return { .Width = extent.width, .Height = extent.height };
+    }
+
+    vk::Extent2D VulkanSwapchainUtils::ChooseExtent(const vk::SurfaceCapabilitiesKHR&  capabilities,
+                                                    const Platform::FramebufferExtent& framebufferExtent)
     {
         // Swapchain dimensions are fixed by the surface. Don't change anything
         if (capabilities.currentExtent.width != std::numeric_limits<u32>::max())
@@ -15,7 +26,7 @@ namespace Engine::Graphics
             return capabilities.currentExtent;
         }
 
-        vk::Extent2D extent = { .width = Platform::Window::GetWidth(), .height = Platform::Window::GetHeight() };
+        vk::Extent2D extent = ToVkExtent(framebufferExtent);
 
         // Clamp width and height between allowed min and max values of the display manager implementation
         extent.width = std::clamp(extent.width, capabilities.minImageExtent.width, capabilities.maxImageExtent.width);

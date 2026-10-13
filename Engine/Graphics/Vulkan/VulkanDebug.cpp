@@ -73,9 +73,9 @@ namespace Engine::Graphics
         return true;
     }
 
-    std::vector<const char*> VulkanDebug::GetInstanceExtensions()
+    std::vector<const char*> VulkanDebug::GetInstanceExtensions(const Platform::Window& window)
     {
-        std::vector<const char*> extensions = Platform::Window::GetInstanceExtensions();
+        std::vector<const char*> extensions = window.GetRequiredInstanceExtensions();
 
         if (ENABLE_VALIDATION_LAYERS)
         {

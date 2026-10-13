@@ -5,6 +5,11 @@
 
 #include <vulkan/vulkan.hpp>
 
+namespace Engine::Platform
+{
+    class Window;
+}
+
 namespace Engine::Graphics
 {
     class VulkanPhysicalDevice;
@@ -17,7 +22,7 @@ namespace Engine::Graphics
     class VulkanContext
     {
     public:
-        VulkanContext();
+        VulkanContext(const Platform::Window& window);
         ~VulkanContext();
 
         VulkanContext(const VulkanContext&)            = delete;
@@ -34,9 +39,8 @@ namespace Engine::Graphics
         void CopyBuffer(vk::Buffer srcBuffer, vk::Buffer dstBuffer, vk::DeviceSize size);
 
     private:
-        void CreateInstance();
+        void CreateInstance(const Platform::Window& window);
         void CreateDebugMessenger();
-        void CreateSurface();
         void CreateDispatchLoader();
 
         u32                         m_ApiVersion = VK_API_VERSION_1_4;

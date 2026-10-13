@@ -143,15 +143,15 @@ GLM soll nur noch über Math/Math.hpp inkludiert werden.
 - [x] ~Header ausarbeiten~
 
 #### Sandbox
-- [ ] Backend als Member
-- [ ] PollEvents liefert FrameInput (Key::Escape checken)
-- [ ] FramebufferExtent leer => WaitEvents
+- [x] ~Backend initialisieren~
+- [x] ~PollEvents liefert FrameInput (Key::Escape checken)~
+- [x] ~FramebufferExtent leer => WaitEvents~
 
 #### Integration vom RAII-Window
-- [ ] Window-Referenz an VulkanRenderer übergeben
-- [ ] VulkanContext, VulkanDebug, VulkanSwapchainUtils, ImGuiLayer und ProfilerPanel umstellen
-- [ ] Swapchain-Recreation per Extent-Vergleich nur in BeginFrame und SubmitAndPresent
-- [ ] Framebuffer-Extent explizit an ChooseExtent übergeben
+- [x] ~Window-Referenz an VulkanRenderer übergeben~
+- [x] ~VulkanContext, VulkanDebug, VulkanSwapchainUtils, ImGuiLayer umstellen~
+- [x] ~Swapchain-Recreation per Extent-Vergleich in SubmitAndPresent~
+- [x] ~Framebuffer-Extent explizit an ChooseExtent übergeben~
 
 ## Camera
 
@@ -175,7 +175,7 @@ Die Projektion soll rechtshändig mit Z-up sein (entspricht Blender):
 ### Allgemeines
 
 - [ ] Projekt mal wieder unter Linux kompilieren
-- [ ] `Docs/ArchitectureOverview.html` versionieren und neu erzeugen
+- [ ] `Docs/ArchitectureOverview.html` neu erzeugen
 
 ### Improvements
 

@@ -15,13 +15,11 @@ namespace vk
 
 namespace Engine::Platform
 {
-    struct WindowSpecification
+    struct WindowInitSpecification
     {
-        std::string Title = "DefaultWindowTitle";
-
-        // Screen coordinates, may differ from framebuffer pixels (DPI)
-        u32 Width  = 0;
-        u32 Height = 0;
+        std::string Title  = "DefaultWindowTitle";
+        u32         Width  = 0;
+        u32         Height = 0;
     };
 
     struct FramebufferExtent
@@ -45,18 +43,18 @@ namespace Engine::Platform
 
         void CreateVulkanSurface(const vk::Instance& instance, vk::SurfaceKHR* surface) const;
 
-        [[nodiscard]] std::vector<const char*>   GetRequiredInstanceExtensions() const;
-        [[nodiscard]] b8                         ShouldClose() const;
-        [[nodiscard]] FramebufferExtent          GetFramebufferExtent() const { return m_FramebufferExtent; }
-        [[nodiscard]] GLFWwindow*                GetGLFWHandle() const { return m_GLFWHandle; }
-        [[nodiscard]] const WindowSpecification& GetSpecification() const { return m_Spec; }
+        [[nodiscard]] std::vector<const char*> GetRequiredInstanceExtensions() const;
+        [[nodiscard]] b8                       ShouldClose() const;
+        [[nodiscard]] FramebufferExtent        GetFramebufferExtent() const { return m_FramebufferExtent; }
+        [[nodiscard]] GLFWwindow*              GetGLFWHandle() const { return m_GLFWHandle; }
+        [[nodiscard]] const std::string&       GetTitle() const { return m_InitSpec.Title; }
 
     private:
         friend class Backend;
-        explicit Window(const WindowSpecification& spec);
+        explicit Window(const WindowInitSpecification& initSpec);
 
-        GLFWwindow*         m_GLFWHandle = nullptr;
-        WindowSpecification m_Spec;
-        FramebufferExtent   m_FramebufferExtent;
+        GLFWwindow*             m_GLFWHandle = nullptr;
+        WindowInitSpecification m_InitSpec;
+        FramebufferExtent       m_FramebufferExtent;
     };
 }

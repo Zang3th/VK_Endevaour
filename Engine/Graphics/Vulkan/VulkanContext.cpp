@@ -16,10 +16,10 @@ namespace Engine::Graphics
 {
     // ----- Public -----
 
-    VulkanContext::VulkanContext()
+    VulkanContext::VulkanContext(const Platform::Window& window)
     {
-        CreateInstance();
-        CreateSurface();
+        CreateInstance(window);
+        window.CreateVulkanSurface(m_Instance, &m_Surface);
 
         if (ENABLE_VALIDATION_LAYERS)
         {
@@ -30,7 +30,7 @@ namespace Engine::Graphics
         m_Device         = MakeScope<VulkanDevice>(m_PhysicalDevice.get());
 
         VulkanAllocator::Init(m_Device.get(), m_Instance, m_ApiVersion);
-        m_Swapchain = MakeScope<VulkanSwapchain>(m_Device.get(), m_Surface);
+        m_Swapchain = MakeScope<VulkanSwapchain>(m_Device.get(), m_Surface, window);
 
         CreateDispatchLoader(); // For later use in extension functions
     }
@@ -65,23 +65,22 @@ namespace Engine::Graphics
 
     // ----- Private -----
 
-    void VulkanContext::CreateInstance()
+    void VulkanContext::CreateInstance(const Platform::Window& window)
     {
         if (ENABLE_VALIDATION_LAYERS)
         {
             ASSERT(VulkanDebug::CheckValidationLayerSupport(g_ValidationLayers),
                    "Validation layers were requested, but not available!");
         }
-        const std::string& title = Platform::Window::GetTitle();
 
-        const vk::ApplicationInfo appInfo{ .pApplicationName   = title.c_str(),
+        const vk::ApplicationInfo appInfo{ .pApplicationName   = window.GetTitle().c_str(),
                                            .applicationVersion = 1,
                                            .pEngineName        = "Engine",
                                            .engineVersion      = 1,
                                            .apiVersion         = m_ApiVersion };
 
         // Query for all required instance extensions
-        auto extensions = VulkanDebug::GetInstanceExtensions();
+        auto extensions = VulkanDebug::GetInstanceExtensions(window);
 
         // Create temporary debug messenger to trace instantiating
         auto debugCreateInfo = VulkanDebug::GetDebugCreateInfo();
@@ -89,9 +88,9 @@ namespace Engine::Graphics
         const vk::InstanceCreateInfo createInfo{
             .pNext                   = ENABLE_VALIDATION_LAYERS ? &debugCreateInfo : nullptr,
             .pApplicationInfo        = &appInfo,
-            .enabledLayerCount       = ENABLE_VALIDATION_LAYERS ? (u32)(g_ValidationLayers.size()) : 0,
+            .enabledLayerCount       = ENABLE_VALIDATION_LAYERS ? (u32)g_ValidationLayers.size() : 0,
             .ppEnabledLayerNames     = ENABLE_VALIDATION_LAYERS ? g_ValidationLayers.data() : nullptr,
-            .enabledExtensionCount   = (u32)(extensions.size()),
+            .enabledExtensionCount   = (u32)extensions.size(),
             .ppEnabledExtensionNames = extensions.data(),
         };
 
@@ -107,11 +106,6 @@ namespace Engine::Graphics
         ASSERT(debugMessenger, "Failed to create debug messenger!");
         m_DebugMessenger = debugMessenger;
         LOG_INFO("Created debug messenger ...");
-    }
-
-    void VulkanContext::CreateSurface()
-    {
-        Platform::Window::CreateVulkanSurface(m_Instance, &m_Surface);
     }
 
     void VulkanContext::CreateDispatchLoader()

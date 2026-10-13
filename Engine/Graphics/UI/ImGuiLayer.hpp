@@ -4,6 +4,11 @@
 
 #include <vulkan/vulkan.hpp>
 
+namespace Engine::Platform
+{
+    class Window;
+}
+
 namespace Engine::Graphics
 {
     class VulkanContext;
@@ -15,7 +20,7 @@ namespace Engine::Graphics
     class ImGuiLayer
     {
     public:
-        ImGuiLayer(VulkanContext* context);
+        ImGuiLayer(VulkanContext* context, const Platform::Window& window);
         ~ImGuiLayer();
 
         ImGuiLayer(const ImGuiLayer&)            = delete;
@@ -26,7 +31,7 @@ namespace Engine::Graphics
 
     private:
         void CreateDescriptorPool();
-        void Init();
+        void Init(const Platform::Window& window);
         void ConfigureStyle();
 
         VulkanContext*              m_Context;

@@ -7,6 +7,11 @@
 
 #include <optional>
 
+namespace Engine::Platform
+{
+    class Window;
+}
+
 namespace Engine::Graphics
 {
     class VulkanDevice;
@@ -17,7 +22,7 @@ namespace Engine::Graphics
     class VulkanSwapchain
     {
     public:
-        VulkanSwapchain(const VulkanDevice* device, const vk::SurfaceKHR& surface);
+        VulkanSwapchain(const VulkanDevice* device, const vk::SurfaceKHR& surface, const Platform::Window& window);
         ~VulkanSwapchain();
 
         VulkanSwapchain(const VulkanSwapchain&)            = delete;
@@ -46,9 +51,12 @@ namespace Engine::Graphics
         void InitializeFrames();
         void AdvanceFrameCount();
 
+        [[nodiscard]] b8 WindowGotResized() const;
+
         // Handles
-        const VulkanDevice*   m_Device  = nullptr;
-        const vk::SurfaceKHR& m_Surface = nullptr;
+        const VulkanDevice*     m_Device  = nullptr;
+        const vk::SurfaceKHR&   m_Surface = nullptr;
+        const Platform::Window& m_Window;
 
         vk::SwapchainKHR m_CurrentSwapchain = nullptr;
         vk::SwapchainKHR m_OldSwapchain     = nullptr;

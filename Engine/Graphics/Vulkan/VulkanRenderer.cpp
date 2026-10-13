@@ -13,14 +13,16 @@
 #include "Graphics/Vulkan/VulkanShader.hpp"
 #include "Graphics/Vulkan/VulkanSwapchain.hpp"
 
+#include "Platform/Window.hpp"
+
 namespace Engine::Graphics
 {
     // ----- Public -----
 
-    VulkanRenderer::VulkanRenderer()
+    VulkanRenderer::VulkanRenderer(const Platform::Window& window)
     {
-        m_Context              = MakeScope<VulkanContext>();
-        m_ImGuiLayer           = MakeScope<ImGuiLayer>(m_Context.get());
+        m_Context              = MakeScope<VulkanContext>(window);
+        m_ImGuiLayer           = MakeScope<ImGuiLayer>(m_Context.get(), window);
         m_ProfilerPanel        = MakeScope<ProfilerPanel>();
         m_VulkanGlobalUniforms = MakeScope<VulkanGlobalUniforms>(m_Context.get());
 

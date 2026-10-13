@@ -11,7 +11,7 @@ namespace Engine::Platform
     {
     public:
         // Initializes GLFW, creates the window and registers all callbacks
-        explicit Backend(const WindowSpecification& spec);
+        explicit Backend(const WindowInitSpecification& initSpec);
 
         // Destroys the window before terminating GLFW
         ~Backend();

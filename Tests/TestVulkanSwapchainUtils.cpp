@@ -6,7 +6,6 @@
 
 #include "Vendor/doctest/doctest.hpp"
 
-#include <algorithm>
 #include <array>
 #include <limits>
 #include <vector>
@@ -14,7 +13,7 @@
 namespace
 {
     using Engine::Graphics::VulkanSwapchainUtils;
-    using Engine::Platform::Window;
+    using Engine::Platform::FramebufferExtent;
 
     constexpr Engine::u32 APPLICATION_DEFINED = std::numeric_limits<Engine::u32>::max();
 
@@ -34,6 +33,30 @@ namespace
         CHECK(chosen.colorSpace == expected.colorSpace);
     }
 
+    // ----- Extent conversion -----
+
+    TEST_CASE("ToVkExtent and ToFramebufferExtent keep width and height and round-trip")
+    {
+        const std::array<FramebufferExtent, 4> extents = { FramebufferExtent{ .Width = 0, .Height = 0 },
+                                                           FramebufferExtent{ .Width = 1920, .Height = 1080 },
+                                                           FramebufferExtent{ .Width = 1, .Height = 4096 },
+                                                           FramebufferExtent{ .Width  = APPLICATION_DEFINED,
+                                                                              .Height = APPLICATION_DEFINED - 1 } };
+
+        for (const FramebufferExtent& extent : extents)
+        {
+            CAPTURE(extent.Width);
+            CAPTURE(extent.Height);
+
+            // Width and height must not be swapped
+            const vk::Extent2D vkExtent = VulkanSwapchainUtils::ToVkExtent(extent);
+            CHECK(vkExtent.width == extent.Width);
+            CHECK(vkExtent.height == extent.Height);
+
+            CHECK(VulkanSwapchainUtils::ToFramebufferExtent(vkExtent) == extent);
+        }
+    }
+
     // ----- ChooseExtent -----
 
     TEST_CASE("ChooseExtent passes a surface dictated extent through untouched")
@@ -45,52 +68,83 @@ namespace
                                                        vk::Extent2D{ .width  = APPLICATION_DEFINED - 1,
                                                                      .height = APPLICATION_DEFINED } };
 
+        // Lies inside the range, so returning it instead of the surface extent would be visible
+        constexpr FramebufferExtent FRAMEBUFFER{ .Width = 1280, .Height = 1024 };
+
         for (const vk::Extent2D& current : dictated)
         {
             CAPTURE(current.width);
             CAPTURE(current.height);
 
             const vk::Extent2D extent = VulkanSwapchainUtils::ChooseExtent(
-                MakeCapabilities(current, { .width = 1000, .height = 1000 }, { .width = 1920, .height = 1080 }));
+                MakeCapabilities(current, { .width = 1000, .height = 1000 }, { .width = 1920, .height = 1080 }),
+                FRAMEBUFFER);
 
             CHECK(extent.width == current.width);
             CHECK(extent.height == current.height);
         }
     }
 
-    TEST_CASE("ChooseExtent clamps the window size into the allowed range")
+    TEST_CASE("ChooseExtent clamps the framebuffer extent into the allowed range")
     {
         struct ClampCase
         {
-            const char*  Name;
-            vk::Extent2D Minimum;
-            vk::Extent2D Maximum;
+            const char*       Name;
+            FramebufferExtent Framebuffer;
+            vk::Extent2D      Minimum;
+            vk::Extent2D      Maximum;
+            vk::Extent2D      Expected;
         };
 
-        const std::array<ClampCase, 4> cases = { ClampCase{ .Name    = "one allowed size",
-                                                            .Minimum = { .width = 1280, .height = 720 },
-                                                            .Maximum = { .width = 1280, .height = 720 } },
-                                                 ClampCase{ .Name    = "window below the minimum",
-                                                            .Minimum = { .width = 100000, .height = 100000 },
-                                                            .Maximum = { .width = 200000, .height = 200000 } },
-                                                 ClampCase{ .Name    = "window above the maximum",
-                                                            .Minimum = { .width = 1, .height = 1 },
-                                                            .Maximum = { .width = 16, .height = 16 } },
-                                                 ClampCase{ .Name    = "permissive range",
-                                                            .Minimum = { .width = 0, .height = 0 },
-                                                            .Maximum = { .width  = APPLICATION_DEFINED - 1,
-                                                                         .height = APPLICATION_DEFINED - 1 } } };
+        const std::array<ClampCase, 7> cases = { ClampCase{ .Name        = "inside the range",
+                                                            .Framebuffer = { .Width = 1600, .Height = 900 },
+                                                            .Minimum     = { .width = 1, .height = 1 },
+                                                            .Maximum     = { .width = 3840, .height = 2160 },
+                                                            .Expected    = { .width = 1600, .height = 900 } },
+                                                 ClampCase{ .Name        = "one allowed size",
+                                                            .Framebuffer = { .Width = 1920, .Height = 1080 },
+                                                            .Minimum     = { .width = 1280, .height = 720 },
+                                                            .Maximum     = { .width = 1280, .height = 720 },
+                                                            .Expected    = { .width = 1280, .height = 720 } },
+                                                 ClampCase{ .Name        = "below the minimum",
+                                                            .Framebuffer = { .Width = 640, .Height = 480 },
+                                                            .Minimum     = { .width = 800, .height = 600 },
+                                                            .Maximum     = { .width = 3840, .height = 2160 },
+                                                            .Expected    = { .width = 800, .height = 600 } },
+                                                 ClampCase{ .Name        = "above the maximum",
+                                                            .Framebuffer = { .Width = 4096, .Height = 4096 },
+                                                            .Minimum     = { .width = 1, .height = 1 },
+                                                            .Maximum     = { .width = 1920, .height = 1080 },
+                                                            .Expected    = { .width = 1920, .height = 1080 } },
+                                                 ClampCase{ .Name        = "axes clamped independently",
+                                                            .Framebuffer = { .Width = 100, .Height = 5000 },
+                                                            .Minimum     = { .width = 200, .height = 200 },
+                                                            .Maximum     = { .width = 3000, .height = 3000 },
+                                                            .Expected    = { .width = 200, .height = 3000 } },
+                                                 ClampCase{ .Name        = "empty framebuffer raised to the minimum",
+                                                            .Framebuffer = { .Width = 0, .Height = 0 },
+                                                            .Minimum     = { .width = 1, .height = 1 },
+                                                            .Maximum     = { .width = 3840, .height = 2160 },
+                                                            .Expected    = { .width = 1, .height = 1 } },
+                                                 ClampCase{ .Name        = "permissive range",
+                                                            .Framebuffer = { .Width = 7680, .Height = 4320 },
+                                                            .Minimum     = { .width = 0, .height = 0 },
+                                                            .Maximum     = { .width  = APPLICATION_DEFINED - 1,
+                                                                             .height = APPLICATION_DEFINED - 1 },
+                                                            .Expected    = { .width = 7680, .height = 4320 } } };
 
-        // Expectations are derived from the window, not hardcoded, so its size does not matter
         for (const ClampCase& testCase : cases)
         {
             INFO(testCase.Name);
 
-            const vk::Extent2D extent = VulkanSwapchainUtils::ChooseExtent(MakeCapabilities(
-                { .width = APPLICATION_DEFINED, .height = APPLICATION_DEFINED }, testCase.Minimum, testCase.Maximum));
+            const vk::Extent2D extent = VulkanSwapchainUtils::ChooseExtent(
+                MakeCapabilities({ .width = APPLICATION_DEFINED, .height = APPLICATION_DEFINED },
+                                 testCase.Minimum,
+                                 testCase.Maximum),
+                testCase.Framebuffer);
 
-            CHECK(extent.width == std::clamp(Window::GetWidth(), testCase.Minimum.width, testCase.Maximum.width));
-            CHECK(extent.height == std::clamp(Window::GetHeight(), testCase.Minimum.height, testCase.Maximum.height));
+            CHECK(extent.width == testCase.Expected.width);
+            CHECK(extent.height == testCase.Expected.height);
         }
     }
 

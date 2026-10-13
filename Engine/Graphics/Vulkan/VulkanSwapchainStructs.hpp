@@ -30,13 +30,17 @@ namespace Engine::Graphics
     // These values describe the current swapchain and may change during recreation.
     struct SwapchainProperties
     {
-        vk::SurfaceFormatKHR            SurfaceFormat = { .format     = vk::Format::eUndefined,
-                                                          .colorSpace = vk::ColorSpaceKHR::eSrgbNonlinear };
-        vk::Extent2D                    Extent        = { .width = 0, .height = 0 };
-        vk::PresentModeKHR              PresentMode   = vk::PresentModeKHR::eFifo;
-        vk::SurfaceTransformFlagBitsKHR Transform     = vk::SurfaceTransformFlagBitsKHR::eIdentity;
-        vk::Format                      DepthFormat   = vk::Format::eUndefined;
-        vk::SampleCountFlagBits         SampleCount   = vk::SampleCountFlagBits::e1;
+        vk::SurfaceFormatKHR SurfaceFormat = { .format     = vk::Format::eUndefined,
+                                               .colorSpace = vk::ColorSpaceKHR::eSrgbNonlinear };
+        // The "real" extent and dimensions of the swapchain
+        vk::Extent2D Extent = { .width = 0, .height = 0 };
+        // The framebuffer extent for which the swapchain got created, differs from the extent above when the surface
+        // dictates currentExtent or the extent got clamped.
+        vk::Extent2D                    FramebufferExtent = { .width = 0, .height = 0 };
+        vk::PresentModeKHR              PresentMode       = vk::PresentModeKHR::eFifo;
+        vk::SurfaceTransformFlagBitsKHR Transform         = vk::SurfaceTransformFlagBitsKHR::eIdentity;
+        vk::Format                      DepthFormat       = vk::Format::eUndefined;
+        vk::SampleCountFlagBits         SampleCount       = vk::SampleCountFlagBits::e1;
 
         u32 MinImageCount = 0;
     };

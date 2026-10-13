@@ -8,25 +8,18 @@
 
 #include <Graphics/Vulkan/VulkanRenderer.hpp>
 
-#include <Platform/Window.hpp>
-
-Sandbox::Sandbox()
-{
-    Engine::Platform::Window::Init({ .Title = "Sandbox", .Width = 1920, .Height = 1080 });
-}
-
-Sandbox::~Sandbox()
-{
-    Engine::Platform::Window::Shutdown();
-}
+#include <Platform/Backend.hpp>
 
 void Sandbox::Run()
 {
+    // Initialize platform backend and window
+    Engine::Platform::Backend backend({ .Title = "Sandbox", .Width = 1920, .Height = 1080 });
+
     // Initialize timer
     Engine::Core::Timer timer;
 
     // Initialize renderer
-    Engine::Graphics::VulkanRenderer vkRenderer;
+    Engine::Graphics::VulkanRenderer vkRenderer(backend.GetWindow());
 
     // Load shader
     const Engine::u32 vertexID =
@@ -66,18 +59,26 @@ void Sandbox::Run()
     LOG_PERF("Engine startup time was {} ...", timer.GetEngineTotalRuntimeString());
     timer.SyncFrame();
 
-    while (!Engine::Platform::Window::ShouldClose())
+    while (!backend.GetWindow().ShouldClose())
     {
-        Engine::Platform::Window::PollEvents();
+        // Input-Struct which gets filled every frame
+        const Engine::Platform::FrameInput input = backend.PollEvents();
 
-        if (Engine::Platform::Window::IsMinimized())
+        // Check for closure
+        if (input.IsKeyDown(Engine::Platform::Key::Escape))
         {
-            Engine::Platform::Window::WaitEvents();
+            break;
+        }
+
+        // Empty framebuffer (extent of 0:0) means minimized under Windows
+        if (backend.GetWindow().GetFramebufferExtent().IsEmpty())
+        {
+            backend.WaitEvents();
             timer.SyncFrame();
             continue;
         }
 
-        auto frame = vkRenderer.BeginFrame(pipelineID);
+        const Engine::Graphics::RenderPacket frame = vkRenderer.BeginFrame(pipelineID);
 
         // Check if frame can't be rendered
         if (!frame.IsValid())
