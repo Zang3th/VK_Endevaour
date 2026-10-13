@@ -106,8 +106,8 @@ def check_vk_info() -> bool:
     result = capture([exe, "--summary"])
 
     if not result or result.returncode != 0:
-        reason = first_line(result.stderr) if result else "could not be started"
-        report("vulkaninfo", False, [("Path", exe), ("Error", reason or f"exit code {result.returncode}")])
+        reason = (first_line(result.stderr) or f"exit code {result.returncode}") if result else "could not be started"
+        report("vulkaninfo", False, [("Path", exe), ("Error", reason)])
         info("")
         return report("Vulkan 1.4", False, [("Version", "unknown, vulkaninfo failed")])
 

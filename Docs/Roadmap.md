@@ -1,26 +1,5 @@
 # VK_Endevaour
 
-## ProfilerPanel
-
-#Version
-- 0.2.2
-
-#Date
-- 22.07.26 - 23.07.26
-
-### Improvements
-
-- [x] ~Szene mit .obj und Debugdreieck bauen~
-- [x] ~Konstanten = 1 aus VulkanGlobalUniforms in VulkanGlobal auslagern~
-- [x] ~ObjLoader ein RandomizeColor-Flag für die Vertices mitgeben~
-
-### ProfilerPanel
-
-- [x] ~Erste einfache API überlegen~
-- [x] ~Implementieren~
-- [x] ~DrawStats pflegen~
-- [x] ~UI für das Panel finalisieren~
-
 ## RenderTargets
 
 #Version
@@ -81,14 +60,13 @@
 #### ImGui
 - [x] ~`PipelineInfoMain.MSAASamples` auf den aktiven Color-/Depth-SampleCount setzen~
 
-#Pin
 ## Refactoring der Plattform
 
 #Version
 - 0.2.4
 
 #Date
-- 08.10.26 - TBD
+- 08.10.26 - 13.10.26
 
 ### Allgemeines
 
@@ -97,7 +75,7 @@
 - [x] ~Math/ in ProjectDefines.py und README ergänzen~
 - [x] ~Auf LLVM 23 upgraden~
 - [x] ~Skripte aufräumen~
-- [ ] `Docs/ArchitectureOverview.html` versionieren und neu erzeugen
+- [x] ~`Docs/ArchitectureOverview.html` versionieren und neu erzeugen~
 
 ### Improvements
 
@@ -153,6 +131,7 @@ GLM soll nur noch über Math/Math.hpp inkludiert werden.
 - [x] ~Swapchain-Recreation per Extent-Vergleich in SubmitAndPresent~
 - [x] ~Framebuffer-Extent explizit an ChooseExtent übergeben~
 
+#Pin
 ## Camera
 
 #Version
@@ -637,3 +616,24 @@ Raytracer mit Vulkan
 
 - [x] ~Video 29~
 - [x] ~Video 30~
+
+## ProfilerPanel
+
+#Version
+- 0.2.2
+
+#Date
+- 22.07.26 - 23.07.26
+
+### Improvements
+
+- [x] ~Szene mit .obj und Debugdreieck bauen~
+- [x] ~Konstanten = 1 aus VulkanGlobalUniforms in VulkanGlobal auslagern~
+- [x] ~ObjLoader ein RandomizeColor-Flag für die Vertices mitgeben~
+
+### ProfilerPanel
+
+- [x] ~Erste einfache API überlegen~
+- [x] ~Implementieren~
+- [x] ~DrawStats pflegen~
+- [x] ~UI für das Panel finalisieren~

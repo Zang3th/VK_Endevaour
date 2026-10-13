@@ -177,7 +177,7 @@ def pvs_studio() -> int:
     setup = locate_pvs()
     missing = [label for label, _, found in setup.prerequisites() if not found]
 
-    if missing:
+    if missing or not setup.analyzer:
         error(f"PVS-Studio setup is incomplete, missing: {', '.join(missing)}. Run with '--verify' for details.")
         return 1
 
