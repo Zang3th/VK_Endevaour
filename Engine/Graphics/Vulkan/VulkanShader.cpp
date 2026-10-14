@@ -22,8 +22,8 @@ namespace Engine::Graphics
 
     VulkanShader::~VulkanShader()
     {
-        LOG_INFO("VulkanShader::Destructor(): {} ...", m_StageString);
         m_Device.destroyShaderModule(m_Module);
+        LOG_INFO("Destroyed shader module ... (Stage: {})", m_StageString);
     }
 
     [[nodiscard]] vk::PipelineShaderStageCreateInfo VulkanShader::GetPipelineShaderStageCreateInfo() const
@@ -38,6 +38,6 @@ namespace Engine::Graphics
         const vk::ShaderModuleCreateInfo shaderCreateInfo{ .codeSize = code.size(), .pCode = (u32*)code.data() };
 
         VK_VERIFY(m_Device.createShaderModule(&shaderCreateInfo, nullptr, &m_Module));
-        LOG_INFO("Created shader module ({}) ...", m_StageString);
+        LOG_INFO("Created shader module ... (Stage: {})", m_StageString);
     }
 }

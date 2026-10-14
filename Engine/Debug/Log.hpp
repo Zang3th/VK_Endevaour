@@ -7,7 +7,7 @@
 
 #define LOG_LOCATION() std::source_location::current().file_name(), std::source_location::current().line()
 
-#define LOG_VERBOSE(msg, ...) fmt::print(stdout, fg(fmt::color::tan), "[VERBOSE] " msg "\n" __VA_OPT__(, ) __VA_ARGS__)
+#define LOG_DEBUG(msg, ...) fmt::print(stdout, fg(fmt::color::tan), "[DBG]  " msg "\n" __VA_OPT__(, ) __VA_ARGS__)
 
 #define LOG_PERF(msg, ...)                                                                                             \
     fmt::print(stdout, fg(fmt::color::medium_aquamarine), "[PERF] " msg "\n" __VA_OPT__(, ) __VA_ARGS__)

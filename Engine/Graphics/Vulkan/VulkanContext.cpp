@@ -37,8 +37,6 @@ namespace Engine::Graphics
 
     VulkanContext::~VulkanContext()
     {
-        LOG_INFO("VulkanContext::Destructor() ...");
-
         m_Swapchain.reset();
         VulkanAllocator::Shutdown();
 
@@ -48,10 +46,14 @@ namespace Engine::Graphics
         if (ENABLE_VALIDATION_LAYERS)
         {
             m_Instance.destroyDebugUtilsMessengerEXT(m_DebugMessenger, nullptr);
+            LOG_INFO("Destroyed debug messenger ...");
         }
 
         m_Instance.destroySurfaceKHR(m_Surface);
+        LOG_INFO("Destroyed Vulkan surface ...");
+
         m_Instance.destroy();
+        LOG_INFO("Destroyed Vulkan instance ...");
     }
 
     void VulkanContext::CopyBuffer(vk::Buffer srcBuffer, vk::Buffer dstBuffer, vk::DeviceSize size)

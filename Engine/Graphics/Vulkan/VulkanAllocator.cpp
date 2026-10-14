@@ -93,12 +93,13 @@ namespace Engine::Graphics
         allocatorInfo.vulkanApiVersion = apiVersion;
 
         VK_VERIFY((vk::Result)(vmaCreateAllocator(&allocatorInfo, &s_Allocator)));
-        LOG_INFO("Created allocator with vma ...");
+        LOG_INFO("Created VMA allocator ...");
     }
 
     void VulkanAllocator::Shutdown()
     {
         vmaDestroyAllocator(s_Allocator);
+        LOG_INFO("Destroyed VMA allocator ...");
     }
 
     BufferAllocation VulkanAllocator::AllocateBuffer(const BufferSpecification& spec)
@@ -126,7 +127,7 @@ namespace Engine::Graphics
                                                &allocationInfo)));
         s_TotalMemory += allocationInfo.size;
 
-        LOG_MEM("+ {} for {} [{}] ... (total {})",
+        LOG_MEM("+{} for {} [{}] ... (total {})",
                 Core::Utility::BytesToString(allocationInfo.size),
                 spec.DebugName,
                 MemoryUsageToString(spec.MemoryUsage),
@@ -144,7 +145,7 @@ namespace Engine::Graphics
         s_TotalMemory -= allocationInfo.size;
         vmaDestroyBuffer(s_Allocator, (VkBuffer)alloc.Buffer, (VmaAllocation)alloc.Handle);
 
-        LOG_MEM("- {} for {} ... (total {})",
+        LOG_MEM("-{} for {} ... (total {})",
                 Core::Utility::BytesToString(allocationInfo.size),
                 alloc.DebugName,
                 Core::Utility::BytesToString(s_TotalMemory));
@@ -168,7 +169,7 @@ namespace Engine::Graphics
                                               &allocationInfo)));
         s_TotalMemory += allocationInfo.size;
 
-        LOG_MEM("+ {} for {} [{}] ... (total {})",
+        LOG_MEM("+{} for {} [{}] ... (total {})",
                 Core::Utility::BytesToString(allocationInfo.size),
                 spec.DebugName,
                 MemoryUsageToString(spec.MemoryUsage),
@@ -186,7 +187,7 @@ namespace Engine::Graphics
         s_TotalMemory -= allocationInfo.size;
         vmaDestroyImage(s_Allocator, image, (VmaAllocation)alloc.Handle);
 
-        LOG_MEM("- {} for {} ... (total {})",
+        LOG_MEM("-{} for {} ... (total {})",
                 Core::Utility::BytesToString(allocationInfo.size),
                 alloc.DebugName,
                 Core::Utility::BytesToString(s_TotalMemory));

@@ -11,14 +11,7 @@ namespace Engine::Core
     Timer::Timer()
     {
         Reset();
-        LOG_INFO("Timer initialized ...");
-    }
-
-    Timer::~Timer()
-    {
-        LOG_PERF("Engine runtime was {} with an average of {} ...",
-                 GetEngineTotalRuntimeString(),
-                 GetEngineFPSAverageString());
+        LOG_INFO("Initialized timer ...");
     }
 
     [[nodiscard]] std::string Timer::GetEngineTotalRuntimeString() const

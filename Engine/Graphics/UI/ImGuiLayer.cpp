@@ -40,10 +40,10 @@ namespace Engine::Graphics
 
     ImGuiLayer::~ImGuiLayer()
     {
-        LOG_INFO("ImGuiLayer::Destructor() ...");
         ImGui_ImplVulkan_Shutdown();
         ImGui_ImplGlfw_Shutdown();
         ImGui::DestroyContext();
+        LOG_INFO("Shut down ImGui ...");
     }
 
     void ImGuiLayer::BeginFrame()

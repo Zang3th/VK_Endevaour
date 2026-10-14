@@ -128,7 +128,7 @@ namespace Engine::Graphics
 
         if (mode == ImportMode::eTopologyDebug)
         {
-            LOG_VERBOSE("Mesh compression is deactivated in ImportMode::TOPOLOGY_DEBUG ...");
+            LOG_DEBUG("Mesh compression is deactivated in ImportMode::TOPOLOGY_DEBUG ...");
         }
         else if (mesh.Vertices.size() < mesh.Indices.size())
         {
@@ -138,7 +138,7 @@ namespace Engine::Graphics
         }
         else
         {
-            LOG_VERBOSE("Mesh was already compressed ...");
+            LOG_DEBUG("Mesh was already compressed ...");
         }
 
         return mesh;

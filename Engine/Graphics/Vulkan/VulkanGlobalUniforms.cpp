@@ -22,8 +22,6 @@ namespace Engine::Graphics
 
     VulkanGlobalUniforms::~VulkanGlobalUniforms()
     {
-        LOG_INFO("VulkanGlobalUniforms::Destructor() ...");
-
         for (u8 i = 0; i < FRAMES_IN_FLIGHT; i++)
         {
             VulkanAllocator::DestroyBuffer(m_BufferAllocs.at(i));
@@ -94,7 +92,7 @@ namespace Engine::Graphics
                                                        .pSetLayouts        = layouts.data() };
 
         VK_VERIFY(m_Context->GetDevice()->GetHandle().allocateDescriptorSets(&allocInfo, m_DescriptorSets.data()));
-        LOG_INFO("Created descriptor sets ... {}", FRAMES_IN_FLIGHT);
+        LOG_INFO("Allocated descriptor sets ... (Count: {})", FRAMES_IN_FLIGHT);
     }
 
     void VulkanGlobalUniforms::WriteDescriptorSets()

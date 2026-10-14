@@ -15,14 +15,14 @@ namespace Engine::Graphics
 
     VulkanDevice::~VulkanDevice()
     {
-        LOG_INFO("VulkanDevice::Destructor() ...");
         m_Device.destroy();
+        LOG_INFO("Destroyed logical device ...");
     }
 
     void VulkanDevice::WaitForIdle() const
     {
         VK_VERIFY(m_Device.waitIdle());
-        LOG_VERBOSE("DeviceWaitIdle returned successfully ...");
+        LOG_DEBUG("DeviceWaitIdle returned successfully ...");
     }
 
     // ----- Private -----

@@ -84,7 +84,8 @@ namespace Engine::Graphics
         VK_VERIFY(result);
         m_View = view;
 
-        LOG_INFO("Created render target ({}) ...", vk::to_string(createInfo.Format));
+        LOG_INFO(
+            "Created render target ... (Name: {}, Format: {})", createInfo.DebugName, vk::to_string(createInfo.Format));
     }
 
     void VulkanRenderTarget::Destroy()
@@ -98,11 +99,11 @@ namespace Engine::Graphics
         ASSERT(m_Device != nullptr, "RenderTarget has no valid device!");
         ASSERT(m_View != nullptr, "RenderTarget has no valid image view to destroy!");
         m_Device.destroyImageView(m_View, nullptr);
-        LOG_INFO("Destroyed image view for render target ...");
 
         ASSERT(m_Image != nullptr, "RenderTarget has no valid image to destroy!");
         ASSERT(m_ImageAllocation.Handle != nullptr, "RenderTarget holds no valid allocation handle!");
         VulkanAllocator::DestroyImage(m_Image, m_ImageAllocation);
+        LOG_INFO("Destroyed render target ... (Name: {})", m_ImageAllocation.DebugName);
 
         m_Device          = nullptr;
         m_Image           = nullptr;

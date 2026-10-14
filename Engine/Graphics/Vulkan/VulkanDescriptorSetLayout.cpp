@@ -17,8 +17,8 @@ namespace Engine::Graphics
 
     VulkanDescriptorSetLayout::~VulkanDescriptorSetLayout()
     {
-        LOG_INFO("VulkanDescriptorSetLayout::Destructor() ...");
         m_Device.destroyDescriptorSetLayout(m_Layout);
+        LOG_INFO("Destroyed descriptor set layout ...");
     }
 
     // ----- Private -----
@@ -30,6 +30,6 @@ namespace Engine::Graphics
                                                                   .pBindings    = spec.Bindings.data() };
 
         VK_VERIFY(m_Device.createDescriptorSetLayout(&layoutCreateInfo, nullptr, &m_Layout));
-        LOG_INFO("Created descriptor set layout ... (Count: {})", spec.Bindings.size());
+        LOG_INFO("Created descriptor set layout ... (Bindings: {})", spec.Bindings.size());
     }
 }

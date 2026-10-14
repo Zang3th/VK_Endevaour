@@ -68,8 +68,6 @@ namespace Engine::Graphics
 
     VulkanSwapchain::~VulkanSwapchain()
     {
-        LOG_INFO("VulkanSwapchain::Destructor() ...");
-
         DestroyImages();
 
         const auto deviceHandle = m_Device->GetHandle();
@@ -80,13 +78,16 @@ namespace Engine::Graphics
             deviceHandle.destroySemaphore(m_FrameResources.at(i).ImageAvailable);
             deviceHandle.destroyFence(m_FrameResources.at(i).InFlight);
         }
+        LOG_INFO("Destroyed sync objects ... (FramesInFlight: {})", FRAMES_IN_FLIGHT);
 
         // Destroy command pools
         deviceHandle.destroyCommandPool(m_GraphicsCommandPool);
         deviceHandle.destroyCommandPool(m_TransferCommandPool);
+        LOG_INFO("Destroyed command pools for graphics and transfer ...");
 
         // Destroy swapchain
         deviceHandle.destroySwapchainKHR(m_CurrentSwapchain);
+        LOG_INFO("Destroyed swapchain ...");
     }
 
     vk::CommandBuffer VulkanSwapchain::CreateTransferCommandBuffer()
@@ -131,6 +132,14 @@ namespace Engine::Graphics
         // Wait for this frame-slot's previous submission to finish
         VK_VERIFY(deviceHandle.waitForFences(1, &currentFrameResources->InFlight, vk::True, UINT64_MAX));
 
+        // Check for resize. Small optimization to check this early in the frame
+        if (WindowGotResized())
+        {
+            LOG_DEBUG("Window resize initiated a swapchain recreation ...");
+            RecreateSwapchain();
+            return std::nullopt;
+        }
+
         u32 imageIndex = UINT32_MAX;
 
         // Try to aquire next image
@@ -139,7 +148,7 @@ namespace Engine::Graphics
 
         if (res == vk::Result::eErrorOutOfDateKHR)
         {
-            LOG_WARN("vkAcquireNextImageKHR initialized swapchain recreation ...");
+            LOG_DEBUG("vkAcquireNextImageKHR initiated a swapchain recreation ...");
             RecreateSwapchain();
             return std::nullopt;
         }
@@ -292,7 +301,7 @@ namespace Engine::Graphics
         const vk::Result res = m_Device->GetGraphicsQueue().presentKHR(&presentInfo);
         if (res == vk::Result::eErrorOutOfDateKHR || res == vk::Result::eSuboptimalKHR || WindowGotResized())
         {
-            LOG_WARN("SubmitAndPresent initialized swapchain recreation ...");
+            LOG_DEBUG("SubmitAndPresent initiated a swapchain recreation ...");
             RecreateSwapchain();
             return;
         }
@@ -336,11 +345,14 @@ namespace Engine::Graphics
         {
             DestroyImages();
             m_Device->GetHandle().destroySwapchainKHR(m_OldSwapchain);
+            LOG_INFO("Destroyed old swapchain ...");
         }
     }
 
     void VulkanSwapchain::DestroyImages()
     {
+        const size_t imageCount = m_Images.size();
+
         // Destroy image views
         for (const auto& image : m_Images)
         {
@@ -348,6 +360,8 @@ namespace Engine::Graphics
             m_Device->GetHandle().destroySemaphore(image.RenderFinished);
         }
         m_Images.clear();
+
+        LOG_INFO("Destroyed swapchain images ... (Count: {})", imageCount);
     }
 
     void VulkanSwapchain::RecreateSwapchain()
@@ -411,7 +425,7 @@ namespace Engine::Graphics
                 .RenderFinished = renderFinished });
         }
 
-        LOG_INFO("Created {} image(s) with view(s) and render-finished semaphore(s) ...", m_Images.size());
+        LOG_INFO("Created swapchain images ... (Count: {})", m_Images.size());
     }
 
     void VulkanSwapchain::CreateCommandPools()
@@ -471,7 +485,7 @@ namespace Engine::Graphics
             m_FrameResources[i].CommandBuffer = commandBuffers.at(i);
         }
 
-        LOG_INFO("Initialized sync objects and command buffers for {} frame(s)-in-flight ...", FRAMES_IN_FLIGHT);
+        LOG_INFO("Created sync objects and command buffers ... (FramesInFlight: {})", FRAMES_IN_FLIGHT);
     }
 
     void VulkanSwapchain::AdvanceFrameCount()

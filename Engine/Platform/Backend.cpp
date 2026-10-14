@@ -88,9 +88,9 @@ namespace Engine::Platform
 
     Backend::~Backend()
     {
-        LOG_INFO("Backend::Destructor() ...");
         m_Window.reset();
         glfwTerminate();
+        LOG_INFO("Terminated GLFW ...");
     }
 
     void Backend::WaitEvents()
@@ -185,14 +185,14 @@ namespace Engine::Platform
 
     Window::~Window()
     {
-        LOG_INFO("Window::Destructor() ...");
         glfwDestroyWindow(m_GLFWHandle);
+        LOG_INFO("Destroyed GLFW window ...");
     }
 
     void Window::CreateVulkanSurface(const vk::Instance& instance, vk::SurfaceKHR* surface) const
     {
         VK_VERIFY((vk::Result)(glfwCreateWindowSurface(instance, m_GLFWHandle, nullptr, (VkSurfaceKHR*)surface)));
-        LOG_INFO("Created Vulkan surface for GLFW window ...");
+        LOG_INFO("Created Vulkan surface ...");
     }
 
     [[nodiscard]] std::vector<const char*> Window::GetRequiredInstanceExtensions() const

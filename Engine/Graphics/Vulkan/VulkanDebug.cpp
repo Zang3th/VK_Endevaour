@@ -106,7 +106,7 @@ namespace Engine::Graphics
         switch (messageSeverity)
         {
             case Severity::eVerbose:
-                LOG_VERBOSE("{}", pCallbackData->pMessage);
+                LOG_DEBUG("{}", pCallbackData->pMessage);
                 break;
 
             case Severity::eInfo:

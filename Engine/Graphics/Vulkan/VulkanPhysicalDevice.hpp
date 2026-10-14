@@ -23,7 +23,7 @@ namespace Engine::Graphics
     {
     public:
         VulkanPhysicalDevice(const vk::Instance& instance, const vk::SurfaceKHR& surface);
-        ~VulkanPhysicalDevice();
+        ~VulkanPhysicalDevice() = default;
 
         [[nodiscard]] const vk::PhysicalDevice& GetHandle() const { return m_PhysicalDevice; };
         [[nodiscard]] const QueueFamilyIndices& GetQueueFamilies() const { return m_QueueFamilyIndices; };

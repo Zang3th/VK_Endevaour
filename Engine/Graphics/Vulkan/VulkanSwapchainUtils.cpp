@@ -22,7 +22,7 @@ namespace Engine::Graphics
         // Swapchain dimensions are fixed by the surface. Don't change anything
         if (capabilities.currentExtent.width != std::numeric_limits<u32>::max())
         {
-            LOG_VERBOSE("Swapchain dimensions are set by the surface ...");
+            LOG_DEBUG("Swapchain dimensions are set by the surface ...");
             return capabilities.currentExtent;
         }
 

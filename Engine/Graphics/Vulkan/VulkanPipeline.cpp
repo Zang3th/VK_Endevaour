@@ -21,9 +21,11 @@ namespace Engine::Graphics
 
     VulkanPipeline::~VulkanPipeline()
     {
-        LOG_INFO("VulkanPipeline::Destructor() ...");
         m_Context->GetDevice()->GetHandle().destroyPipelineLayout(m_Layout);
+        LOG_INFO("Destroyed pipeline layout ...");
+
         m_Context->GetDevice()->GetHandle().destroyPipeline(m_Pipeline);
+        LOG_INFO("Destroyed graphics pipeline ...");
     }
 
     void VulkanPipeline::Bind(vk::CommandBuffer commandBuffer) const

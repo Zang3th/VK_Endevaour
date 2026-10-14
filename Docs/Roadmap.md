@@ -158,7 +158,7 @@ Die Projektion soll rechtshändig mit Z-up sein (entspricht Blender):
 
 ### Improvements
 
-- [ ] Logging vereinheitlichen und bündeln
+- [x] ~Logging vereinheitlichen~
 
 ### Bugs
 

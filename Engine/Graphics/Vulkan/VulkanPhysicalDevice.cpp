@@ -154,11 +154,6 @@ namespace Engine::Graphics
         PickDevice();
     }
 
-    VulkanPhysicalDevice::~VulkanPhysicalDevice()
-    {
-        LOG_INFO("VulkanPhysicalDevice::Destructor() ...");
-    }
-
     // ----- Private -----
 
     void VulkanPhysicalDevice::PickDevice()

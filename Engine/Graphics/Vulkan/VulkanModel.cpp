@@ -17,9 +17,11 @@ namespace Engine::Graphics
 
     VulkanModel::~VulkanModel()
     {
-        LOG_INFO("VulkanModel::Destructor() ...");
         VulkanAllocator::DestroyBuffer(m_VertexBufferAlloc);
+        LOG_INFO("Destroyed vertex buffer ...");
+
         VulkanAllocator::DestroyBuffer(m_IndexBufferAlloc);
+        LOG_INFO("Destroyed index buffer ...");
     }
 
     void VulkanModel::Bind(vk::CommandBuffer commandBuffer) const

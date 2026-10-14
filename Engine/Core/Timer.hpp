@@ -36,7 +36,7 @@ namespace Engine::Core
     {
     public:
         Timer();
-        ~Timer();
+        ~Timer() = default;
 
         Timer(const Timer&)            = delete;
         Timer& operator=(const Timer&) = delete;

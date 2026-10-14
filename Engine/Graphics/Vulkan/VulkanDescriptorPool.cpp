@@ -14,8 +14,8 @@ namespace Engine::Graphics
 
     VulkanDescriptorPool::~VulkanDescriptorPool()
     {
-        LOG_INFO("VulkanDescriptorPool::Destructor() ...");
         m_Device.destroyDescriptorPool(m_Pool);
+        LOG_INFO("Destroyed descriptor pool ...");
     }
 
     // ----- Private -----
@@ -28,6 +28,6 @@ namespace Engine::Graphics
                                                            .pPoolSizes    = spec.PoolSizes.data() };
 
         VK_VERIFY(m_Device.createDescriptorPool(&poolCreateInfo, nullptr, &m_Pool));
-        LOG_INFO("Created descriptor pool ... (MaxSets: {}, PoolSize: {})", spec.MaxSets, spec.PoolSizes.size());
+        LOG_INFO("Created descriptor pool ... (MaxSets: {}, PoolSizes: {})", spec.MaxSets, spec.PoolSizes.size());
     }
 }

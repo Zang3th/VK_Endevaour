@@ -92,6 +92,9 @@ void Sandbox::Run()
         vkRenderer.DrawFrame(frame, timer.GetFrameTiming());
     }
 
-    // Wait for device idle
+    LOG_DEBUG("Engine should close ...");
+    LOG_PERF("Engine runtime was {} with an average of {} ...",
+             timer.GetEngineTotalRuntimeString(),
+             timer.GetEngineFPSAverageString());
     vkRenderer.WaitForDevice();
 }

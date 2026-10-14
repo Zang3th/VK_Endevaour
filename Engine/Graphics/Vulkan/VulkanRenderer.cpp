@@ -29,10 +29,7 @@ namespace Engine::Graphics
         m_Swapchain = m_Context->GetSwapchain();
     }
 
-    VulkanRenderer::~VulkanRenderer()
-    {
-        LOG_INFO("VulkanRenderer::Destructor() ...");
-    }
+    VulkanRenderer::~VulkanRenderer() = default;
 
     [[nodiscard]] u32 VulkanRenderer::LoadShader(vk::ShaderStageFlagBits stage, const std::filesystem::path& path)
     {
