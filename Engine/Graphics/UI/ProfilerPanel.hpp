@@ -1,10 +1,18 @@
 #pragma once
 
-#include "Core/Timer.hpp"
-
-#include "Graphics/Vulkan/VulkanRendererStructs.hpp"
+#include "Core/Types.hpp"
 
 #include <array>
+
+namespace Engine::Core
+{
+    struct FrameTiming;
+}
+
+namespace Engine::Graphics
+{
+    struct RenderStats;
+}
 
 namespace Engine::Graphics
 {

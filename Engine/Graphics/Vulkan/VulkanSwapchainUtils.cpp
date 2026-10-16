@@ -39,6 +39,8 @@ namespace Engine::Graphics
     vk::SurfaceFormatKHR VulkanSwapchainUtils::ChooseSurfaceFormat(
         const std::vector<vk::SurfaceFormatKHR>& surfaceFormats)
     {
+        ASSERT(!surfaceFormats.empty(), "Surface reports no formats!");
+
         // Check if prefered format is available
         for (const auto& surfaceFormat : surfaceFormats)
         {

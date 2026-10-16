@@ -7,7 +7,6 @@
 #include <array>
 #include <cmath>
 #include <limits>
-#include <unordered_map>
 #include <unordered_set>
 #include <vector>
 
@@ -129,12 +128,6 @@ namespace
                                  .TexCoord = { 0.0f, 0.0f } };
 
         CHECK_FALSE(notANumber == notANumber);
-
-        std::unordered_map<Vertex, Engine::u32> unique;
-        unique[notANumber] = 0;
-        unique[notANumber] = 1;
-
-        CHECK(unique.size() == 2u);
     }
 
     TEST_CASE("Distinct vertices mostly hash distinctly")

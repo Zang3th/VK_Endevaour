@@ -21,4 +21,10 @@ namespace Engine::Graphics
         u32 Vertices  = 0;
         u32 Indices   = 0;
     };
+
+    struct RenderSettings
+    {
+        vk::PolygonMode      PolygonMode = vk::PolygonMode::eFill;
+        vk::CullModeFlagBits CullMode    = vk::CullModeFlagBits::eBack;
+    };
 }

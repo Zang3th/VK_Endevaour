@@ -20,6 +20,7 @@ namespace Engine::Graphics
     struct Mesh;
     class ImGuiLayer;
     class ProfilerPanel;
+    class MainMenuBar;
     class VulkanContext;
     class VulkanSwapchain;
     class VulkanShader;
@@ -59,6 +60,7 @@ namespace Engine::Graphics
         Scope<VulkanContext> m_Context;
         Scope<ImGuiLayer>    m_ImGuiLayer;
         Scope<ProfilerPanel> m_ProfilerPanel;
+        Scope<MainMenuBar>   m_MainMenuBar;
         VulkanSwapchain*     m_Swapchain = nullptr;
 
         // Uniform stuff
@@ -74,6 +76,8 @@ namespace Engine::Graphics
         u32 m_ModelIndex    = 0;
         u32 m_PipelineIndex = 0;
 
-        RenderStats m_RenderStats;
+        // Shared with the UI
+        RenderStats    m_RenderStats;
+        RenderSettings m_RenderSettings;
     };
 }

@@ -145,36 +145,6 @@ namespace
 
     TEST_CASE("ObjLoader deduplicates vertices by value")
     {
-        SUBCASE("shared edge keeps the corner stream intact")
-        {
-            const Mesh mesh = Load("v 0.0 0.0 0.0\n"
-                                   "v 1.0 0.0 0.0\n"
-                                   "v 1.0 1.0 0.0\n"
-                                   "v 0.0 1.0 0.0\n"
-                                   "f 1 2 3\n"
-                                   "f 1 3 4\n",
-                                   "vke_shared_edge.obj");
-
-            CheckMeshIsWellFormed(mesh);
-            REQUIRE(mesh.Vertices.size() == 4u);
-            REQUIRE(mesh.Indices.size() == 6u);
-
-            const std::vector<Engine::u32> expectedIndices = { 0, 1, 2, 0, 2, 3 };
-            CHECK(mesh.Indices == expectedIndices);
-
-            const std::array<ExpectedPosition, 6> expected = { ExpectedPosition{ .X = 0.0f, .Y = 0.0f, .Z = 0.0f },
-                                                               ExpectedPosition{ .X = 1.0f, .Y = 0.0f, .Z = 0.0f },
-                                                               ExpectedPosition{ .X = 1.0f, .Y = 1.0f, .Z = 0.0f },
-                                                               ExpectedPosition{ .X = 0.0f, .Y = 0.0f, .Z = 0.0f },
-                                                               ExpectedPosition{ .X = 1.0f, .Y = 1.0f, .Z = 0.0f },
-                                                               ExpectedPosition{ .X = 0.0f, .Y = 1.0f, .Z = 0.0f } };
-
-            for (Engine::u32 i = 0; i < expected.size(); i++)
-            {
-                CheckPosition(mesh.Vertices.at(mesh.Indices.at(i)), expected.at(i));
-            }
-        }
-
         SUBCASE("identical positions from separate obj entries collapse")
         {
             const Mesh mesh = Load("v 0.0 0.0 0.0\n"

@@ -1,5 +1,6 @@
 #pragma once
 
+#include <cstddef>
 #include <cstdint>
 #include <limits>
 
@@ -23,7 +24,8 @@ namespace Engine
     using f32 = float;
     using f64 = double;
 
-    using ull = unsigned long long;
+    using ull   = unsigned long long;
+    using usize = std::size_t;
 
     // Platform assumptions
 

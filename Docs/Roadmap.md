@@ -138,7 +138,36 @@ GLM soll nur noch über Math/Math.hpp inkludiert werden.
 - 0.2.5
 
 #Date
-- TBD
+- 14.10.2026 - TBD
+
+### Allgemeines
+
+- [x] ~Projekt mal wieder unter Linux kompilieren~
+- [ ] `Docs/ArchitectureOverview.html` neu erzeugen
+
+### Improvements
+
+- [x] ~Logging vereinheitlichen~
+- [ ] Angeforderte Features prüfen
+- [ ] Vulkan >= 1.4 prüfen
+
+### Bugs
+
+- [ ] Lag-Spikes inspizieren
+
+### RenderControls
+
+#Info
+Optionen sollen via UI gesteuert werden.
+
+- [x] ~Polygon Mode~
+- [x] ~Cull Mode~
+
+#### ToDo
+- [x] ~Interaktion / Schnittstelle mit dem Renderer überlegen~
+- [x] ~UI implementieren~
+
+### Camera
 
 #Info
 Die Kamera wird von der Anwendung verwaltet, dort mittels Input aktualisiert und pro Frame an den Renderer übergeben.
@@ -146,25 +175,9 @@ Die Kamera wird von der Anwendung verwaltet, dort mittels Input aktualisiert und
 Zusätzlich werden die Kameraparameter im ProfilerPanel dargestellt.
 
 Die Projektion soll rechtshändig mit Z-up sein (entspricht Blender):
-
 - +X = rechts
 - +Y = vorwärts
 - +Z = oben
-
-### Allgemeines
-
-- [ ] Projekt mal wieder unter Linux kompilieren
-- [ ] `Docs/ArchitectureOverview.html` neu erzeugen
-
-### Improvements
-
-- [x] ~Logging vereinheitlichen~
-
-### Bugs
-
-- [ ] Lag-Spikes inspizieren
-
-### Camera
 
 - [ ] Minimale API überlegen
 - [ ] Ablageort im Engine festlegen
@@ -183,18 +196,6 @@ Die Projektion soll rechtshändig mit Z-up sein (entspricht Blender):
 - [ ] Bewegung mit DeltaSeconds skalieren
 - [ ] Tests mit synthetischem Input-Struct
 
-### RenderControls
-
-#Info
-Optionen sollen via UI gesteuert werden.
-
-- [ ] Polygon Mode
-- [ ] Cull Mode
-
-#### ToDo
-- [ ] Interaktion / Schnittstelle mit dem Renderer überlegen
-- [ ] UI implementieren
-
 ### Kofi Game Engine Series
 
 - [ ] Video 31
@@ -210,6 +211,11 @@ Optionen sollen via UI gesteuert werden.
 ### Improvements
 
 - [ ] RenderFrame, RenderItem und RenderRequest einführen
+
+### UI
+
+- [ ] Custom Font integrieren
+- [ ] UI verbessern
 
 ### VulkanMesh
 

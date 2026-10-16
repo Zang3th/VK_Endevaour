@@ -1,5 +1,9 @@
 #include "ProfilerPanel.hpp"
 
+#include "Core/Timer.hpp"
+
+#include "Graphics/Vulkan/VulkanRendererStructs.hpp"
+
 #include "Vendor/imgui/imgui.h"
 
 namespace Engine::Graphics

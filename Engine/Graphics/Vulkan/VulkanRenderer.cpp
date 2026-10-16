@@ -3,6 +3,7 @@
 #include "Debug/Log.hpp"
 
 #include "Graphics/UI/ImGuiLayer.hpp"
+#include "Graphics/UI/MainMenuBar.hpp"
 #include "Graphics/UI/ProfilerPanel.hpp"
 
 #include "Graphics/Vulkan/VulkanContext.hpp"
@@ -24,6 +25,7 @@ namespace Engine::Graphics
         m_Context              = MakeScope<VulkanContext>(window);
         m_ImGuiLayer           = MakeScope<ImGuiLayer>(m_Context.get(), window);
         m_ProfilerPanel        = MakeScope<ProfilerPanel>();
+        m_MainMenuBar          = MakeScope<MainMenuBar>();
         m_VulkanGlobalUniforms = MakeScope<VulkanGlobalUniforms>(m_Context.get());
 
         m_Swapchain = m_Context->GetSwapchain();
@@ -117,9 +119,9 @@ namespace Engine::Graphics
         const vk::Rect2D scissor = { .extent = extent };
         cmdBuffer.setScissor(0, 1, &scissor);
 
-        cmdBuffer.setPolygonModeEXT(vk::PolygonMode::eFill, m_Context->GetLoader());
+        cmdBuffer.setPolygonModeEXT(m_RenderSettings.PolygonMode, m_Context->GetLoader());
         cmdBuffer.setPrimitiveTopology(vk::PrimitiveTopology::eTriangleList);
-        cmdBuffer.setCullMode(vk::CullModeFlagBits::eBack);
+        cmdBuffer.setCullMode(m_RenderSettings.CullMode);
         cmdBuffer.setFrontFace(vk::FrontFace::eCounterClockwise);
     }
 
@@ -176,6 +178,7 @@ namespace Engine::Graphics
     {
         m_ImGuiLayer->BeginFrame();
 
+        m_MainMenuBar->Render(m_RenderSettings);
         m_ProfilerPanel->Render(frameTiming, m_RenderStats);
 
         m_ImGuiLayer->RenderFrame(cmdBuffer);
