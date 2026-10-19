@@ -59,11 +59,8 @@ namespace Engine::Graphics
                                                              .synchronization2 = vk::True,
                                                              .dynamicRendering = vk::True };
 
-        // For default point size initialization
-        vk::PhysicalDeviceVulkan14Features vulkan14Features{ .pNext = &vulkan13Features, .maintenance5 = vk::True };
-
         // Activate dynamic state 3 extension
-        vk::PhysicalDeviceExtendedDynamicState3FeaturesEXT extDyn3Features{ .pNext = &vulkan14Features,
+        vk::PhysicalDeviceExtendedDynamicState3FeaturesEXT extDyn3Features{ .pNext = &vulkan13Features,
                                                                             .extendedDynamicState3PolygonMode =
                                                                                 vk::True };
 

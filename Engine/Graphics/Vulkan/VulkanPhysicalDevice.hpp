@@ -31,6 +31,7 @@ namespace Engine::Graphics
         {
             return QuerySwapchainSupport(m_PhysicalDevice, m_Surface);
         }
+        [[nodiscard]] u32 GetApiVersion() const { return m_ApiVersion; };
 
     private:
         void                           PickDevice();
@@ -42,5 +43,6 @@ namespace Engine::Graphics
         vk::PhysicalDevice           m_PhysicalDevice;
         QueueFamilyIndices           m_QueueFamilyIndices;
         vk::PhysicalDeviceProperties m_Properties;
+        u32                          m_ApiVersion = 0;
     };
 }

@@ -9,6 +9,7 @@
 #include <vulkan/vulkan_enums.hpp>
 #include <vulkan/vulkan_structs.hpp>
 
+#include <algorithm>
 #include <array>
 #include <set>
 
@@ -31,8 +32,23 @@ namespace
         return fmt::format("{}.{}.{}.{}", major, minor, secondary, tertiary);
     }
 
-    [[nodiscard]] bool CheckExtensionSupport(const vk::PhysicalDevice& device)
+    [[nodiscard]] std::string GetApiVersionString(const Engine::u32 apiVersion)
     {
+        return fmt::format("{}.{}.{}",
+                           VK_API_VERSION_MAJOR(apiVersion),
+                           VK_API_VERSION_MINOR(apiVersion),
+                           VK_API_VERSION_PATCH(apiVersion));
+    }
+
+    [[nodiscard]] bool CheckDeviceSupport(const vk::PhysicalDevice& device)
+    {
+        if (device.getProperties().apiVersion < Engine::Graphics::VULKAN_API_MIN_VERSION)
+        {
+            LOG_WARN("Device doesn't support minimum Vulkan API version {}",
+                     GetApiVersionString(Engine::Graphics::VULKAN_API_MIN_VERSION));
+            return false;
+        }
+
         // Query for available extensions
         const auto [result, availableExtensions] = device.enumerateDeviceExtensionProperties();
         VK_VERIFY(result);
@@ -172,14 +188,16 @@ namespace Engine::Graphics
             const SwapchainSupport   swapchainSupport = QuerySwapchainSupport(device, m_Surface);
 
             // Break at first suitable device
-            if (queueFamilies.IsComplete() && swapchainSupport.IsComplete() && CheckExtensionSupport(device))
+            if (queueFamilies.IsComplete() && swapchainSupport.IsComplete() && CheckDeviceSupport(device))
             {
                 m_PhysicalDevice     = device;
                 m_QueueFamilyIndices = queueFamilies;
                 m_Properties         = device.getProperties();
-                LOG_INFO("Found suitable device ... (GPU: {}, Driver: {})",
+                m_ApiVersion         = std::min(VULKAN_API_TARGET_VERSION, m_Properties.apiVersion);
+                LOG_INFO("Found suitable device ... (GPU: {}, Driver: {}, API: {})",
                          (const char*)m_Properties.deviceName,
-                         GetDriverVersionString(m_Properties));
+                         GetDriverVersionString(m_Properties),
+                         GetApiVersionString(m_ApiVersion));
                 break;
             }
         }

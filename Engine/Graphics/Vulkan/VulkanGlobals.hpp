@@ -14,6 +14,9 @@ const bool ENABLE_VALIDATION_LAYERS = true;
 
 namespace Engine::Graphics
 {
+    inline static constexpr u32 VULKAN_API_MIN_VERSION    = VK_API_VERSION_1_3;
+    inline static constexpr u32 VULKAN_API_TARGET_VERSION = VK_API_VERSION_1_4;
+
     inline static const std::vector<const char*> g_ValidationLayers = { "VK_LAYER_KHRONOS_validation" };
 
     // clang-format off

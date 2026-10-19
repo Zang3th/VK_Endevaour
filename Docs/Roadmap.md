@@ -142,18 +142,15 @@ GLM soll nur noch über Math/Math.hpp inkludiert werden.
 
 ### Allgemeines
 
+- [x] ~Engine-Version String einführen und loggen~
+- [x] ~Version-Bump~
 - [x] ~Projekt mal wieder unter Linux kompilieren~
 - [ ] `Docs/ArchitectureOverview.html` neu erzeugen
 
 ### Improvements
 
 - [x] ~Logging vereinheitlichen~
-- [ ] Angeforderte Features prüfen
-- [ ] Vulkan >= 1.4 prüfen
-
-### Bugs
-
-- [ ] Lag-Spikes inspizieren
+- [x] ~Vulkan >= 1.3 prüfen~
 
 ### RenderControls
 
@@ -208,9 +205,18 @@ Die Projektion soll rechtshändig mit Z-up sein (entspricht Blender):
 #Date
 - TBD
 
+### Allgemeines
+
+- [ ] Version-Bump
+- [ ] `Docs/ArchitectureOverview.html` neu erzeugen
+
 ### Improvements
 
 - [ ] RenderFrame, RenderItem und RenderRequest einführen
+
+### Bugs
+
+- [ ] Lag-Spikes inspizieren
 
 ### UI
 
@@ -247,6 +253,17 @@ Besteht aus einem Mesh-Handle (u32) und einem Transform-Struct.
 
 #Date
 - TBD
+
+### Allgemeines
+
+- [ ] Version-Bump
+- [ ] Projekt mal wieder unter Linux kompilieren
+- [ ] `Docs/ArchitectureOverview.html` neu erzeugen
+
+### Release
+
+- [ ] README anpassen
+- [ ] Release-Notes schreiben
 
 ### WorldGrid
 

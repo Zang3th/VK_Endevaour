@@ -1,5 +1,7 @@
 #include "Backend.hpp"
 
+#include "Core/Globals.hpp"
+
 #include "Debug/Log.hpp"
 
 #include "Graphics/Vulkan/VulkanAssert.hpp"
@@ -67,8 +69,11 @@ namespace Engine::Platform
         ASSERT(glfwInit(), "Failed to initialize GLFW!");
         LOG_INFO("Initialized GLFW ...");
 
-        // Create window and set user pointer
-        m_Window     = Scope<Window>(new Window(initSpec));
+        // Create window
+        const std::string title = initSpec.Title + " - Engine " + Core::ENGINE_VERSION_STRING;
+        m_Window = Scope<Window>(new Window({ .Title = title, .Width = initSpec.Width, .Height = initSpec.Height }));
+
+        // Set user pointer
         m_GLFWHandle = m_Window->m_GLFWHandle;
         glfwSetWindowUserPointer(m_GLFWHandle, this);
 

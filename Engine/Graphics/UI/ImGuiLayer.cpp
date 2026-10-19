@@ -114,7 +114,7 @@ namespace Engine::Graphics
         constexpr vk::DeviceSize IMGUI_MIN_ALLOCATION_SIZE = 1048576; // ImGui best practice
 
         // Setup ImGui renderer backend
-        ImGui_ImplVulkan_InitInfo initInfo{ .ApiVersion     = m_Context->GetApiVersion(),
+        ImGui_ImplVulkan_InitInfo initInfo{ .ApiVersion     = device->GetPhysicalDevice()->GetApiVersion(),
                                             .Instance       = m_Context->GetInstance(),
                                             .PhysicalDevice = device->GetPhysicalDevice()->GetHandle(),
                                             .Device         = device->GetHandle(),

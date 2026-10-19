@@ -1,7 +1,6 @@
 #pragma once
 
 #include "Core/Memory.hpp"
-#include "Core/Types.hpp"
 
 #include <vulkan/vulkan.hpp>
 
@@ -28,7 +27,6 @@ namespace Engine::Graphics
         VulkanContext(const VulkanContext&)            = delete;
         VulkanContext& operator=(const VulkanContext&) = delete;
 
-        [[nodiscard]] u32                                      GetApiVersion() const { return m_ApiVersion; }
         [[nodiscard]] const vk::Instance&                      GetInstance() const { return m_Instance; }
         [[nodiscard]] const vk::SurfaceKHR&                    GetSurface() const { return m_Surface; }
         [[nodiscard]] const VulkanDevice*                      GetDevice() const { return m_Device.get(); }
@@ -43,7 +41,6 @@ namespace Engine::Graphics
         void CreateDebugMessenger();
         void CreateDispatchLoader();
 
-        u32                         m_ApiVersion = VK_API_VERSION_1_4;
         vk::Instance                m_Instance;
         vk::SurfaceKHR              m_Surface;
         vk::DebugUtilsMessengerEXT  m_DebugMessenger;

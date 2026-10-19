@@ -29,7 +29,7 @@ namespace Engine::Graphics
         m_PhysicalDevice = MakeScope<VulkanPhysicalDevice>(m_Instance, m_Surface);
         m_Device         = MakeScope<VulkanDevice>(m_PhysicalDevice.get());
 
-        VulkanAllocator::Init(m_Device.get(), m_Instance, m_ApiVersion);
+        VulkanAllocator::Init(m_Device.get(), m_Instance, m_PhysicalDevice->GetApiVersion());
         m_Swapchain = MakeScope<VulkanSwapchain>(m_Device.get(), m_Surface, window);
 
         CreateDispatchLoader(); // For later use in extension functions
@@ -79,7 +79,7 @@ namespace Engine::Graphics
                                            .applicationVersion = 1,
                                            .pEngineName        = "Engine",
                                            .engineVersion      = 1,
-                                           .apiVersion         = m_ApiVersion };
+                                           .apiVersion         = VULKAN_API_TARGET_VERSION };
 
         // Query for all required instance extensions
         auto extensions = VulkanDebug::GetInstanceExtensions(window);
